@@ -257,7 +257,7 @@ commands(Autopilot_Interface &api)
 	global_int_pos.yaw = ggsp.hdg;
 	gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
 	gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
-	float High = 15;
+	float High = 25;
 	//set global_point 经度，纬度，相对home高度
 	set_global_position(global_int_pos.lat_int,
 						global_int_pos.lon_int,
@@ -293,11 +293,13 @@ commands(Autopilot_Interface &api)
     commission.target_component = 01;
     commission.command = 16;
     commission.frame = MAV_FRAME_BODY_FLU;
-    commission.autocontinue = 0;
+    commission.autocontinue = 1;
     commission.current = 1;
+    commission.seq = 1;
+    commission.param1 = 1;
     commission.x = 5;
     commission.y = 5;
-    commission.z = 10;//高度设定10m
+    commission.z = 10;
     mavlink_message_t Bmessage;
     mavlink_msg_mission_item_encode(255, 190, &Bmessage, &commission);
     int lenB = api.write_message(Bmessage);
