@@ -62,7 +62,7 @@
 using namespace cv;
 using namespace std;
 
-vector<loc_t> target_gps_position;//全局变量——圆心目标的坐
+vector<loc_t> target_gps_position;//全局变量——圆心目标的坐标
 // ------------------------------------------------------------------------------
 //   TOP
 // ------------------------------------------------------------------------------
@@ -414,7 +414,8 @@ quit_handler( int sig )
 
 ///////////////视觉定位线程
 void videothread(Autopilot_Interface &api){
-	float areanum = 0.215;
+
+    float areanum = 0.215;
 	VideoCapture cap(0);
 	if(!cap.isOpened()) return;
 
