@@ -1,3 +1,0 @@
-/home/nvidia/cuart/build/CMakeFiles/rebuild_cache.dir
-/home/nvidia/cuart/build/CMakeFiles/edit_cache.dir
-/home/nvidia/cuart/build/CMakeFiles/c_uart_interface_example.dir
