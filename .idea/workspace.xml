@@ -14,6 +14,7 @@
     <list default="true" id="f63c1b4c-7698-4aa1-91f9-18b8f5810847" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/autopilot_interface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/autopilot_interface.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mavlink_control.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/mavlink_control.cpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -29,8 +30,8 @@
       <file leaf-file-name="autopilot_interface.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-4288">
-              <caret line="871" column="25" selection-start-line="871" selection-start-column="25" selection-end-line="871" selection-end-column="25" />
+            <state relative-caret-position="212">
+              <caret line="892" lean-forward="true" selection-start-line="892" selection-end-line="892" />
             </state>
           </provider>
         </entry>
@@ -38,8 +39,8 @@
       <file leaf-file-name="mavlink_control.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-193">
-              <caret line="309" column="21" lean-forward="true" selection-start-line="309" selection-start-column="21" selection-end-line="309" selection-end-column="21" />
+            <state relative-caret-position="437">
+              <caret line="180" column="28" lean-forward="true" selection-start-line="180" selection-start-column="28" selection-end-line="180" selection-end-column="28" />
               <folding>
                 <element signature="e#2411#2439#0" expanded="true" />
                 <element signature="e#3069#3115#0" expanded="true" />
@@ -146,7 +147,7 @@
       <workItem from="1526027292030" duration="1429000" />
       <workItem from="1526091423014" duration="5595000" />
       <workItem from="1526172362178" duration="456000" />
-      <workItem from="1526176179308" duration="5781000" />
+      <workItem from="1526176179308" duration="6602000" />
     </task>
     <task id="LOCAL-00001" summary="example!">
       <created>1526027388522</created>
@@ -169,11 +170,18 @@
       <option name="project" value="LOCAL" />
       <updated>1526194845004</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="local position更换成bady_ned坐标系。&#10;使用84/82/39号命令分别进行全局与局部设点运行，并将设点运行规范化。">
+      <created>1526196933445</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1526196933445</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="13261000" />
+    <option name="totallyTimeSpent" value="14082000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
@@ -202,6 +210,32 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
@@ -209,6 +243,11 @@
     <MESSAGE value="example!" />
     <MESSAGE value="local position更换成bady_ned坐标系。&#10;使用84/82/39号命令分别进行全局与局部设点运行，并将设点运行规范化。" />
     <option name="LAST_COMMIT_MESSAGE" value="local position更换成bady_ned坐标系。&#10;使用84/82/39号命令分别进行全局与局部设点运行，并将设点运行规范化。" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="1" />
+    </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
@@ -307,15 +346,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4288">
-          <caret line="871" column="25" selection-start-line="871" selection-start-column="25" selection-end-line="871" selection-end-column="25" />
+        <state relative-caret-position="212">
+          <caret line="892" lean-forward="true" selection-start-line="892" selection-end-line="892" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-193">
-          <caret line="309" column="21" lean-forward="true" selection-start-line="309" selection-start-column="21" selection-end-line="309" selection-end-column="21" />
+        <state relative-caret-position="437">
+          <caret line="180" column="28" lean-forward="true" selection-start-line="180" selection-start-column="28" selection-end-line="180" selection-end-column="28" />
           <folding>
             <element signature="e#2411#2439#0" expanded="true" />
             <element signature="e#3069#3115#0" expanded="true" />

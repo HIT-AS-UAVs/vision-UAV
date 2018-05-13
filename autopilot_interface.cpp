@@ -178,7 +178,8 @@ void
 set_global_position(float x,float y,float z,mavlink_set_position_target_global_int_t &sp)
 {
 	sp.type_mask = MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_POSITION;
-	sp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+	sp.coordinate_frame =
+            MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
 
 	sp.lat_int   = x;
 	sp.lon_int   = y;
@@ -194,7 +195,8 @@ set_global_velocity(float vx, float vy, float vz, mavlink_set_position_target_gl
 	sp.type_mask =
 			MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_VELOCITY ;
 
-	sp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+	sp.coordinate_frame =
+	        MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
 	sp.vx  = vx;
 	sp.vy  = vy;
 	sp.vz  = vz;
@@ -836,6 +838,7 @@ toggle_offboard_control( bool flag )
 	commission11.target_system = 01;
 	commission11.target_component = 01;
 	commission11.command = 16;
+	commission11.seq = 1;
 	commission11.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
 	commission11.autocontinue = 1;
 	commission11.current = 1;
@@ -859,18 +862,47 @@ toggle_offboard_control( bool flag )
 		printf("[%f,%f,%f]\n", (float)commission11.x, (float)commission11.y, (float)commission11.z);
 	}
 
-	/*****************
-	 /////////////////////////////////返航
-	mavlink_command_long_t com3 = { 0 };
-	com3.target_system= 01;
-	com3.target_component = 01;
-	com3.command = 20;
+    ///////////////////////////////////mission全局设目标点
+    mavlink_mission_item_t commission12;
+    commission12.target_system = 01;
+    commission12.target_component = 01;
+    commission12.command = 16;
+    commission12.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+    commission12.autocontinue = 1;
+    commission12.seq = 2;
+    commission12.current = 0;
+    commission12.x = current_messages.global_position_int.lat;
+    commission12.y = current_messages.global_position_int.lon;
+    commission12.z = 25;
+    commission12.param1 = 1;
+    commission12.param2 = 1;
+    commission12.param3 = 0;
 
-	mavlink_message_t message3;
-	mavlink_msg_command_long_encode(255, 190, &message3, &com3);
+    mavlink_message_t G2Bmessage;
+    mavlink_msg_mission_item_encode(255, 190, &G2Bmessage, &commission12);
+    int lenG2B = write_message(G2Bmessage);
+    if (lenG2B <= 0)
+    {
+        printf("Body position write wrong!");
+        printf("[%f,%f,%f]", commission12.x, commission12.y, commission12.z);
+    }
+    else {
+        printf("成功写入mission 全局坐标系坐标点\n");
+        printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
+    }
 
-	// Send the message
-	int len3 = serial_port->write_message(message3);
+    /*****************
+     /////////////////////////////////返航
+    mavlink_command_long_t com3 = { 0 };
+    com3.target_system= 01;
+    com3.target_component = 01;
+    com3.command = 20;
+
+    mavlink_message_t message3;
+    mavlink_msg_command_long_encode(255, 190, &message3, &com3);
+
+    // Send the message
+    int len3 = serial_port->write_message(message3);
 **************/
 	return len;
 }
