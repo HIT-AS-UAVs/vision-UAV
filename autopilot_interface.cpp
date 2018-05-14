@@ -414,6 +414,9 @@ read_messages()
 					mavlink_msg_position_target_local_ned_decode(&message, &(current_messages.position_target_local_ned));
 					current_messages.time_stamps.position_target_local_ned = get_time_usec();
 					this_timestamps.position_target_local_ned = current_messages.time_stamps.position_target_local_ned;
+					std::cout<<"local_position.x:"<<current_messages.local_position_ned.x<<std::endl
+                             <<"local_position.y:"<<current_messages.local_position_ned.y<<std::endl
+                             <<"local_position.z:"<<current_messages.local_position_ned.z<<std::endl;
 					break;
 				}
 
@@ -698,7 +701,7 @@ disable_offboard_control()
 		printf("\n");
 
 	} // end: if offboard_status
-
+//MAV_CMD_MISSION_START
 }
 
 
@@ -769,7 +772,7 @@ toggle_offboard_control( bool flag )
 	mavlink_command_long_t com1 = { 0 };
 	com1.target_system= 01;
 	com1.target_component = 01;
-	com1.command = 400;
+	com1.command = MAV_CMD_MISSION_START;
 	com1.param1 = 1;
 	mavlink_message_t message1;
 	mavlink_msg_command_long_encode(255, 190, &message1, &com1);
@@ -804,7 +807,7 @@ toggle_offboard_control( bool flag )
 	// Send the message
 	int len2 = serial_port->write_message(message2);
 
-
+/*
 	///////////////////////////////////mission本体FLU设目标点
 	mavlink_command_int_t command;
 	command.target_system = 01;
@@ -831,7 +834,7 @@ toggle_offboard_control( bool flag )
 		printf("成功写入本体坐标系坐标点\n");
 		std::cout<<"commission.x:"<<command.x<<std::endl<<"commission.y:"<<command.y<<std::endl;
 	}
-
+*/
 
 	///////////////////////////////////mission全局设目标点
 	mavlink_mission_item_t commission11;
@@ -870,10 +873,10 @@ toggle_offboard_control( bool flag )
     commission12.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
     commission12.autocontinue = 1;
     commission12.seq = 2;
-    commission12.current = 0;
+    commission12.current = 1;
     commission12.x = current_messages.global_position_int.lat;
     commission12.y = current_messages.global_position_int.lon;
-    commission12.z = 25;
+    commission12.z = 20;
     commission12.param1 = 1;
     commission12.param2 = 1;
     commission12.param3 = 0;
@@ -890,6 +893,33 @@ toggle_offboard_control( bool flag )
         printf("成功写入mission 全局坐标系坐标点\n");
         printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
     }
+
+
+    //////////////////////////////////开始misiion
+    mavlink_command_long_t mission_start = { 0 };
+    mission_start.target_system= 01;
+    mission_start.target_component = 01;
+    mission_start.command = 300;
+    mission_start.confirmation = 1;
+    mission_start.param1 = 1;
+    mission_start.param2 = 2;
+
+    mavlink_message_t Mission_starmessage;
+    mavlink_msg_command_long_encode(255, 190, &Mission_starmessage, &mission_start);
+
+    // Send the message
+    int lenmission = serial_port->write_message(Mission_starmessage);
+    if (lenmission <= 0)
+    {
+        printf("Start Mission error!\n");
+        //printf("[%f,%f,%f]", commission12.x, commission12.y, commission12.z);
+    }
+    else {
+        printf("Start Mission!\n");
+        //printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
+    }
+
+
 
     /*****************
      /////////////////////////////////返航
