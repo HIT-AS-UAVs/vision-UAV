@@ -395,7 +395,6 @@ read_messages()
 					mavlink_msg_local_position_ned_decode(&message, &(current_messages.local_position_ned));
 					current_messages.time_stamps.local_position_ned = get_time_usec();
 					this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
-					std::cout<<"local position remember:"<<current_messages.local_position_ned.z<<std::endl;
 					break;
 				}
 
@@ -416,6 +415,9 @@ read_messages()
 					mavlink_msg_position_target_local_ned_decode(&message, &(current_messages.position_target_local_ned));
 					current_messages.time_stamps.position_target_local_ned = get_time_usec();
 					this_timestamps.position_target_local_ned = current_messages.time_stamps.position_target_local_ned;
+					std::cout<<"local_position.x:"<<current_messages.local_position_ned.x<<std::endl
+                             <<"local_position.y:"<<current_messages.local_position_ned.y<<std::endl
+                             <<"local_position.z:"<<current_messages.local_position_ned.z<<std::endl;
 //					std::cout<<"local_position.z:"<<current_messages.position_target_local_ned.z<<std::endl;
 					break;
 				}
@@ -701,7 +703,7 @@ disable_offboard_control()
 		printf("\n");
 
 	} // end: if offboard_status
-
+//MAV_CMD_MISSION_START
 }
 
 
@@ -799,7 +801,7 @@ toggle_offboard_control( bool flag )
 	com2.target_system= 01;
 	com2.target_component = 01;
 	com2.command = 22;
-	com2.param7 = 15;//高度设定10m
+	com2.param7 = 10;//高度设定10m
 
 	mavlink_message_t message2;
 	mavlink_msg_command_long_encode(255, 190, &message2, &com2);
@@ -807,7 +809,7 @@ toggle_offboard_control( bool flag )
 	// Send the message
 	int len2 = serial_port->write_message(message2);
 
-/*
+
 	///////////////////////////////////mission本体FLU设目标点
 	mavlink_command_int_t command;
 	command.target_system = 01;
@@ -834,7 +836,7 @@ toggle_offboard_control( bool flag )
 		printf("成功写入本体坐标系坐标点\n");
 		std::cout<<"commission.x:"<<command.x<<std::endl<<"commission.y:"<<command.y<<std::endl;
 	}
-*/
+
 
 	///////////////////////////////////mission全局设目标点
 	mavlink_mission_item_t commission11;
@@ -991,7 +993,6 @@ toggle_offboard_control( bool flag )
     // Send the message
     int len3 = serial_port->write_message(message3);
 **************/
-
 	return len;
 }
 
