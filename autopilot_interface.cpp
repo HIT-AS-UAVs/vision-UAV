@@ -68,11 +68,10 @@ get_time_usec()
 
 
 // ----------------------------------------------------------------------------------
-//   Setpoint Helper Functions
+//   设置目标点的函数
 // ----------------------------------------------------------------------------------
 
 // choose one of the next three
-
 /*
  * Set target local ned position
  *
@@ -84,13 +83,11 @@ set_position(float x, float y, float z, mavlink_set_position_target_local_ned_t 
 {
 	sp.type_mask =
 		MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION;
-
-	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+	sp.coordinate_frame = MAV_FRAME_BODY_NED;
 
 	sp.x   = x;
 	sp.y   = y;
 	sp.z   = z;
-
 	printf("POSITION SETPOINT XYZ = [ %.4f , %.4f , %.4f ] \n", sp.x, sp.y, sp.z);
 
 }
@@ -105,16 +102,14 @@ void
 set_velocity(float vx, float vy, float vz, mavlink_set_position_target_local_ned_t &sp)
 {
 	sp.type_mask =
-		MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY     ;
+			MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY     ;
 
-	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-
+	//sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+	sp.coordinate_frame = MAV_FRAME_BODY_NED;
 	sp.vx  = vx;
 	sp.vy  = vy;
 	sp.vz  = vz;
-
 	//printf("VELOCITY SETPOINT UVW = [ %.4f , %.4f , %.4f ] \n", sp.vx, sp.vy, sp.vz);
-
 }
 
 /*
@@ -130,21 +125,18 @@ set_acceleration(float ax, float ay, float az, mavlink_set_position_target_local
 	// NOT IMPLEMENTED
 	fprintf(stderr,"set_acceleration doesn't work yet \n");
 	throw 1;
-
-
 	sp.type_mask =
-		MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_ACCELERATION &
-		MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY     ;
+			MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_ACCELERATION &
+			MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY     ;
 
-	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-
+	//sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+	sp.coordinate_frame = MAV_FRAME_BODY_NED;
 	sp.afx  = ax;
 	sp.afy  = ay;
 	sp.afz  = az;
 }
 
 // the next two need to be called after one of the above
-
 /*
  * Set target local ned yaw
  *
@@ -174,6 +166,90 @@ set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp)
 {
 	sp.type_mask &=
 		MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE ;
+
+	sp.yaw_rate  = yaw_rate;
+}
+
+
+/*
+ * 设置全局目标坐标点，坐标系GLOBAL_RELATIVE_ALT_INT
+ */
+void
+set_global_position(float x,float y,float z,mavlink_set_position_target_global_int_t &sp)
+{
+	sp.type_mask = MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_POSITION;
+	sp.coordinate_frame =
+            MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+
+	sp.lat_int   = x;
+	sp.lon_int   = y;
+	sp.alt   = z;
+}
+
+/*
+ * 设置global_velocity
+ */
+void
+set_global_velocity(float vx, float vy, float vz, mavlink_set_position_target_global_int_t &sp)
+{
+	sp.type_mask =
+			MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_VELOCITY ;
+
+	sp.coordinate_frame =
+	        MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+	sp.vx  = vx;
+	sp.vy  = vy;
+	sp.vz  = vz;
+}
+
+/*
+ * 设置全局加速度
+ * MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
+ */
+void
+set_global_acceleration(float ax, float ay, float az, mavlink_set_position_target_global_int_t &sp)
+{
+
+	// NOT IMPLEMENTED
+	fprintf(stderr,"set_acceleration doesn't work yet \n");
+	throw 1;
+
+	sp.type_mask =
+			MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_ACCELERATION &
+			MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_VELOCITY;
+	sp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+	sp.afx  = ax;
+	sp.afy  = ay;
+	sp.afz  = az;
+
+}
+
+// the next two need to be called after one of the above
+
+/*
+ * 设置指向
+ */
+void
+set_global_yaw(float yaw, mavlink_set_position_target_global_int_t &sp)
+{
+	sp.type_mask &= MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_ANGLE;
+	sp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+	sp.yaw  = yaw;
+
+	printf("POSITION SETPOINT YAW = %.4f \n", sp.yaw);
+}
+
+/*
+ * Set target local ned yaw rate
+ *
+ * Modifies a mavlink_set_position_target_local_ned_t struct with a target yaw rate
+ * in the Local NED frame, in radians per second.
+ */
+void
+set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp)
+{
+	sp.type_mask &=
+			MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_RATE ;
 
 	sp.yaw_rate  = yaw_rate;
 }
@@ -217,15 +293,27 @@ Autopilot_Interface::
 
 
 // ------------------------------------------------------------------------------
-//   Update Setpoint
+//   Update Global Setpoint
 // ------------------------------------------------------------------------------
 void
 Autopilot_Interface::
-update_setpoint(mavlink_set_position_target_local_ned_t setpoint)
+update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point)
 {
-	current_setpoint = setpoint;
-    write_setpoint();
+	current_global_setpoint = set_global_point;
+	write_global_setpoint();
 }
+
+// ------------------------------------------------------------------------------
+//   Update Local Setpoint
+// ------------------------------------------------------------------------------
+void
+Autopilot_Interface::
+update_local_setpoint(mavlink_set_position_target_local_ned_t setpoint)
+{
+	current_local_setpoint = setpoint;
+	write_local_setpoint();
+}
+
 
 
 // ------------------------------------------------------------------------------
@@ -399,7 +487,7 @@ read_messages()
 					this_timestamps.mission_item = current_messages.time_stamps.mission_item;
 					break;
 				}
-                case MAVLINK_MSG_ID_COMMAND_ACK:
+				case MAVLINK_MSG_ID_COMMAND_ACK:
                 {
                     printf("MAVLINK_MSG_ID_COMMAND_ACK\n");
                     mavlink_msg_command_ack_decode(&message, &(current_messages.command_ack));
@@ -409,6 +497,26 @@ read_messages()
                     this_timestamps.command_ack = current_messages.time_stamps.command_ack;
                     break;
                 }
+
+				case MAVLINK_MSG_ID_PARAM_VALUE:
+				{
+					printf("MAVLINK ID PARAM_VALUE!\n");
+					mavlink_msg_param_value_decode(&message,&(current_messages.param_value));
+					this_timestamps.param_value = current_messages.time_stamps.param_value;
+					std::cout<<"param_id:"<<current_messages.param_value.param_id<<std::endl
+							 <<"param_value:"<<current_messages.param_value.param_value<<std::endl
+							 <<"param_type:"<<(float)current_messages.param_value.param_type<<std::endl;
+					break;
+				}
+				case MAVLINK_MSG_ID_STATUSTEXT:
+				{
+					printf("Mavlink ID statustext!\n");
+					mavlink_msg_statustext_decode(&message,&(current_messages.statustext));
+					this_timestamps.statustext = current_messages.time_stamps.statustext;
+					std::cout<<"severity:"<<(float)current_messages.statustext.severity<<std::endl
+							 <<"text:"<<current_messages.statustext.text<<std::endl;
+					break;
+				}
 
 				default:
 				{
@@ -467,42 +575,57 @@ write_message(mavlink_message_t message)
 // ------------------------------------------------------------------------------
 void
 Autopilot_Interface::
-write_setpoint()
+write_global_setpoint()
 {
+	mavlink_set_position_target_global_int_t sp = current_global_setpoint;
+	// double check some system parameters
+	if ( not sp.time_boot_ms )
+		sp.time_boot_ms = (uint32_t) (get_time_usec()/1000);
+	sp.target_system    = system_id;
+	sp.target_component = autopilot_id;
 	// --------------------------------------------------------------------------
-	//   PACK PAYLOAD
+	//   ENCODE
 	// --------------------------------------------------------------------------
+	mavlink_message_t message;
+	mavlink_msg_set_position_target_global_int_encode(system_id, companion_id, &message, &sp);
+	// --------------------------------------------------------------------------
+	//   WRITE
+	// --------------------------------------------------------------------------
+	int len = write_message(message);
+	// check the write
+	if ( len <= 0 )
+		fprintf(stderr,"WARNING: could not send POSITION_TARGET_GLOBAL_INT \n");
+	else
+		printf("%lu Global_POSITION_TARGET  = [ %4f , %4f , %4f ] \n", write_count, (float)sp.lat_int, (float)sp.lon_int, sp.alt);
+	std::cout<<sp.type_mask<<std::endl;
+	return;
+}
 
+void
+Autopilot_Interface::
+write_local_setpoint()
+{
 	// pull from position target
-	mavlink_set_position_target_local_ned_t sp = current_setpoint;
+	mavlink_set_position_target_local_ned_t sp = current_local_setpoint;
 
 	// double check some system parameters
 	if ( not sp.time_boot_ms )
 		sp.time_boot_ms = (uint32_t) (get_time_usec()/1000);
 	sp.target_system    = system_id;
 	sp.target_component = autopilot_id;
-
-
 	// --------------------------------------------------------------------------
 	//   ENCODE
 	// --------------------------------------------------------------------------
-
 	mavlink_message_t message;
 	mavlink_msg_set_position_target_local_ned_encode(system_id, companion_id, &message, &sp);
-
-
-	// --------------------------------------------------------------------------
-	//   WRITE
-	// --------------------------------------------------------------------------
-
 	// do the write
 	int len = write_message(message);
-
 	// check the write
 	if ( len <= 0 )
 		fprintf(stderr,"WARNING: could not send POSITION_TARGET_LOCAL_NED \n");
-	//	else
-	//		printf("%lu POSITION_TARGET  = [ %f , %f , %f ] \n", write_count, position_target.x, position_target.y, position_target.z);
+	else
+		printf("%lu POSITION_TARGET  = [ %f , %f , %f ] \n", write_count, sp.x, sp.y, sp.z);
+	std::cout<<sp.type_mask<<std::endl;
 
 	return;
 }
@@ -598,7 +721,6 @@ toggle_offboard_control( bool flag )
 	com.base_mode = 1;
 	com.target_system = 01;
 	com.custom_mode = 00;
-
 	// Encode
 	mavlink_message_t message;
 	mavlink_msg_set_mode_encode(255, 190, &message, &com);
@@ -606,6 +728,42 @@ toggle_offboard_control( bool flag )
 	// Send the message
 		int len = serial_port->write_message(message);
 	// Done!
+
+	///////请求数据流(关闭ALL)
+//	mavlink_request_data_stream_t com7 = { 0 };
+//	com7.target_system= 01;
+//	com7.target_component = 01;
+//	com7.req_stream_id = MAV_DATA_STREAM_ALL;
+//	com7.req_message_rate = 2;
+//	com7.start_stop = 0;
+//
+//	mavlink_message_t message7;
+//	mavlink_msg_request_data_stream_encode(255, 190, &message7, &com7);
+
+//	 Send the message
+//	int len7 = serial_port->write_message(message7);
+
+	/////////////////////////////////请求数据流
+	mavlink_request_data_stream_t comdata = { 0 };
+	comdata.req_message_rate = 5;
+	comdata.req_stream_id = MAV_DATA_STREAM_POSITION;
+	comdata.start_stop = 1;
+	comdata.target_system = 1;
+	comdata.target_component = 1;
+	mavlink_message_t Rmassage;
+	mavlink_msg_request_data_stream_encode(255,190,&Rmassage,&comdata);
+	//重复发送确保指令收到
+	for (int i = 0; i < 3; ++i)
+	{
+		int Rlen = serial_port->write_message(Rmassage);
+		usleep(100);
+	}
+	sleep(2);
+	printf("current global message %f",(float)current_messages.global_position_int.lat);
+//    std::cout<<"lat:"<<current_messages.global_position_int.lat<<std::endl
+//             <<"lon:"<<current_messages.global_position_int.lon<<std::endl;
+
+
 
 	////////////////////////////////////////解锁
 	mavlink_command_long_t com1 = { 0 };
@@ -615,7 +773,6 @@ toggle_offboard_control( bool flag )
 	com1.param1 = 1;
 	mavlink_message_t message1;
 	mavlink_msg_command_long_encode(255, 190, &message1, &com1);
-
 	// Send the message
 	int len1 = serial_port->write_message(message1);
 	usleep(100);
@@ -626,11 +783,9 @@ toggle_offboard_control( bool flag )
 	com5.base_mode = 1;
 	com5.target_system = 01;
 	com5.custom_mode = 04;
-
 	// Encode
 	mavlink_message_t message5;
 	mavlink_msg_set_mode_encode(255, 190, &message5, &com5);
-
 	// Send the message
 		int len5 = serial_port->write_message(message5);
 	// Done!
@@ -649,84 +804,105 @@ toggle_offboard_control( bool flag )
 	// Send the message
 	int len2 = serial_port->write_message(message2);
 
-///////请求数据流(关闭ALL)
-	mavlink_request_data_stream_t com7 = { 0 };
-	com7.target_system= 01;
-	com7.target_component = 01;
-	com7.req_stream_id = MAV_DATA_STREAM_ALL;
-	com7.req_message_rate = 2;
-	com7.start_stop = 0;
 
-	mavlink_message_t message7;
-	mavlink_msg_request_data_stream_encode(255, 190, &message7, &com7);
+	///////////////////////////////////mission本体FLU设目标点
+	mavlink_command_int_t command;
+	command.target_system = 01;
+	command.target_component = 01;
+	command.command = 16;
+	command.frame = MAV_FRAME_BODY_FLU;//高度设定10m
+	command.autocontinue = 1;
+	command.current = 1;
+	command.x = 10;
+	command.y = 10;
+	command.z = 10;
+	command.param1 = 1;
+	command.param2 = 1;
+	command.param3 = 0;
+	mavlink_message_t Bmessage;
+	mavlink_msg_command_int_encode(255, 190, &Bmessage, &command);
+	int lenB = write_message(Bmessage);
+	if (lenB <= 0)
+	{
+		printf("Body position write wrong!");
+		printf("[%f,%f,%f]", command.x, command.y, command.z);
+	}
+	else {
+		printf("成功写入本体坐标系坐标点\n");
+		std::cout<<"commission.x:"<<command.x<<std::endl<<"commission.y:"<<command.y<<std::endl;
+	}
 
-	// Send the message
-	int len7 = serial_port->write_message(message7);
 
+	///////////////////////////////////mission全局设目标点
+	mavlink_mission_item_t commission11;
+	commission11.target_system = 01;
+	commission11.target_component = 01;
+	commission11.command = 16;
+	commission11.seq = 1;
+	commission11.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+	commission11.autocontinue = 1;
+	commission11.current = 1;
+	commission11.x = current_messages.global_position_int.lat;
+	commission11.y = current_messages.global_position_int.lon;
+	commission11.z = 25;
+	commission11.param1 = 1;
+	commission11.param2 = 1;
+	commission11.param3 = 0;
 
-	///////请求数据流
-    mavlink_request_data_stream_t com6 = { 0 };
-    com6.target_system= 01;
-    com6.target_component = 01;
-    com6.req_stream_id = MAV_DATA_STREAM_POSITION;
-    com6.req_message_rate = 2;
-    com6.start_stop = 1;
+	mavlink_message_t GBmessage;
+	mavlink_msg_mission_item_encode(255, 190, &GBmessage, &commission11);
+	int lenGB = write_message(GBmessage);
+	if (lenGB <= 0)
+	{
+		printf("Body position write wrong!");
+		printf("[%f,%f,%f]", commission11.x, commission11.y, commission11.z);
+	}
+	else {
+		printf("成功写入mission 全局坐标系坐标点\n");
+		printf("[%f,%f,%f]\n", (float)commission11.x, (float)commission11.y, (float)commission11.z);
+	}
 
-    mavlink_message_t message6;
-    mavlink_msg_request_data_stream_encode(255, 190, &message6, &com6);
+    ///////////////////////////////////mission全局设目标点
+    mavlink_mission_item_t commission12;
+    commission12.target_system = 01;
+    commission12.target_component = 01;
+    commission12.command = 16;
+    commission12.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+    commission12.autocontinue = 1;
+    commission12.seq = 2;
+    commission12.current = 0;
+    commission12.x = current_messages.global_position_int.lat;
+    commission12.y = current_messages.global_position_int.lon;
+    commission12.z = 25;
+    commission12.param1 = 1;
+    commission12.param2 = 1;
+    commission12.param3 = 0;
+
+    mavlink_message_t G2Bmessage;
+    mavlink_msg_mission_item_encode(255, 190, &G2Bmessage, &commission12);
+    int lenG2B = write_message(G2Bmessage);
+    if (lenG2B <= 0)
+    {
+        printf("Body position write wrong!");
+        printf("[%f,%f,%f]", commission12.x, commission12.y, commission12.z);
+    }
+    else {
+        printf("成功写入mission 全局坐标系坐标点\n");
+        printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
+    }
+
+    /*****************
+     /////////////////////////////////返航
+    mavlink_command_long_t com3 = { 0 };
+    com3.target_system= 01;
+    com3.target_component = 01;
+    com3.command = 20;
+
+    mavlink_message_t message3;
+    mavlink_msg_command_long_encode(255, 190, &message3, &com3);
 
     // Send the message
-    int len6 = serial_port->write_message(message6);
-
-    std::cout<<"GPS:"<<std::endl;
-/*
-    // -------------------------------------------------------------------------
-    // --------------- 全局坐标系下设置目标位置坐标 -------------------------------
-    // -------------------------------------------------------------------------
-    mavlink_set_position_target_global_int_t gsp;
-    //mavlink_set_position_target_global_int_t global_int_pos;
-    gsp.time_boot_ms = (uint32_t) (get_time_usec()/1000);
-    gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT;
-    gsp.lat_int = current_messages.global_position_int.lat-4000;
-    gsp.lon_int = current_messages.global_position_int.lon-4000;
-    gsp.alt = current_messages.global_position_int.alt;
-    mavlink_message_t Gmessage;
-    mavlink_msg_set_position_target_global_int_encode(255, 190, &Gmessage, &gsp);
-    // 写入数据
-    int lenG = write_message(Gmessage);
-    printf("成功写入全局坐标点\n");
-    // -------------------------------------------------------------------------
-    // --------------------本体坐标系写入目标点
-    // -------------------------------------------------------------------------
-    /*mavlink_mission_item_t commission;
-    commission.target_system= 01;
-    commission.target_component = 01;
-    commission.command = 16;
-    commission.frame = MAV_FRAME_BODY_FLU;//高度设定10m
-    commission.autocontinue = 0;
-    commission.current = 1;
-    commission.x = 5;
-    commission.y = 5;
-    commission.z = 10;
-    mavlink_message_t Bmessage;
-    mavlink_msg_mission_item_encode(255, 190, &Bmessage, &commission);
-    int lenB = api.write_message(Bmessage);
-    printf("成功写入本体坐标系坐标点");
-
-*/
-
-	/*****************
-	 /////////////////////////////////返航
-	mavlink_command_long_t com3 = { 0 };
-	com3.target_system= 01;
-	com3.target_component = 01;
-	com3.command = 20;
-
-	mavlink_message_t message3;
-	mavlink_msg_command_long_encode(255, 190, &message3, &com3);
-
-	// Send the message
-	int len3 = serial_port->write_message(message3);
+    int len3 = serial_port->write_message(message3);
 **************/
 	return len;
 }
@@ -833,6 +1009,14 @@ start()
 	initial_position.yaw      = local_data.attitude.yaw;
 	initial_position.yaw_rate = local_data.attitude.yawspeed;
 
+	//初始化global_position
+	initial_global_position.lat_int = local_data.global_position_int.lat;
+	initial_global_position.lon_int = local_data.global_position_int.lon;
+	initial_global_position.alt = local_data.global_position_int.alt;
+	initial_global_position.vx = local_data.global_position_int.vx;
+	initial_global_position.vy = local_data.global_position_int.vy;
+	initial_global_position.vz = local_data.global_position_int.vz;
+	initial_global_position.yaw = local_data.global_position_int.hdg;
 	printf("INITIAL POSITION XYZ = [ %.4f , %.4f , %.4f ] \n", initial_position.x, initial_position.y, initial_position.z);
 	printf("INITIAL POSITION YAW = %.4f \n", initial_position.yaw);
 	printf("\n");
@@ -986,19 +1170,19 @@ write_thread(void)
 
 	// prepare an initial setpoint, just stay put
 	mavlink_set_position_target_local_ned_t sp;
-	sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY &
-				   MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE;
-	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-	sp.vx       = 0.0;
-	sp.vy       = 0.0;
-	sp.vz       = 0.0;
-	sp.yaw_rate = 0.0;
-
+//	sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY &
+//				   MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE;
+//	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+//	sp.vx       = 0.0;
+//	sp.vy       = 0.0;
+//	sp.vz       = 0.0;
+//	sp.yaw_rate = 0.0;
+//
 	// set position target
-	current_setpoint = sp;
+//	current_setpoint = sp;
 
 	// write a message and signal writing
-	write_setpoint();
+//	write_setpoint();
 	writing_status = true;
 
 	// Pixhawk needs to see off-board commands at minimum 2Hz,
@@ -1006,7 +1190,7 @@ write_thread(void)
 	while ( !time_to_exit )
 	{
 		usleep(250000);   // Stream at 4Hz
-		write_setpoint();
+//		write_setpoint();
 	}
 
 	// signal end

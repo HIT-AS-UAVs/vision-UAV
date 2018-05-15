@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
-project(c_uart_interface_example)
+project(UAVs_uart_interface)
 
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(OpenCV REQUIRED)
-add_executable(c_uart_interface_example
+add_executable(UAVs_uart_interface
         ${OpenCV_INCLUDE_DIRS}
         mavlink/ardupilotmega/ardupilotmega.h
         mavlink/ardupilotmega/mavlink.h
@@ -273,7 +273,7 @@ add_executable(c_uart_interface_example
         ellipse/common.h
         ellipse/common.cpp
         )
-target_link_libraries(c_uart_interface_example
+target_link_libraries(UAVs_uart_interface
         pthread
         ${OpenCV_LIBRARIES}
         )

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/c_uart_interface_example.iml" filepath="$PROJECT_DIR$/.idea/c_uart_interface_example.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/vision-UAV.iml" filepath="$PROJECT_DIR$/.idea/vision-UAV.iml" />
     </modules>
   </component>
 </project>

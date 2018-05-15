@@ -110,6 +110,13 @@
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_ANGLE    0b0000100111111111
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE     0b0000010111111111
 
+#define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_POSITION     0b0000110111111000
+#define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_VELOCITY     0b0000110111000111
+#define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_ACCELERATION 0b0000110000111111
+#define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_FORCE        0b0000111000111111
+#define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_ANGLE    0b0000100111111111
+#define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_RATE     0b0000010111111111
+
 
 // ------------------------------------------------------------------------------
 //   Prototypes
@@ -123,6 +130,13 @@ void set_velocity(float vx, float vy, float vz, mavlink_set_position_target_loca
 void set_acceleration(float ax, float ay, float az, mavlink_set_position_target_local_ned_t &sp);
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp);
 void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp);
+
+void set_global_position(float x, float y, float z, mavlink_set_position_target_global_int_t &sp);
+void set_global_velocity(float vx, float vy, float vz, mavlink_set_position_target_global_int_t &sp);
+void set_global_acceleration(float ax, float ay, float az, mavlink_set_position_target_global_int_t &sp);
+void set_global_yaw(float yaw, mavlink_set_position_target_global_int_t &sp);
+void set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp);
+
 
 void* start_autopilot_interface_read_thread(void *args);
 void* start_autopilot_interface_write_thread(void *args);
@@ -153,6 +167,8 @@ struct Time_Stamps
     uint64_t command_long;
     uint64_t mission_item;
     uint64_t command_ack;
+	uint64_t param_value;
+	uint64_t statustext;
 
 	void
 	reset_timestamps()
@@ -171,6 +187,8 @@ struct Time_Stamps
         command_long = 0;
         mission_item = 0;
         command_ack = 0;
+		param_value = 0;
+		statustext = 0;
 	}
 
 };
@@ -225,6 +243,10 @@ struct Mavlink_Messages {
 	//COMMAND_ACK
 	mavlink_command_ack_t command_ack;
 
+	mavlink_param_value_t param_value;
+
+	mavlink_statustext_t statustext;
+
 	// System Parameters?
 
 	// Time Stamps
@@ -276,8 +298,15 @@ public:
 
 	Mavlink_Messages current_messages;
 	mavlink_set_position_target_local_ned_t initial_position;
+	mavlink_set_position_target_global_int_t initial_global_position;
+	mavlink_global_position_int_t global_position;
+	mavlink_local_position_ned_t local_position;
 
-	void update_setpoint(mavlink_set_position_target_local_ned_t setpoint);
+	//void update_setpoint(mavlink_set_position_target_local_ned_t setpoint);
+	void update_local_setpoint(mavlink_set_position_target_local_ned_t setpoint);
+
+	void update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point);
+
 	void read_messages();
 	int  write_message(mavlink_message_t message);
 
@@ -302,13 +331,19 @@ private:
 	pthread_t read_tid;
 	pthread_t write_tid;
 
-	mavlink_set_position_target_local_ned_t current_setpoint;
+	//mavlink_set_position_target_local_ned_t current_setpoint;
+	mavlink_set_position_target_local_ned_t current_local_setpoint;
+	mavlink_set_position_target_global_int_t current_global_setpoint;
 
 	void read_thread();
 	void write_thread(void);
 
 	int toggle_offboard_control( bool flag );
-	void write_setpoint();
+//	void write_setpoint();
+
+	void write_global_setpoint();
+
+	void write_local_setpoint();
 
 };
 
