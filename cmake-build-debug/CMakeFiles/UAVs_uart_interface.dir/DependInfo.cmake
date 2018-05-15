@@ -4,17 +4,18 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/hitlb/HITLB/vision-UAV/autopilot_interface.cpp" "/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o"
-  "/home/hitlb/HITLB/vision-UAV/ellipse/EllipseDetectorYaed.cpp" "/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o"
-  "/home/hitlb/HITLB/vision-UAV/ellipse/common.cpp" "/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o"
-  "/home/hitlb/HITLB/vision-UAV/mavlink_control.cpp" "/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o"
-  "/home/hitlb/HITLB/vision-UAV/serial_port.cpp" "/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o"
+  "/home/zxy/c_uart_interface_example/autopilot_interface.cpp" "/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o"
+  "/home/zxy/c_uart_interface_example/ellipse/EllipseDetectorYaed.cpp" "/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o"
+  "/home/zxy/c_uart_interface_example/ellipse/common.cpp" "/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o"
+  "/home/zxy/c_uart_interface_example/mavlink_control.cpp" "/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o"
+  "/home/zxy/c_uart_interface_example/serial_port.cpp" "/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/usr/include/opencv"
+  "/usr/local/include"
+  "/usr/local/include/opencv"
   )
 
 # Targets to which this target links.

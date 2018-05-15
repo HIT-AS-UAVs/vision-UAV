@@ -62,7 +62,8 @@
 using namespace cv;
 using namespace std;
 
-vector<loc_t> target_gps_position;//全局变量——圆心目标的坐
+vector<loc_t> target_gps_position;//全局变量——圆心目标的坐标
+vector<coordinate> ellipse_out1;
 // ------------------------------------------------------------------------------
 //   TOP
 // ------------------------------------------------------------------------------
@@ -137,7 +138,8 @@ top (int argc, char **argv)
 	 * This is where the port is opened, and read and write threads are started.
 	 */
 
-
+//视觉定位线程
+//    thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
 	serial_port.start();
 	autopilot_interface.start();
 
@@ -149,22 +151,66 @@ top (int argc, char **argv)
 	 * Now we can implement the algorithm we want on top of the autopilot interface
 	 */
 
-//视觉定位线程
-	thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
-
    commands(autopilot_interface);
 
 	// --------------------------------------------------------------------------
 	//   THREAD and PORT SHUTDOWN
 	// --------------------------------------------------------------------------
+	ofstream outf;
+	outf.open("location.txt");
+	static uint32_t lasttime;
+	while (1) {
 
-	while (1) {};
+		/*判断是否读入GPS信号*/
+		if(autopilot_interface.current_messages.global_position_int.time_boot_ms == lasttime){
+			continue;
+//			break;
+		}
+		else {
+			lasttime = autopilot_interface.current_messages.global_position_int.time_boot_ms;
+			for (auto &p:ellipse_out1) {
+
+				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
+				float x = (p.x - cx) / fx * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;//单位为：m
+				float y = -(p.y - cy) / fy * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;
+				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
+				float x_r = y * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) - x * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);//单位是:m
+				float y_r = x * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) + y * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);
+				cout << "x:" << x << endl
+					 << "y:" << y << endl
+					 << "order:" << p.order << endl;
+				cout << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
+					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
+					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
+					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
+					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
+				outf << "x:" << x << endl
+					 << "y:" << y << endl
+					 << "order:" << p.order << endl;
+				outf << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
+					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
+					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
+					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
+					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
+				cout << "result_x:" << x_r << endl
+					 << "result_y:" << y_r << endl
+					 << "order:" << p.order << endl;
+				outf << "result_x:" << x_r << endl
+					 << "result_y:" << y_r << endl
+					 << "order:" << p.order << endl;
+				outf << "local_x:" << autopilot_interface.current_messages.local_position_ned.x << endl
+					 << "local_y:" << autopilot_interface.current_messages.local_position_ned.y << endl
+					 << "local_z:" << autopilot_interface.current_messages.local_position_ned.z << endl;
+			}
+			ellipse_out1.clear();
+		}
+	};
 	/*
 	 * Now that we are done we can stop the threads and close the port
 	 */
 	autopilot_interface.stop();
 	serial_port.stop();
-	t1.join();
+//	t1.join();
 
 	// --------------------------------------------------------------------------
 	//   DONE
@@ -199,7 +245,17 @@ commands(Autopilot_Interface &api)
     printf("SEND OFFBOARD COMMANDS\n");
 
     // initialize command data strtuctures
-
+//////////////////////guided模式
+	mavlink_set_mode_t com5 = { 0 };
+	com5.base_mode = 1;
+	com5.target_system = 01;
+	com5.custom_mode = 04;
+	// Encode
+	mavlink_message_t message5;
+	mavlink_msg_set_mode_encode(255, 190, &message5, &com5);
+	// Send the message
+	int len5 = api.write_message(message5);
+	// Done!
 
  	// --------------------------------------------------------------------------
     // 给定局部坐标(local_ned)位置，并执行
@@ -220,7 +276,7 @@ commands(Autopilot_Interface &api)
         // Example 2 - Set Position
         set_position(  - 5.0, // [m]
                        - 5.0, // [m]
-                       - 5.0, // [m]
+                       - 10.0, // [m]
                      sp);
 
         // Example 1.2 - Append Yaw Command
@@ -255,7 +311,7 @@ commands(Autopilot_Interface &api)
 	global_int_pos.yaw = ggsp.hdg;
 	gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
 	gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
-	float High = 25;
+	float High = 15;
 	//set global_point 经度，纬度，相对home高度
 	set_global_position(global_int_pos.lat_int,
 						global_int_pos.lon_int,
@@ -281,7 +337,7 @@ commands(Autopilot_Interface &api)
 		// printf("[%f,%f,%f]\n", api.global_position.lat, gsp.lon_int, gsp.alt);
 		printf("[%f,%f,%f]\n", (float)gsp.lon_int,  (float)gsp.lat_int, gsp.alt);
 	}
-
+/*
 	// -------------------------------------------------------------------------
     // --------------------本体坐标系写入目标点
     // -------------------------------------------------------------------------
@@ -301,7 +357,7 @@ commands(Autopilot_Interface &api)
     mavlink_msg_mission_item_encode(255, 190, &Bmessage, &commission);
     int lenB = api.write_message(Bmessage);
     printf("成功写入本体坐标系坐标点");
-
+*/
     // --------------------------------------------------------------------------
     // RETURN Home 以及
     //
@@ -439,8 +495,9 @@ quit_handler( int sig )
 }
 
 ///////////////视觉定位线程
-void videothread(Autopilot_Interface &api){
-	float areanum = 0.215;
+void videothread(){
+
+    float areanum = 0.215;
 	VideoCapture cap(0);
 	if(!cap.isOpened()) return;
 
@@ -482,8 +539,6 @@ void videothread(Autopilot_Interface &api){
 	);
 
 	Mat1b gray;
-	ofstream outf;
-	outf.open("GPS.txt");
 	while(true)
 	{
 
@@ -494,70 +549,10 @@ void videothread(Autopilot_Interface &api){
 		vector<Ellipse> ellsYaed;
 		Mat1b gray2 = gray.clone();
 		yaed->Detect(gray, ellsYaed);
-/**********输出的是执行时间
-		vector<double> times = yaed->GetTimes();
-		cout << "--------------------------------" << endl;
-		cout << "Execution Time: " << endl;
-		cout << "Edge Detection: \t" << times[0] << endl;
-		cout << "Pre processing: \t" << times[1] << endl;
-		cout << "Grouping:       \t" << times[2] << endl;
-		cout << "Estimation:     \t" << times[3] << endl;
-		cout << "Validation:     \t" << times[4] << endl;
-		cout << "Clustering:     \t" << times[5] << endl;
-		cout << "--------------------------------" << endl;
-		cout << "Total:	         \t" << yaed->GetExecTime() << endl;
-		cout << "--------------------------------" << endl;
-		****************/
-	/*********判断是否读入GPS信号
-		if(api.current_messages.time_stamps.global_position_int == 0)
-			continue;
-		*******/
-
 		Mat3b resultImage = image.clone();
-		vector<coordinate> ellipse_out1;
-		loc_t currentloc;
-		currentloc.lat = api.current_messages.global_position_int.lat;
-		currentloc.lon = api.current_messages.global_position_int.lon;
-		currentloc.relative_alt = api.current_messages.global_position_int.relative_alt;
-		currentloc.yaw = api.current_messages.global_position_int.hdg;
-		yaed->DrawDetectedEllipses(resultImage, ellipse_out1, ellsYaed, currentloc.relative_alt);
-		//////////////计算GPS转换的long_to_cm
-		float long_to_cm;
-		long_to_cm = longitude_scale(currentloc);
-
-
-		//vector<loc_t> target_gps_position;//储存当前目标GPS坐标的vector
-		////////输出当前时刻中心圆心相对于机体的坐标
-		for(auto &p:ellipse_out1){
-			cout<<"x:"<<p.x<<endl
-				<<"y:"<<p.y<<endl
-				<<"order:"<<p.order<<endl;
-			outf<<"x:"<<p.x<<endl
-				<<"y:"<<p.y<<endl
-				<<"order:"<<p.order<<endl;
-			float x = p.x * cos(currentloc.yaw * 3.1415926 / 180 / 100) + p.y * sin(currentloc.yaw * 3.1415926 / 180 / 100);//单位是:m
-			float y = p.y * cos(currentloc.yaw * 3.1415926 / 180 / 100)	- p.x * sin(currentloc.yaw * 3.1415926 / 180 / 100);
-			loc_t c_t;
-			c_t.lat = x * 100 / 1.113195 + currentloc.lat;
-			c_t.lon = y * 100 / long_to_cm + currentloc.lon;
-			c_t.order = p.order;
-			target_gps_position.push_back(c_t);
-		}
-
-		cout<<"lat:"<<api.current_messages.global_position_int.lat<<endl;
-		cout<<"lon:"<<api.current_messages.global_position_int.lon<<endl;
-		cout<<"relate_alt:"<<api.current_messages.global_position_int.relative_alt<<endl;
-		cout<<"yaw:"<<api.current_messages.global_position_int.hdg<<endl;
-		outf<<"-------------current_status:"<<endl<<"time:"<<api.current_messages.time_stamps.position_target_global_int;
-		outf<<"lat:"<<api.current_messages.global_position_int.lat<<endl;
-		outf<<"lon:"<<api.current_messages.global_position_int.lon<<endl;
-		outf<<"relate_alt:"<<api.current_messages.global_position_int.relative_alt<<endl;
-		outf<<"yaw:"<<api.current_messages.global_position_int.hdg<<endl;
-		for(auto &p:target_gps_position){
-			cout<<"----------target:"<<endl<<"lat:"<<p.lat<<endl<<"lon:"<<p.lon<<endl<<"order:"<<p.order<<endl;
-			outf<<"----------target:"<<endl<<"lat:"<<p.lat<<endl<<"lon:"<<p.lon<<endl<<"order:"<<p.order<<endl;
-		}
-
+		vector<coordinate> ellipse_out;
+		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellsYaed);
+        ellipse_out1 = ellipse_out;
 		int num_ellipses = ellsYaed.size();
 //		计算中心圆的半径
 		float ellipses_a = 0;
@@ -591,7 +586,6 @@ void videothread(Autopilot_Interface &api){
 		}
 //		将中心圆的半径与全局的rows进行比例换算，若超过1/6，则进行方框判断。
 		if (ellipses_a - 175 > 0){
-			cout<<"process"<<endl;
 			threshold(gray, thresh, 120, 255, CV_THRESH_BINARY);
 //            imshow("threshold", thresh);
 //            morphologyEx(gauss, gauss, MORPH_CLOSE, (5, 5) );
@@ -651,7 +645,7 @@ void videothread(Autopilot_Interface &api){
 		}
 		namedWindow("Yaed",1);
 		imshow("Yaed", resultImage);
-
+        ellipse_out.clear();
 		waitKey(10);
 	}
     };

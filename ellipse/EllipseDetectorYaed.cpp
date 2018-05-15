@@ -1895,7 +1895,7 @@ void CEllipseDetectorYaed::ClusterEllipses(vector<Ellipse>& ellipses)
 
 
 //Draw at most iTopN detected ellipses.
-void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int32_t hight, int iTopN, int thickness) {
+void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int iTopN, int thickness) {
 
 /*
 	int sz_ell = int(ellipses.size());
@@ -1957,42 +1957,15 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 				e._rad * 180.0 / CV_PI, 0.0, 360.0, color, thickness);
 		int j = i/2;
 		const string text = to_string(j);
-		//在相机坐标系下椭圆圆心的坐标（相机坐标系横坐标为col,纵坐标为row）
-        float x = - (e._xc - cx) / fx * hight/1000;//单位为：m
-        float y = - (e._yc - cy) / fy * hight/1000;
-		//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正北为x,正东为y）
-		float x_n = y - 240;//240为图像高度的一半
-		float y_n = x - 320;//320为图像宽度的一半
 		putText(output, text, Point(cvRound(e._xc), cvRound(e._yc)),CV_FONT_HERSHEY_SIMPLEX,1,Scalar(0,0,255),2,8);//给目标编号
 
         coordinate e_c;
-		e_c.x = x_n;
-		e_c.y = y_n;
+		e_c.x = e._xc;
+		e_c.y = e._yc;
 		e_c.order = j;
 		ellipse_out.push_back(e_c);
-//		cout << "the coordinate of the ellipse:" << endl << "x:" << e._xc << endl << "y:" << e._yc << endl << "a:"
-//			 << e._a << endl << "scores:" << e._score << endl;
-//        cout<<"real_x:"<<x_n<<endl<<"real_y:"<<y_n<<endl;
-
-
 	}
 
 
 }
 
-//计算long_to_cm
-	float longitude_scale(loc_t loc){
-		static int32_t last_lat;
-		static float scale;
-		//比较两次纬度相差值，避免重复运算余弦函数
-		if (abs(last_lat - loc.lat) < 100000) {
-			// we are within 0.01 degrees (about 1km) of the
-			// same latitude. We can avoid the cos() and return
-			// the same scale factor.
-			return scale;
-		}
-		scale = cosf(loc.lat * 1.0e-7f * 3.1415926 / 180);
-		scale = constrain(scale, 0.01f, 1.0f);
-		last_lat = loc.lat;
-		return scale;
-	};
