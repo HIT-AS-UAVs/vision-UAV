@@ -395,6 +395,7 @@ read_messages()
 					mavlink_msg_local_position_ned_decode(&message, &(current_messages.local_position_ned));
 					current_messages.time_stamps.local_position_ned = get_time_usec();
 					this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
+					std::cout<<"local position remember:"<<current_messages.local_position_ned.z<<std::endl;
 					break;
 				}
 
@@ -405,6 +406,7 @@ read_messages()
                     std::cout<<"lat:"<<current_messages.global_position_int.lat<<std::endl;
 					current_messages.time_stamps.global_position_int = get_time_usec();
 					this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
+					global_position = current_messages.global_position_int;
 					break;
 				}
 
@@ -414,6 +416,7 @@ read_messages()
 					mavlink_msg_position_target_local_ned_decode(&message, &(current_messages.position_target_local_ned));
 					current_messages.time_stamps.position_target_local_ned = get_time_usec();
 					this_timestamps.position_target_local_ned = current_messages.time_stamps.position_target_local_ned;
+//					std::cout<<"local_position.z:"<<current_messages.position_target_local_ned.z<<std::endl;
 					break;
 				}
 
@@ -758,7 +761,7 @@ toggle_offboard_control( bool flag )
 		int Rlen = serial_port->write_message(Rmassage);
 		usleep(100);
 	}
-	sleep(2);
+	sleep(1);
 	printf("current global message %f",(float)current_messages.global_position_int.lat);
 //    std::cout<<"lat:"<<current_messages.global_position_int.lat<<std::endl
 //             <<"lon:"<<current_messages.global_position_int.lon<<std::endl;
@@ -796,7 +799,7 @@ toggle_offboard_control( bool flag )
 	com2.target_system= 01;
 	com2.target_component = 01;
 	com2.command = 22;
-	com2.param7 = 10;//高度设定10m
+	com2.param7 = 15;//高度设定10m
 
 	mavlink_message_t message2;
 	mavlink_msg_command_long_encode(255, 190, &message2, &com2);
@@ -804,7 +807,7 @@ toggle_offboard_control( bool flag )
 	// Send the message
 	int len2 = serial_port->write_message(message2);
 
-
+/*
 	///////////////////////////////////mission本体FLU设目标点
 	mavlink_command_int_t command;
 	command.target_system = 01;
@@ -831,7 +834,7 @@ toggle_offboard_control( bool flag )
 		printf("成功写入本体坐标系坐标点\n");
 		std::cout<<"commission.x:"<<command.x<<std::endl<<"commission.y:"<<command.y<<std::endl;
 	}
-
+*/
 
 	///////////////////////////////////mission全局设目标点
 	mavlink_mission_item_t commission11;
@@ -870,10 +873,10 @@ toggle_offboard_control( bool flag )
     commission12.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
     commission12.autocontinue = 1;
     commission12.seq = 2;
-    commission12.current = 0;
+    commission12.current = 1;
     commission12.x = current_messages.global_position_int.lat;
     commission12.y = current_messages.global_position_int.lon;
-    commission12.z = 25;
+    commission12.z = 15;
     commission12.param1 = 1;
     commission12.param2 = 1;
     commission12.param3 = 0;
@@ -891,6 +894,90 @@ toggle_offboard_control( bool flag )
         printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
     }
 
+    mavlink_command_long_t commisionstart = { 0 };
+    commisionstart.target_system= 01;
+    commisionstart.target_component = 01;
+    commisionstart.command = 300;
+    commisionstart.param1 = 0;
+    commisionstart.param2 = 1;
+    commisionstart.confirmation = 0;
+
+    mavlink_message_t mes_mission;
+    mavlink_msg_command_long_encode(255, 190, &mes_mission, &commisionstart);
+
+    // Send the message
+    int len_start = serial_port->write_message(mes_mission);
+    if (len_start <= 0)
+    {
+        printf("mission start error!\n");
+    }
+    else {
+        printf("mission start!\n");
+    }
+
+
+    //////////////////////Auto模式
+    mavlink_set_mode_t ComAuto = { 0 };
+    ComAuto.base_mode = 1;
+    ComAuto.target_system = 01;
+    ComAuto.custom_mode = 03;
+    // Encode
+    mavlink_message_t mess_Auto;
+    mavlink_msg_set_mode_encode(255, 190, &mess_Auto, &ComAuto);
+    // Send the message
+    int lenAuto = serial_port->write_message(mess_Auto);
+    // Done!
+
+
+    /////////////////////////////////////任务pause
+    mavlink_command_long_t commisionpause = { 0 };
+    commisionpause.target_system= 01;
+    commisionpause.target_component = 01;
+    commisionpause.command = MAV_CMD_DO_PAUSE_CONTINUE;
+    commisionpause.param1 = 0;
+//    commisionstart.param2 = 2;
+    commisionpause.confirmation = 0;
+
+    mavlink_message_t mission_pause;
+    mavlink_msg_command_long_encode(255, 190, &mission_pause, &commisionpause);
+
+    // Send the message
+    int len_pause = serial_port->write_message(mission_pause);
+    if (len_pause <= 0)
+    {
+        printf("mission pause error!\n");
+//        printf("[%f,%f,%f]", commission12.x, commission12.y, commission12.z);
+    }
+    else {
+        printf("mission pause !\n");
+//        printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
+    }
+
+    ///////////////////////////////////continue
+    mavlink_command_long_t commcontinue = { 0 };
+    commcontinue.target_system= 01;
+    commcontinue.target_component = 01;
+    commcontinue.command = MAV_CMD_DO_PAUSE_CONTINUE;
+    commcontinue.param1 = 1;
+//    commisionstart.param2 = 2;
+    commcontinue.confirmation = 0;
+
+    mavlink_message_t mission_continue;
+    mavlink_msg_command_long_encode(255, 190, &mission_continue, &commcontinue);
+
+    // Send the message
+    int len_continue = serial_port->write_message(mission_continue);
+    if (len_continue <= 0)
+    {
+        printf("mission continue error!");
+//        printf("[%f,%f,%f]", commission12.x, commission12.y, commission12.z);
+    }
+    else {
+        printf("mission continue!\n");
+//        printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
+    }
+
+
     /*****************
      /////////////////////////////////返航
     mavlink_command_long_t com3 = { 0 };
@@ -904,6 +991,7 @@ toggle_offboard_control( bool flag )
     // Send the message
     int len3 = serial_port->write_message(message3);
 **************/
+
 	return len;
 }
 

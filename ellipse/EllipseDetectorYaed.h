@@ -44,8 +44,6 @@ using namespace cv;
 
 #define DEG_TO_RAD 3.1415926/180;
 
-#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
 //#define DISCARD_CONSTRAINT_OBOX
 //#define DISCARD_CONSTRAINT_CONVEXITY
 //#define DISCARD_CONSTRAINT_POSITION
@@ -71,8 +69,6 @@ typedef struct _loc{
     int order;
 }loc_t;
 
-///////////计算long_to_cm
-float longitude_scale(loc_t loc);
 
 // Data available after selection strategy.
 // They are kept in an associative array to:
@@ -158,7 +154,7 @@ public:
 	void Detect(Mat1b& gray, vector<Ellipse>& ellipses);
 	
 	//Draw the first iTopN ellipses on output
-	void DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int32_t hight, int iTopN=4, int thickness=2);
+	void DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int iTopN=4, int thickness=2);
 	
 	//Set the parameters of the detector
 	void SetParameters	(	Size	szPreProcessingGaussKernelSize,

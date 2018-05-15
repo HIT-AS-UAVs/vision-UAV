@@ -34,19 +34,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /home/hitlb/clion-2018.1.2/bin/cmake/bin/cmake
+CMAKE_COMMAND = /home/zxy/clion-2018.1.2/bin/cmake/bin/cmake
 
 # The command to remove a file.
-RM = /home/hitlb/clion-2018.1.2/bin/cmake/bin/cmake -E remove -f
+RM = /home/zxy/clion-2018.1.2/bin/cmake/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hitlb/HITLB/vision-UAV
+CMAKE_SOURCE_DIR = /home/zxy/c_uart_interface_example
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hitlb/HITLB/vision-UAV/cmake-build-debug
+CMAKE_BINARY_DIR = /home/zxy/c_uart_interface_example/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/UAVs_uart_interface.dir/depend.make
@@ -59,16 +59,16 @@ include CMakeFiles/UAVs_uart_interface.dir/flags.make
 
 CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o: CMakeFiles/UAVs_uart_interface.dir/flags.make
 CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o: ../autopilot_interface.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o -c /home/hitlb/HITLB/vision-UAV/autopilot_interface.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o -c /home/zxy/c_uart_interface_example/autopilot_interface.cpp
 
 CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hitlb/HITLB/vision-UAV/autopilot_interface.cpp > CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxy/c_uart_interface_example/autopilot_interface.cpp > CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.i
 
 CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hitlb/HITLB/vision-UAV/autopilot_interface.cpp -o CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxy/c_uart_interface_example/autopilot_interface.cpp -o CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.s
 
 CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o.requires:
 
@@ -83,16 +83,16 @@ CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o.provides.build: CMa
 
 CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o: CMakeFiles/UAVs_uart_interface.dir/flags.make
 CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o: ../mavlink_control.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o -c /home/hitlb/HITLB/vision-UAV/mavlink_control.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o -c /home/zxy/c_uart_interface_example/mavlink_control.cpp
 
 CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hitlb/HITLB/vision-UAV/mavlink_control.cpp > CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxy/c_uart_interface_example/mavlink_control.cpp > CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.i
 
 CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hitlb/HITLB/vision-UAV/mavlink_control.cpp -o CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxy/c_uart_interface_example/mavlink_control.cpp -o CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.s
 
 CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o.requires:
 
@@ -107,16 +107,16 @@ CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o.provides.build: CMakeFi
 
 CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o: CMakeFiles/UAVs_uart_interface.dir/flags.make
 CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o: ../serial_port.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o -c /home/hitlb/HITLB/vision-UAV/serial_port.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o -c /home/zxy/c_uart_interface_example/serial_port.cpp
 
 CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hitlb/HITLB/vision-UAV/serial_port.cpp > CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxy/c_uart_interface_example/serial_port.cpp > CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.i
 
 CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hitlb/HITLB/vision-UAV/serial_port.cpp -o CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxy/c_uart_interface_example/serial_port.cpp -o CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.s
 
 CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o.requires:
 
@@ -131,16 +131,16 @@ CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o.provides.build: CMakeFiles/
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o: CMakeFiles/UAVs_uart_interface.dir/flags.make
 CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o: ../ellipse/EllipseDetectorYaed.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o -c /home/hitlb/HITLB/vision-UAV/ellipse/EllipseDetectorYaed.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o -c /home/zxy/c_uart_interface_example/ellipse/EllipseDetectorYaed.cpp
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hitlb/HITLB/vision-UAV/ellipse/EllipseDetectorYaed.cpp > CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxy/c_uart_interface_example/ellipse/EllipseDetectorYaed.cpp > CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.i
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hitlb/HITLB/vision-UAV/ellipse/EllipseDetectorYaed.cpp -o CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxy/c_uart_interface_example/ellipse/EllipseDetectorYaed.cpp -o CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.s
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o.requires:
 
@@ -155,16 +155,16 @@ CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o.provides.bu
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o: CMakeFiles/UAVs_uart_interface.dir/flags.make
 CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o: ../ellipse/common.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o -c /home/hitlb/HITLB/vision-UAV/ellipse/common.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o -c /home/zxy/c_uart_interface_example/ellipse/common.cpp
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hitlb/HITLB/vision-UAV/ellipse/common.cpp > CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxy/c_uart_interface_example/ellipse/common.cpp > CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.i
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hitlb/HITLB/vision-UAV/ellipse/common.cpp -o CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxy/c_uart_interface_example/ellipse/common.cpp -o CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.s
 
 CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o.requires:
 
@@ -194,25 +194,37 @@ UAVs_uart_interface: CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o
 UAVs_uart_interface: CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o
 UAVs_uart_interface: CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o
 UAVs_uart_interface: CMakeFiles/UAVs_uart_interface.dir/build.make
-UAVs_uart_interface: /usr/lib/libopencv_dnn.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_ml.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_objdetect.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_shape.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_stitching.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_superres.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_videostab.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_calib3d.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_features2d.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_flann.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_highgui.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_photo.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_video.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_videoio.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_imgcodecs.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_imgproc.so.3.3.1
-UAVs_uart_interface: /usr/lib/libopencv_core.so.3.3.1
+UAVs_uart_interface: /usr/local/lib/libopencv_cudabgsegm.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudaobjdetect.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudastereo.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_dnn.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_ml.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_shape.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_stitching.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_superres.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_videostab.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudafeatures2d.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudacodec.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudaoptflow.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudalegacy.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_calib3d.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudawarping.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_features2d.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_flann.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_highgui.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_objdetect.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_photo.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudaimgproc.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudafilters.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudaarithm.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_video.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_videoio.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_imgcodecs.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_imgproc.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_core.so.3.3.0
+UAVs_uart_interface: /usr/local/lib/libopencv_cudev.so.3.3.0
 UAVs_uart_interface: CMakeFiles/UAVs_uart_interface.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable UAVs_uart_interface"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable UAVs_uart_interface"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/UAVs_uart_interface.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -233,6 +245,6 @@ CMakeFiles/UAVs_uart_interface.dir/clean:
 .PHONY : CMakeFiles/UAVs_uart_interface.dir/clean
 
 CMakeFiles/UAVs_uart_interface.dir/depend:
-	cd /home/hitlb/HITLB/vision-UAV/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/hitlb/HITLB/vision-UAV /home/hitlb/HITLB/vision-UAV /home/hitlb/HITLB/vision-UAV/cmake-build-debug /home/hitlb/HITLB/vision-UAV/cmake-build-debug /home/hitlb/HITLB/vision-UAV/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/zxy/c_uart_interface_example/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/zxy/c_uart_interface_example /home/zxy/c_uart_interface_example /home/zxy/c_uart_interface_example/cmake-build-debug /home/zxy/c_uart_interface_example/cmake-build-debug /home/zxy/c_uart_interface_example/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/UAVs_uart_interface.dir/depend
 
