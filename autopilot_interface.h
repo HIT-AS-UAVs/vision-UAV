@@ -169,6 +169,7 @@ struct Time_Stamps
     uint64_t command_ack;
 	uint64_t param_value;
 	uint64_t statustext;
+	uint64_t  mission_current;
 
 	void
 	reset_timestamps()
@@ -189,6 +190,7 @@ struct Time_Stamps
         command_ack = 0;
 		param_value = 0;
 		statustext = 0;
+		mission_current = 0;
 	}
 
 };
@@ -246,6 +248,8 @@ struct Mavlink_Messages {
 	mavlink_param_value_t param_value;
 
 	mavlink_statustext_t statustext;
+
+	mavlink_mission_current_t mission_current;
 
 	// System Parameters?
 

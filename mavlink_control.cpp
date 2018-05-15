@@ -292,7 +292,7 @@ commands(Autopilot_Interface &api)
     commission.frame = MAV_FRAME_BODY_FLU;
     commission.autocontinue = 1;
     commission.current = 1;
-    commission.seq = 1;
+    //commission.seq = 1;
     commission.param1 = 1;
     commission.x = 5;
     commission.y = 5;
