@@ -66,6 +66,27 @@ get_time_usec()
 	return _time_stamp.tv_sec*1000000 + _time_stamp.tv_usec;
 }
 
+float Distance(float x,float y,float z,float x1,float y1,float z1)
+{
+    //如果是经纬度*10^7，转化为m
+    if (x > 10000)
+    {
+        x = x*18.5/1000;
+        x1 = x1*18.5/1000;
+        y = y*14/1000;
+        y1 = y1*14/1000;
+    }
+    float Distance = fabsf(x - x1)+fabsf(y - y1)+fabsf(z - z1);
+    return Distance ;
+}
+float D2R(uint16_t ghdg)
+{
+    float deg = (float)ghdg/100.0;
+    float Rad = deg*3.14159/180;
+    return Rad;
+
+}
+
 
 // ----------------------------------------------------------------------------------
 //   设置目标点的函数
@@ -83,7 +104,8 @@ set_position(float x, float y, float z, mavlink_set_position_target_local_ned_t 
 {
 	sp.type_mask =
 		MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION;
-	sp.coordinate_frame = MAV_FRAME_BODY_NED;
+	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+	        //MAV_FRAME_BODY_NED;
 
 	sp.x   = x;
 	sp.y   = y;
@@ -104,36 +126,12 @@ set_velocity(float vx, float vy, float vz, mavlink_set_position_target_local_ned
 	sp.type_mask =
 			MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY     ;
 
-	//sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-	sp.coordinate_frame = MAV_FRAME_BODY_NED;
+	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+	//sp.coordinate_frame = MAV_FRAME_BODY_NED;
 	sp.vx  = vx;
 	sp.vy  = vy;
 	sp.vz  = vz;
 	//printf("VELOCITY SETPOINT UVW = [ %.4f , %.4f , %.4f ] \n", sp.vx, sp.vy, sp.vz);
-}
-
-/*
- * Set target local ned acceleration
- *
- * Modifies a mavlink_set_position_target_local_ned_t struct with target AX AY AZ
- * accelerations in the Local NED frame, in meters per second squared.
- */
-void
-set_acceleration(float ax, float ay, float az, mavlink_set_position_target_local_ned_t &sp)
-{
-
-	// NOT IMPLEMENTED
-	fprintf(stderr,"set_acceleration doesn't work yet \n");
-	throw 1;
-	sp.type_mask =
-			MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_ACCELERATION &
-			MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY     ;
-
-	//sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-	sp.coordinate_frame = MAV_FRAME_BODY_NED;
-	sp.afx  = ax;
-	sp.afy  = ay;
-	sp.afz  = az;
 }
 
 // the next two need to be called after one of the above
@@ -175,7 +173,7 @@ set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp)
  * 设置全局目标坐标点，坐标系GLOBAL_RELATIVE_ALT_INT
  */
 void
-set_global_position(float x,float y,float z,mavlink_set_position_target_global_int_t &sp)
+set_global_position(int32_t x,int32_t y,int32_t z,mavlink_set_position_target_global_int_t &sp)
 {
 	sp.type_mask = MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_POSITION;
 	sp.coordinate_frame =
@@ -202,27 +200,6 @@ set_global_velocity(float vx, float vy, float vz, mavlink_set_position_target_gl
 	sp.vz  = vz;
 }
 
-/*
- * 设置全局加速度
- * MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
- */
-void
-set_global_acceleration(float ax, float ay, float az, mavlink_set_position_target_global_int_t &sp)
-{
-
-	// NOT IMPLEMENTED
-	fprintf(stderr,"set_acceleration doesn't work yet \n");
-	throw 1;
-
-	sp.type_mask =
-			MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_ACCELERATION &
-			MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_VELOCITY;
-	sp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
-	sp.afx  = ax;
-	sp.afy  = ay;
-	sp.afz  = az;
-
-}
 
 // the next two need to be called after one of the above
 
@@ -302,6 +279,31 @@ update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point
 	current_global_setpoint = set_global_point;
 	write_global_setpoint();
 }
+
+
+// ------------------------------------------------------------------------------
+//	驱动舵机：<PWM_Value:1100-1900>
+//	ServoId：AUX_OUT1-6 对应148-153
+// ------------------------------------------------------------------------------
+int
+Autopilot_Interface::
+Servo_Control(float ServoId, float PWM_Value)
+{
+    mavlink_command_long_t ServoCom = { 0 };
+    ServoCom.target_system = 01;
+    ServoCom.target_component = 01;
+    ServoCom.command = MAV_CMD_DO_SET_SERVO;
+    ServoCom.param1 = ServoId;
+    ServoCom.param2 = PWM_Value;
+    ServoCom.confirmation = 0;
+    mavlink_message_t RCC;
+    mavlink_msg_command_long_encode(255, 190, &RCC, &ServoCom);
+    // Send the message
+    int ServoLen = serial_port->write_message(RCC);
+    usleep(100);
+    return ServoLen;
+}
+
 
 // ------------------------------------------------------------------------------
 //   Update Local Setpoint
@@ -395,6 +397,10 @@ read_messages()
 					mavlink_msg_local_position_ned_decode(&message, &(current_messages.local_position_ned));
 					current_messages.time_stamps.local_position_ned = get_time_usec();
 					this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
+                    std::cout<<"local_position.x:"<<current_messages.local_position_ned.x<<std::endl
+                             <<"local_position.y:"<<current_messages.local_position_ned.y<<std::endl
+                             <<"local_position.z:"<<current_messages.local_position_ned.z<<std::endl;
+                    local_position = current_messages.local_position_ned;
 					break;
 				}
 
@@ -405,6 +411,7 @@ read_messages()
                     std::cout<<"lat:"<<current_messages.global_position_int.lat<<std::endl;
 					current_messages.time_stamps.global_position_int = get_time_usec();
 					this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
+                    global_position = current_messages.global_position_int;
 					break;
 				}
 
@@ -414,9 +421,6 @@ read_messages()
 					mavlink_msg_position_target_local_ned_decode(&message, &(current_messages.position_target_local_ned));
 					current_messages.time_stamps.position_target_local_ned = get_time_usec();
 					this_timestamps.position_target_local_ned = current_messages.time_stamps.position_target_local_ned;
-					std::cout<<"local_position.x:"<<current_messages.local_position_ned.x<<std::endl
-                             <<"local_position.y:"<<current_messages.local_position_ned.y<<std::endl
-                             <<"local_position.z:"<<current_messages.local_position_ned.z<<std::endl;
 					break;
 				}
 
@@ -521,6 +525,21 @@ read_messages()
 					break;
 				}
 
+                case MAVLINK_MSG_ID_MISSION_COUNT:
+                {
+                    printf("mavlink id mission_count!\n");
+                    mavlink_msg_mission_count_decode(&message,&(current_messages.mission_count));
+                    std::cout<<"mission count :"<<current_messages.mission_count.count<<std::endl;
+                    break;
+                }
+                case MAVLINK_MSG_ID_MISSION_ACK:
+                {
+                    printf("mavlink id mission_ack!\n");
+                    mavlink_msg_mission_ack_decode(&message,&(current_messages.mission_ack));
+                    std::cout<<"mission_ack:"<<(float)current_messages.mission_ack.type<<std::endl;
+                    break;
+                }
+
 				default:
 				{
 					 printf("Warning, did not handle message id %i\n",message.msgid);
@@ -565,10 +584,8 @@ write_message(mavlink_message_t message)
 {
 	// do the write
 	int len = serial_port->write_message(message);
-
 	// book keep
 	write_count++;
-
 	// Done!
 	return len;
 }
@@ -669,6 +686,38 @@ enable_offboard_control()
 }
 
 
+// ----------------------------------------------------------------------------------
+//                                     设置模式
+//      STABILIZE=0,    ACRO=1,     ALT_HOLD=2,AUTO=3,GUIDED=4,
+//       LOITER=5,      RTL=6,          CIRCLE=7,
+//       LAND=9,    DRIFT=11,       SPORT=13,
+//       FLIP=14,   AUTOTUNE=15,    POSHOLD=16,
+//       BRAKE=17,  HROW=18,       AVOID_ADSB=19,
+//       GUIDED_NOGPS=20,            SMART_RTL=21,
+// -----------------------------------------------------------------------------------
+void
+Autopilot_Interface::
+Set_Mode(unsigned int custom)
+{
+    mavlink_set_mode_t Mode_enable = { 0 };
+    Mode_enable.base_mode = 1;
+    Mode_enable.target_system = 01;
+    Mode_enable.custom_mode = custom;
+    mavlink_message_t Mode_mes;
+    mavlink_msg_set_mode_encode(255, 190, &Mode_mes, &Mode_enable);
+    // Send the message
+    int lenMode = write_message(Mode_mes);
+    if (lenMode <= 0)
+    {
+        printf("设置模式错误!\n");
+    }
+    else {
+        printf("成功设置模式\n");
+    }
+
+}
+
+
 // ------------------------------------------------------------------------------
 //   Stop Off-Board Mode
 // ------------------------------------------------------------------------------
@@ -712,188 +761,63 @@ int
 Autopilot_Interface::
 toggle_offboard_control( bool flag )
 {
-	// Prepare command for off-board mode
-//	mavlink_command_long_t com = { 0 };
-//	com.target_system    = system_id;
-//	com.target_component = autopilot_id;
-//	com.command          = MAV_CMD_NAV_GUIDED_ENABLE;
-//	com.confirmation     = true;
-//	com.param1           = (float) flag; // flag >0.5 => start, <0.5 => stop
-	//////////////////////自稳模式
+    // Prepare command for off-board mode
+    //////////////////////自稳模式
     mavlink_set_mode_t com = { 0 };
-	com.base_mode = 1;
-	com.target_system = 01;
-	com.custom_mode = 00;
-	// Encode
-	mavlink_message_t message;
-	mavlink_msg_set_mode_encode(255, 190, &message, &com);
+    com.base_mode = 1;
+    com.target_system = 01;
+    com.custom_mode = 00;
+    // Encode
+    mavlink_message_t message;
+    mavlink_msg_set_mode_encode(255, 190, &message, &com);
+    int len = serial_port->write_message(message);
+    usleep(100);
+    // Done!
 
-	// Send the message
-		int len = serial_port->write_message(message);
-	// Done!
+    ///////请求数据流(关闭ALL)
+    mavlink_request_data_stream_t com1 = { 0 };
+    com1.target_system= 01;
+    com1.target_component = 01;
+    com1.req_stream_id = MAV_DATA_STREAM_ALL;
+    com1.req_message_rate = 2;
+    com1.start_stop = 0;
+    mavlink_message_t message1;
+    mavlink_msg_request_data_stream_encode(255, 190, &message1, &com1);
+    int len1 = serial_port->write_message(message1);
+    usleep(100);
 
-	///////请求数据流(关闭ALL)
-//	mavlink_request_data_stream_t com7 = { 0 };
-//	com7.target_system= 01;
-//	com7.target_component = 01;
-//	com7.req_stream_id = MAV_DATA_STREAM_ALL;
-//	com7.req_message_rate = 2;
-//	com7.start_stop = 0;
-//
-//	mavlink_message_t message7;
-//	mavlink_msg_request_data_stream_encode(255, 190, &message7, &com7);
-
-//	 Send the message
-//	int len7 = serial_port->write_message(message7);
-
-	/////////////////////////////////请求数据流
-	mavlink_request_data_stream_t comdata = { 0 };
-	comdata.req_message_rate = 5;
-	comdata.req_stream_id = MAV_DATA_STREAM_POSITION;
-	comdata.start_stop = 1;
-	comdata.target_system = 1;
-	comdata.target_component = 1;
-	mavlink_message_t Rmassage;
-	mavlink_msg_request_data_stream_encode(255,190,&Rmassage,&comdata);
-	//重复发送确保指令收到
-	for (int i = 0; i < 3; ++i)
-	{
-		int Rlen = serial_port->write_message(Rmassage);
-		usleep(100);
-	}
-	sleep(2);
-	printf("current global message %f",(float)current_messages.global_position_int.lat);
-//    std::cout<<"lat:"<<current_messages.global_position_int.lat<<std::endl
-//             <<"lon:"<<current_messages.global_position_int.lon<<std::endl;
-
-
-
-	////////////////////////////////////////解锁
-	mavlink_command_long_t com1 = { 0 };
-	com1.target_system= 01;
-	com1.target_component = 01;
-	com1.command = MAV_CMD_MISSION_START;
-	com1.param1 = 1;
-	mavlink_message_t message1;
-	mavlink_msg_command_long_encode(255, 190, &message1, &com1);
-	// Send the message
-	int len1 = serial_port->write_message(message1);
-	usleep(100);
-
-
-	//////////////////////guided模式
-	mavlink_set_mode_t com5 = { 0 };
-	com5.base_mode = 1;
-	com5.target_system = 01;
-	com5.custom_mode = 04;
-	// Encode
-	mavlink_message_t message5;
-	mavlink_msg_set_mode_encode(255, 190, &message5, &com5);
-	// Send the message
-		int len5 = serial_port->write_message(message5);
-	// Done!
-
-
-	/////////////////////////////////起飞
-	mavlink_command_long_t com2 = { 0 };
-	com2.target_system= 01;
-	com2.target_component = 01;
-	com2.command = 22;
-	com2.param7 = 10;//高度设定10m
-
-	mavlink_message_t message2;
-	mavlink_msg_command_long_encode(255, 190, &message2, &com2);
-
-	// Send the message
-	int len2 = serial_port->write_message(message2);
-
-/*
-	///////////////////////////////////mission本体FLU设目标点
-	mavlink_command_int_t command;
-	command.target_system = 01;
-	command.target_component = 01;
-	command.command = 16;
-	command.frame = MAV_FRAME_BODY_FLU;//高度设定10m
-	command.autocontinue = 1;
-	command.current = 1;
-	command.x = 10;
-	command.y = 10;
-	command.z = 10;
-	command.param1 = 1;
-	command.param2 = 1;
-	command.param3 = 0;
-	mavlink_message_t Bmessage;
-	mavlink_msg_command_int_encode(255, 190, &Bmessage, &command);
-	int lenB = write_message(Bmessage);
-	if (lenB <= 0)
-	{
-		printf("Body position write wrong!");
-		printf("[%f,%f,%f]", command.x, command.y, command.z);
-	}
-	else {
-		printf("成功写入本体坐标系坐标点\n");
-		std::cout<<"commission.x:"<<command.x<<std::endl<<"commission.y:"<<command.y<<std::endl;
-	}
-*/
-
-	///////////////////////////////////mission全局设目标点
-	mavlink_mission_item_t commission11;
-	commission11.target_system = 01;
-	commission11.target_component = 01;
-	commission11.command = 16;
-	commission11.seq = 1;
-	commission11.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
-	commission11.autocontinue = 1;
-	commission11.current = 1;
-	commission11.x = current_messages.global_position_int.lat;
-	commission11.y = current_messages.global_position_int.lon;
-	commission11.z = 25;
-	commission11.param1 = 1;
-	commission11.param2 = 1;
-	commission11.param3 = 0;
-
-	mavlink_message_t GBmessage;
-	mavlink_msg_mission_item_encode(255, 190, &GBmessage, &commission11);
-	int lenGB = write_message(GBmessage);
-	if (lenGB <= 0)
-	{
-		printf("Body position write wrong!");
-		printf("[%f,%f,%f]", commission11.x, commission11.y, commission11.z);
-	}
-	else {
-		printf("成功写入mission 全局坐标系坐标点\n");
-		printf("[%f,%f,%f]\n", (float)commission11.x, (float)commission11.y, (float)commission11.z);
-	}
-
-    ///////////////////////////////////mission全局设目标点
-    mavlink_mission_item_t commission12;
-    commission12.target_system = 01;
-    commission12.target_component = 01;
-    commission12.command = 16;
-    commission12.frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
-    commission12.autocontinue = 1;
-    commission12.seq = 2;
-    commission12.current = 1;
-    commission12.x = current_messages.global_position_int.lat;
-    commission12.y = current_messages.global_position_int.lon;
-    commission12.z = 20;
-    commission12.param1 = 1;
-    commission12.param2 = 1;
-    commission12.param3 = 0;
-
-    mavlink_message_t G2Bmessage;
-    mavlink_msg_mission_item_encode(255, 190, &G2Bmessage, &commission12);
-    int lenG2B = write_message(G2Bmessage);
-    if (lenG2B <= 0)
+    /////////////////////////////////请求位置数据流
+    mavlink_request_data_stream_t comdata = { 0 };
+    comdata.req_message_rate = 5;
+    comdata.req_stream_id = MAV_DATA_STREAM_POSITION;
+    comdata.start_stop = 1;
+    comdata.target_system = 1;
+    comdata.target_component = 1;
+    mavlink_message_t Rmassage;
+    mavlink_msg_request_data_stream_encode(255,190,&Rmassage,&comdata);
+    //重复发送确保指令收到
+    for (int i = 0; i < 3; ++i)
     {
-        printf("Body position write wrong!");
-        printf("[%f,%f,%f]", commission12.x, commission12.y, commission12.z);
+        int Rlen = serial_port->write_message(Rmassage);
+        usleep(100);
     }
-    else {
-        printf("成功写入mission 全局坐标系坐标点\n");
-        printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
-    }
+    usleep(20000);
 
+    ////////////////////////////////////////解锁
+    mavlink_command_long_t Armdata = { 0 };
+    Armdata.target_system= 01;
+    Armdata.target_component = 01;
+    Armdata.command = MAV_CMD_COMPONENT_ARM_DISARM;
+    Armdata.param1 = 1;
+    mavlink_message_t Armmes;
+    mavlink_msg_command_long_encode(255, 190, &Armmes, &Armdata);
+    // Send the message
+    int Armlen = serial_port->write_message(Armmes);
+    usleep(100);
+
+    //设置成AUTO模式，开始mission
+    Set_Mode(03);
+    sleep(1);
 
     //////////////////////////////////开始misiion
     mavlink_command_long_t mission_start = { 0 };
@@ -902,7 +826,7 @@ toggle_offboard_control( bool flag )
     mission_start.command = 300;
     mission_start.confirmation = 1;
     mission_start.param1 = 1;
-    mission_start.param2 = 2;
+    mission_start.param2 = 8;
 
     mavlink_message_t Mission_starmessage;
     mavlink_msg_command_long_encode(255, 190, &Mission_starmessage, &mission_start);
@@ -912,29 +836,14 @@ toggle_offboard_control( bool flag )
     if (lenmission <= 0)
     {
         printf("Start Mission error!\n");
-        //printf("[%f,%f,%f]", commission12.x, commission12.y, commission12.z);
     }
     else {
         printf("Start Mission!\n");
-        //printf("[%f,%f,%f]\n", (float)commission12.x, (float)commission12.y, (float)commission12.z);
     }
 
+    // Done!
 
-
-    /*****************
-     /////////////////////////////////返航
-    mavlink_command_long_t com3 = { 0 };
-    com3.target_system= 01;
-    com3.target_component = 01;
-    com3.command = 20;
-
-    mavlink_message_t message3;
-    mavlink_msg_command_long_encode(255, 190, &message3, &com3);
-
-    // Send the message
-    int len3 = serial_port->write_message(message3);
-**************/
-	return len;
+    return len;
 }
 
 

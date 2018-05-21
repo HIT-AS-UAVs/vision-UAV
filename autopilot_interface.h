@@ -102,7 +102,7 @@
  *     MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_ANGLE;
  */
 
-                                                // bit number  876543210987654321
+// bit number  876543210987654321
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION     0b0000110111111000
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY     0b0000110111000111
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_ACCELERATION 0b0000110000111111
@@ -127,16 +127,19 @@
 uint64_t get_time_usec();
 void set_position(float x, float y, float z, mavlink_set_position_target_local_ned_t &sp);
 void set_velocity(float vx, float vy, float vz, mavlink_set_position_target_local_ned_t &sp);
-void set_acceleration(float ax, float ay, float az, mavlink_set_position_target_local_ned_t &sp);
+//void set_acceleration(float ax, float ay, float az, mavlink_set_position_target_local_ned_t &sp);
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp);
 void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp);
+//
 
-void set_global_position(float x, float y, float z, mavlink_set_position_target_global_int_t &sp);
+void set_global_position(int32_t x, int32_t y, int32_t z, mavlink_set_position_target_global_int_t &sp);
 void set_global_velocity(float vx, float vy, float vz, mavlink_set_position_target_global_int_t &sp);
-void set_global_acceleration(float ax, float ay, float az, mavlink_set_position_target_global_int_t &sp);
+//void set_global_acceleration(float ax, float ay, float az, mavlink_set_position_target_global_int_t &sp);
 void set_global_yaw(float yaw, mavlink_set_position_target_global_int_t &sp);
 void set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp);
 
+float Distance(float x,float y,float z,float x1,float y1,float z1);
+float D2R(uint16_t ghdg);
 
 void* start_autopilot_interface_read_thread(void *args);
 void* start_autopilot_interface_write_thread(void *args);
@@ -148,50 +151,54 @@ void* start_autopilot_interface_write_thread(void *args);
 
 struct Time_Stamps
 {
-	Time_Stamps()
-	{
-		reset_timestamps();
-	}
+    Time_Stamps()
+    {
+        reset_timestamps();
+    }
 
-	uint64_t heartbeat;
-	uint64_t sys_status;
-	uint64_t battery_status;
-	uint64_t radio_status;
-	uint64_t local_position_ned;
-	uint64_t global_position_int;
-	uint64_t position_target_local_ned;
-	uint64_t position_target_global_int;
-	uint64_t highres_imu;
-	uint64_t attitude;
+    uint64_t heartbeat;
+    uint64_t sys_status;
+    uint64_t battery_status;
+    uint64_t radio_status;
+    uint64_t local_position_ned;
+    uint64_t global_position_int;
+    uint64_t position_target_local_ned;
+    uint64_t position_target_global_int;
+    uint64_t highres_imu;
+    uint64_t attitude;
     uint64_t setmode;
     uint64_t command_long;
     uint64_t mission_item;
     uint64_t command_ack;
-	uint64_t param_value;
-	uint64_t statustext;
-	uint64_t  mission_current;
+    uint64_t param_value;
+    uint64_t statustext;
+    uint64_t  mission_current;
+    uint64_t mission_count;
+    uint64_t mission_ack;
 
-	void
-	reset_timestamps()
-	{
-		heartbeat = 0;
-		sys_status = 0;
-		battery_status = 0;
-		radio_status = 0;
-		local_position_ned = 0;
-		global_position_int = 0;
-		position_target_local_ned = 0;
-		position_target_global_int = 0;
-		highres_imu = 0;
-		attitude = 0;
+    void
+    reset_timestamps()
+    {
+        heartbeat = 0;
+        sys_status = 0;
+        battery_status = 0;
+        radio_status = 0;
+        local_position_ned = 0;
+        global_position_int = 0;
+        position_target_local_ned = 0;
+        position_target_global_int = 0;
+        highres_imu = 0;
+        attitude = 0;
         setmode = 0;
         command_long = 0;
         mission_item = 0;
         command_ack = 0;
-		param_value = 0;
-		statustext = 0;
-		mission_current = 0;
-	}
+        param_value = 0;
+        statustext = 0;
+        mission_current = 0;
+        mission_count = 0;
+        mission_ack = 0;
+    }
 
 };
 
@@ -200,38 +207,38 @@ struct Time_Stamps
 
 struct Mavlink_Messages {
 
-	int sysid;
-	int compid;
+    int sysid;
+    int compid;
 
-	// Heartbeat
-	mavlink_heartbeat_t heartbeat;
+    // Heartbeat
+    mavlink_heartbeat_t heartbeat;
 
-	// System Status
-	mavlink_sys_status_t sys_status;
+    // System Status
+    mavlink_sys_status_t sys_status;
 
-	// Battery Status
-	mavlink_battery_status_t battery_status;
+    // Battery Status
+    mavlink_battery_status_t battery_status;
 
-	// Radio Status
-	mavlink_radio_status_t radio_status;
+    // Radio Status
+    mavlink_radio_status_t radio_status;
 
-	// Local Position
-	mavlink_local_position_ned_t local_position_ned;
+    // Local Position
+    mavlink_local_position_ned_t local_position_ned;
 
-	// Global Position
-	mavlink_global_position_int_t global_position_int;
+    // Global Position
+    mavlink_global_position_int_t global_position_int;
 
-	// Local Position Target
-	mavlink_position_target_local_ned_t position_target_local_ned;
+    // Local Position Target
+    mavlink_position_target_local_ned_t position_target_local_ned;
 
-	// Global Position Target
-	mavlink_position_target_global_int_t position_target_global_int;
+    // Global Position Target
+    mavlink_position_target_global_int_t position_target_global_int;
 
-	// HiRes IMU
-	mavlink_highres_imu_t highres_imu;
+    // HiRes IMU
+    mavlink_highres_imu_t highres_imu;
 
-	// Attitude
-	mavlink_attitude_t attitude;
+    // Attitude
+    mavlink_attitude_t attitude;
 
     //Param_Value
     mavlink_set_mode_t set_mode;
@@ -242,25 +249,28 @@ struct Mavlink_Messages {
     //Mission_Item
     mavlink_mission_item_t mission_item;
 
-	//COMMAND_ACK
-	mavlink_command_ack_t command_ack;
+    //COMMAND_ACK
+    mavlink_command_ack_t command_ack;
 
-	mavlink_param_value_t param_value;
+    mavlink_param_value_t param_value;
 
-	mavlink_statustext_t statustext;
+    mavlink_statustext_t statustext;
 
-	mavlink_mission_current_t mission_current;
+    mavlink_mission_current_t mission_current;
 
-	// System Parameters?
+    mavlink_mission_count_t mission_count;
+    mavlink_mission_ack_t mission_ack;
 
-	// Time Stamps
-	Time_Stamps time_stamps;
+    // System Parameters?
 
-	void
-	reset_timestamps()
-	{
-		time_stamps.reset_timestamps();
-	}
+    // Time Stamps
+    Time_Stamps time_stamps;
+
+    void
+    reset_timestamps()
+    {
+        time_stamps.reset_timestamps();
+    }
 
 };
 
@@ -270,84 +280,76 @@ struct Mavlink_Messages {
 // ----------------------------------------------------------------------------------
 /*
  * Autopilot Interface Class
- *
- * This starts two threads for read and write over MAVlink. The read thread
- * listens for any MAVlink message and pushes it to the current_messages
- * attribute.  The write thread at the moment only streams a position target
- * in the local NED frame (mavlink_set_position_target_local_ned_t), which
- * is changed by using the method update_setpoint().  Sending these messages
- * are only half the requirement to get response from the autopilot, a signal
- * to enter "offboard_control" mode is sent by using the enable_offboard_control()
- * method.  Signal the exit of this mode with disable_offboard_control().  It's
- * important that one way or another this program signals offboard mode exit,
- * otherwise the vehicle will go into failsafe.
  */
 class Autopilot_Interface
 {
 
 public:
 
-	Autopilot_Interface();
-	Autopilot_Interface(Serial_Port *serial_port_);
-	~Autopilot_Interface();
+    Autopilot_Interface();
+    Autopilot_Interface(Serial_Port *serial_port_);
+    ~Autopilot_Interface();
 
-	char reading_status;
-	char writing_status;
-	char control_status;
+    char reading_status;
+    char writing_status;
+    char control_status;
     uint64_t write_count;
 
     int system_id;
-	int autopilot_id;
-	int companion_id;
+    int autopilot_id;
+    int companion_id;
 
-	Mavlink_Messages current_messages;
-	mavlink_set_position_target_local_ned_t initial_position;
-	mavlink_set_position_target_global_int_t initial_global_position;
-	mavlink_global_position_int_t global_position;
-	mavlink_local_position_ned_t local_position;
+    Mavlink_Messages current_messages;
+    mavlink_set_position_target_local_ned_t initial_position;
+    mavlink_set_position_target_global_int_t initial_global_position;
+    mavlink_global_position_int_t global_position;
+    mavlink_local_position_ned_t local_position;
 
-	//void update_setpoint(mavlink_set_position_target_local_ned_t setpoint);
-	void update_local_setpoint(mavlink_set_position_target_local_ned_t setpoint);
+    //void update_setpoint(mavlink_set_position_target_local_ned_t setpoint);
+    void update_local_setpoint(mavlink_set_position_target_local_ned_t setpoint);
 
-	void update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point);
+    void update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point);
 
-	void read_messages();
-	int  write_message(mavlink_message_t message);
+    int Servo_Control(float ServoId, float PWM_Value);
 
-	void enable_offboard_control();
-	void disable_offboard_control();
+    void read_messages();
+    int  write_message(mavlink_message_t message);
 
-	void start();
-	void stop();
+    void enable_offboard_control();
+    void Set_Mode(unsigned int custom);
+    void disable_offboard_control();
 
-	void start_read_thread();
-	void start_write_thread(void);
+    void start();
+    void stop();
 
-	void handle_quit( int sig );
+    void start_read_thread();
+    void start_write_thread(void);
+
+    void handle_quit( int sig );
 
 
 private:
 
-	Serial_Port *serial_port;
+    Serial_Port *serial_port;
 
-	bool time_to_exit;
+    bool time_to_exit;
 
-	pthread_t read_tid;
-	pthread_t write_tid;
+    pthread_t read_tid;
+    pthread_t write_tid;
 
-	//mavlink_set_position_target_local_ned_t current_setpoint;
-	mavlink_set_position_target_local_ned_t current_local_setpoint;
-	mavlink_set_position_target_global_int_t current_global_setpoint;
+    //mavlink_set_position_target_local_ned_t current_setpoint;
+    mavlink_set_position_target_local_ned_t current_local_setpoint;
+    mavlink_set_position_target_global_int_t current_global_setpoint;
 
-	void read_thread();
-	void write_thread(void);
+    void read_thread();
+    void write_thread(void);
 
-	int toggle_offboard_control( bool flag );
+    int toggle_offboard_control( bool flag );
 //	void write_setpoint();
 
-	void write_global_setpoint();
+    void write_global_setpoint();
 
-	void write_local_setpoint();
+    void write_local_setpoint();
 
 };
 
