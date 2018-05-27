@@ -74,7 +74,7 @@ using namespace std;
 #include "ellipse/EllipseDetectorYaed.h"
 
 extern vector<loc_t> target_gps_position;
-extern vector<coordinate> ellipse_out1;
+extern vector<coordinate> ellipse_out1, target_ellipse_position;
 // ------------------------------------------------------------------------------
 //   Prototypes
 // ------------------------------------------------------------------------------
