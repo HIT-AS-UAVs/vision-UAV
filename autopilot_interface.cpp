@@ -761,6 +761,7 @@ int
 Autopilot_Interface::
 toggle_offboard_control( bool flag )
 {
+   /*
     // Prepare command for off-board mode
     //////////////////////自稳模式
     mavlink_set_mode_t com = { 0 };
@@ -773,7 +774,7 @@ toggle_offboard_control( bool flag )
     int len = serial_port->write_message(message);
     usleep(100);
     // Done!
-
+*/
     ///////请求数据流(关闭ALL)
     mavlink_request_data_stream_t com1 = { 0 };
     com1.target_system= 01;
@@ -795,14 +796,15 @@ toggle_offboard_control( bool flag )
     comdata.target_component = 1;
     mavlink_message_t Rmassage;
     mavlink_msg_request_data_stream_encode(255,190,&Rmassage,&comdata);
+	int Rlen;
     //重复发送确保指令收到
     for (int i = 0; i < 3; ++i)
     {
-        int Rlen = serial_port->write_message(Rmassage);
+    	Rlen = serial_port->write_message(Rmassage);
         usleep(100);
     }
     usleep(20000);
-
+/*
     ////////////////////////////////////////解锁
     mavlink_command_long_t Armdata = { 0 };
     Armdata.target_system= 01;
@@ -842,8 +844,8 @@ toggle_offboard_control( bool flag )
     }
 
     // Done!
-
-    return len;
+*/
+    return Rlen;
 }
 
 
