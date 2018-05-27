@@ -58,6 +58,7 @@
 #include "ellipse/EllipseDetectorYaed.h"
 #include <thread>//多线程
 #include <fstream>
+#include <cmath>
 
 using namespace cv;
 using namespace std;
@@ -139,7 +140,7 @@ top (int argc, char **argv)
 	 */
 
 //视觉定位线程
-//    thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
+    //thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
 	serial_port.start();
 	autopilot_interface.start();
 
@@ -159,10 +160,10 @@ top (int argc, char **argv)
 	ofstream outf;
 	outf.open("location.txt");
 	static uint32_t lasttime;
-	while (1) {
+	/*while (1) {
 
 		/*判断是否读入GPS信号*/
-		if(autopilot_interface.current_messages.global_position_int.time_boot_ms == lasttime){
+		/*if(autopilot_interface.current_messages.global_position_int.time_boot_ms == lasttime){
 			continue;
 //			break;
 		}
@@ -204,13 +205,13 @@ top (int argc, char **argv)
 			}
 			ellipse_out1.clear();
 		}
-	};
+	}; */
 	/*
 	 * Now that we are done we can stop the threads and close the port
 	 */
 	autopilot_interface.stop();
 	serial_port.stop();
-//	t1.join();
+	//t1.join();
 
 	// --------------------------------------------------------------------------
 	//   DONE
@@ -229,140 +230,169 @@ top (int argc, char **argv)
 void
 commands(Autopilot_Interface &api)
 {
+    // 设置变量，用于返回相应切换点
+    mavlink_global_position_int_t gp;
+    mavlink_global_position_int_t flagPoint;
+    flagPoint.lat = 411198976;
+    flagPoint.lon = 1230987852;
+    flagPoint.relative_alt = 20;
+    bool flag = true;
+    bool goback = true;
 
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
-    //      设置guided（offboard）模式
+    //   设置guided（offboard）模式/解锁、起飞
     // --------------------------------------------------------------------------
 
     api.enable_offboard_control();
     usleep(100); // give some time to let it sink in
 
-    // now the autopilot is accepting setpoint commands
     // --------------------------------------------------------------------------
     //   SEND OFFBOARD COMMANDS
     // --------------------------------------------------------------------------
-    printf("SEND OFFBOARD COMMANDS\n");
+    printf("Start Mission!\n");
 
-    // initialize command data strtuctures
-//////////////////////guided模式
-	mavlink_set_mode_t com5 = { 0 };
-	com5.base_mode = 1;
-	com5.target_system = 01;
-	com5.custom_mode = 04;
-	// Encode
-	mavlink_message_t message5;
-	mavlink_msg_set_mode_encode(255, 190, &message5, &com5);
-	// Send the message
-	int len5 = api.write_message(message5);
-	// Done!
+    while(flag)
+    {
+        gp = api.global_position;
+//		if (flag == false)
+//		{
+//			break;
+//		}
+//设置触发节点
+        if (Distance(gp.lat,gp.lon,gp.relative_alt,gp.lat,gp.lon,gp.relative_alt) <  2)
+        {
+            // --------------------------------------------------------------------------
+            // 设置guided模式
+            // --------------------------------------------------------------------------
+            api.Set_Mode(05);
+            usleep(100);
+            api.Set_Mode(04);
+            usleep(100);
+            // now the autopilot is accepting setpoint commands
+            // --------------------------------------------------------------------------
+            // 给定局部坐标(local_ned)位置，并执行
+            // --------------------------------------------------------------------------
+            mavlink_set_position_target_local_ned_t sp;
+            mavlink_local_position_ned_t locsp = api.local_position;
+            sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+            // -------------------------------------------------------------------------
+            // 设置位置，速度，加速度三选一
+            // -------------------------------------------------------------------------
 
- 	// --------------------------------------------------------------------------
-    // 给定局部坐标(local_ned)位置，并执行
-    // --------------------------------------------------------------------------
-        mavlink_set_position_target_local_ned_t sp;
-        mavlink_local_position_ned_t locsp = api.local_position;
-        sp.coordinate_frame = MAV_FRAME_BODY_NED;
-     //mavlink_set_position_target_local_ned_t ip = api.initial_position;
-     // -------------------------------------------------------------------------
-     // 设置位置，速度，加速度三选一
-     // -------------------------------------------------------------------------
-
-        // Example 1 - Set Velocity
 //	    set_velocity(  -1.0       , // [m/s]
 //				       -1.0       , // [m/s]
 //				        0.0       , // [m/s]
 //				      sp        );
-        // Example 2 - Set Position
-        set_position(  - 5.0, // [m]
-                       - 5.0, // [m]
-                       - 10.0, // [m]
-                     sp);
 
-        // Example 1.2 - Append Yaw Command
-//	    set_yaw( locsp.yaw , // [rad]
-//			     sp     );
-//
-        // SEND THE COMMAND
-        api.update_local_setpoint(sp);
+            set_position(  locsp.x + 10, // [m]
+                           locsp.y + 5, // [m]
+                           locsp.z - 10, // [m]
+                           sp);
 
-     //Wait for 8 seconds, check position
-        for (int i=0; i < 8; i++)
+            // Example 1.2 - Append Yaw Command
+            float yaw = D2R(gp.hdg);
+            set_yaw( yaw, // [rad]
+                     sp     );
+
+            // SEND THE COMMAND
+            api.update_local_setpoint(sp);
+
+            while(1)
+            {
+                mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
+                float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
+                if(distance < 2)
+                {
+                    goback = false;
+                    usleep(200);
+					// ------------------------------------------------------------------------------
+					//	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
+					//	ServoId：AUX_OUT1-6 对应148-153
+					// ------------------------------------------------------------------------------
+                    api.Servo_Control(149,1250);
+                    break;
+                }
+                else
+                {
+                    sleep(1);
+//					goback = false;
+//					break;
+                }
+            }
+            printf("\n");
+
+            if(goback == false)
+            {
+                // -------------------------------------------------------------------------
+                // --------------- 全局坐标系下设置目标位置坐标 -------------------------------
+                // -------------------------------------------------------------------------
+                mavlink_set_position_target_global_int_t gsp;
+                mavlink_global_position_int_t ggsp = gp; //api.global_position;
+                mavlink_set_position_target_global_int_t global_int_pos = api.initial_global_position;
+                global_int_pos.lat_int = ggsp.lat;
+                global_int_pos.lon_int = ggsp.lon;
+                global_int_pos.alt = ggsp.alt;
+                global_int_pos.vx = ggsp.vx;
+                global_int_pos.vy = ggsp.vy;
+                global_int_pos.vz = ggsp.vz;
+//				float gyaw = D2R(ggsp.hdg);
+//				global_int_pos.yaw = gyaw;
+                gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
+                gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+                int32_t High = 20;
+                //set global_point 经度，纬度，相对home高度
+                set_global_position(global_int_pos.lat_int,
+                                    global_int_pos.lon_int,
+                                    High,
+                                    gsp);
+//				set_global_yaw(gyaw,
+//						       gsp);
+
+                api.update_global_setpoint(gsp);
+                while(1)
+                {
+                    mavlink_global_position_int_t current_global = api.global_position;
+                    float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,gp.lat,gp.lon,gp.relative_alt);
+                    if(distan < 2)
+                    {
+                        usleep(200);
+                        api.Set_Mode(03);
+                        break;
+                    }
+                    else
+                    {
+                        sleep(1);
+                    }
+                }
+
+                break;
+            }
+
+        }
+        else
         {
-        	mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
-        	printf("%i CURRENT POSITION XYZ = [ % .4f , % .4f , % .4f ] \n", i, pos.x, pos.y, pos.z);
-        	sleep(1);
+            usleep(10000);
         }
 
         printf("\n");
 
-    // -------------------------------------------------------------------------
-    // --------------- 全局坐标系下设置目标位置坐标 -------------------------------
-    // -------------------------------------------------------------------------
-	mavlink_set_position_target_global_int_t gsp;
-	mavlink_global_position_int_t ggsp = api.global_position;
-	mavlink_set_position_target_global_int_t global_int_pos = api.initial_global_position;
-	global_int_pos.lat_int = ggsp.lat;
-	global_int_pos.lon_int = ggsp.lon;
-	global_int_pos.alt = ggsp.alt;
-	global_int_pos.vx = ggsp.vx;
-	global_int_pos.vy = ggsp.vy;
-	global_int_pos.vz = ggsp.vz;
-	global_int_pos.yaw = ggsp.hdg;
-	gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
-	gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
-	float High = 15;
-	//set global_point 经度，纬度，相对home高度
-	set_global_position(global_int_pos.lat_int,
-						global_int_pos.lon_int,
-						High,
-						gsp);
-//		set_global_velocity( global_int_pos.vx = -1.0       , // [m/s]
-//					         global_int_pos.vy = -1.0       , // [m/s]
-//							 global_int_pos.vz = 0.0       , // [m/s]
-//				              gsp );
-//		set_global_yaw( global_int_pos.yaw , // [rad]
-//			            gsp );
+    }
 
-	api.update_global_setpoint(gsp);
-	mavlink_message_t Gmessage;
-	mavlink_msg_set_position_target_global_int_encode(255, 190, &Gmessage, &gsp);
-	// 写入数据
-	int lenG = api.write_message(Gmessage);
-	if (lenG <= 0) {
-		printf("global position write wrong!");
-		printf("[%f,%f,%f]", gsp.lon_int, gsp.lat_int, gsp.alt);
-	} else {
-		printf("成功写入全局坐标点\n");
-		// printf("[%f,%f,%f]\n", api.global_position.lat, gsp.lon_int, gsp.alt);
-		printf("[%f,%f,%f]\n", (float)gsp.lon_int,  (float)gsp.lat_int, gsp.alt);
-	}
-/*
-	// -------------------------------------------------------------------------
-    // --------------------本体坐标系写入目标点
-    // -------------------------------------------------------------------------
-    mavlink_mission_item_t commission;
-    commission.target_system= 01;
-    commission.target_component = 01;
-    commission.command = 16;
-    commission.frame = MAV_FRAME_BODY_FLU;
-    commission.autocontinue = 1;
-    commission.current = 1;
-    commission.seq = 1;
-    commission.param1 = 1;
-    commission.x = 5;
-    commission.y = 5;
-    commission.z = 10;
-    mavlink_message_t Bmessage;
-    mavlink_msg_mission_item_encode(255, 190, &Bmessage, &commission);
-    int lenB = api.write_message(Bmessage);
-    printf("成功写入本体坐标系坐标点");
-*/
     // --------------------------------------------------------------------------
     // RETURN Home 以及
     //
     // STOP OFFBOARD MODE
     // --------------------------------------------------------------------------
+    sleep(5);
+    mavlink_mission_clear_all_t comclearall;
+    comclearall.target_system = 01;
+    comclearall.target_component = 01;
+
+    mavlink_message_t Clearcom;
+    mavlink_msg_mission_clear_all_encode(255,190,&Clearcom,&comclearall);
+    int Clearlen = api.write_message(Clearcom);
+    sleep(1);
 
     //返航
     mavlink_command_long_t com3 = { 0 };
@@ -374,38 +404,8 @@ commands(Autopilot_Interface &api)
     mavlink_msg_command_long_encode(255, 190, &message3, &com3);
     int len3 = api.write_message(message3);
 
-    //停止offboard
-    //api.disable_offboard_control();
 
     // now pixhawk isn't listening to setpoint commands
-
-
-    // --------------------------------------------------------------------------
-    //   GET A MESSAGE
-    // --------------------------------------------------------------------------
-    printf("READ SOME MESSAGES \n");
-
-    // copy current messages
-    Mavlink_Messages messages = api.current_messages;
-
-    // local position in ned frame
-    mavlink_local_position_ned_t pos = messages.local_position_ned;
-    printf("Got message LOCAL_POSITION_NED (spec: https://pixhawk.ethz.ch/mavlink/#LOCAL_POSITION_NED)\n");
-    printf("    pos  (NED):  %f %f %f (m)\n", pos.x, pos.y, pos.z );
-
-    // hires imu
-//	mavlink_highres_imu_t imu = messages.highres_imu;
-//	printf("Got message HIGHRES_IMU (spec: https://pixhawk.ethz.ch/mavlink/#HIGHRES_IMU)\n");
-//	printf("    ap time:     %llu \n", imu.time_usec);
-//	printf("    acc  (NED):  % f % f % f (m/s^2)\n", imu.xacc , imu.yacc , imu.zacc );
-//	printf("    gyro (NED):  % f % f % f (rad/s)\n", imu.xgyro, imu.ygyro, imu.zgyro);
-//	printf("    mag  (NED):  % f % f % f (Ga)\n"   , imu.xmag , imu.ymag , imu.zmag );
-//	printf("    baro:        %f (mBar) \n"  , imu.abs_pressure);
-//	printf("    altitude:    %f (m) \n"     , imu.pressure_alt);
-//	printf("    temperature: %f C \n"       , imu.temperature );
-//
-//	printf("\n");
-
 
     // --------------------------------------------------------------------------
     //   END OF COMMANDS
