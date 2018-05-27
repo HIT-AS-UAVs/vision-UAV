@@ -669,6 +669,8 @@ thread
 -
 fstream
 -
+cmath
+-
 
 /home/zxy/c_uart_interface_example/mavlink_control.h
 iostream
