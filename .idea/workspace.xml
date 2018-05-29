@@ -7,14 +7,45 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Default" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f63c1b4c-7698-4aa1-91f9-18b8f5810847" name="Default" comment="">
+    <list default="true" id="f63c1b4c-7698-4aa1-91f9-18b8f5810847" name="Default" comment="双串口serial_port+WL_port(interface)，简单运行流程(mavlink_control)">
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/autopilot_interface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/autopilot_interface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mavlink_control.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/mavlink_control.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/CXX.includecache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/DependInfo.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/build.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.internal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/flags.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/link.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c_uart_interface_example.dir/DependInfo.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c_uart_interface_example.dir/build.make" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c_uart_interface_example.dir/cmake_clean.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c_uart_interface_example.dir/depend.make" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c_uart_interface_example.dir/flags.make" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c_uart_interface_example.dir/link.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c_uart_interface_example.dir/progress.make" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/UAVs_uart_interface" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/UAVs_uart_interface.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/UAVs_uart_interface.cbp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/c_uart_interface_example.cbp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/messageID.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/messageID.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -30,8 +61,20 @@
       <file leaf-file-name="autopilot_interface.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="212">
-              <caret line="892" lean-forward="true" selection-start-line="892" selection-end-line="892" />
+            <state relative-caret-position="565">
+              <caret line="1136" column="3" selection-start-line="1136" selection-start-column="3" selection-end-line="1136" selection-end-column="3" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="autopilot_interface.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="200">
+              <caret line="349" column="17" lean-forward="true" selection-start-line="349" selection-start-column="17" selection-end-line="349" selection-end-column="17" />
+              <folding>
+                <element signature="e#2453#2477#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -39,17 +82,46 @@
       <file leaf-file-name="mavlink_control.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="437">
-              <caret line="180" column="28" lean-forward="true" selection-start-line="180" selection-start-column="28" selection-end-line="180" selection-end-column="28" />
+            <state relative-caret-position="215">
+              <caret line="144" column="8" lean-forward="true" selection-start-line="144" selection-start-column="8" selection-end-line="144" selection-end-column="8" />
               <folding>
                 <element signature="e#2411#2439#0" expanded="true" />
-                <element signature="e#3069#3115#0" expanded="true" />
+                <element signature="e#3120#3166#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="serial_port.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/serial_port.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-4">
+              <caret line="99" column="7" selection-start-line="99" selection-start-column="7" selection-end-line="99" selection-end-column="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mavlink_control.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/mavlink_control.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="377">
+              <caret line="74" selection-start-line="74" selection-end-line="74" selection-end-column="6" />
+              <folding>
+                <element signature="e#2420#2439#0" expanded="true" />
+                <element signature="e#2678#2713#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>Machine_Num</find>
+      <find>START WRITE THREAD</find>
+      <find>START WRITE THREAD</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -62,9 +134,10 @@
       <list>
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/mavlink_control.h" />
         <option value="$PROJECT_DIR$/autopilot_interface.h" />
-        <option value="$PROJECT_DIR$/autopilot_interface.cpp" />
         <option value="$PROJECT_DIR$/mavlink_control.cpp" />
+        <option value="$PROJECT_DIR$/autopilot_interface.cpp" />
       </list>
     </option>
   </component>
@@ -79,9 +152,9 @@
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="747" />
+    <option name="x" value="992" />
     <option name="y" value="-4" />
-    <option name="width" value="1173" />
+    <option name="width" value="928" />
     <option name="height" value="1084" />
   </component>
   <component name="ProjectView">
@@ -89,6 +162,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -96,16 +170,10 @@
               <item name="UAVs_uart_interface" type="b2602c69:ProjectViewProjectNode" />
               <item name="vision-UAV" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="UAVs_uart_interface" type="b2602c69:ProjectViewProjectNode" />
-              <item name="vision-UAV" type="462c0819:PsiDirectoryNode" />
-              <item name="mavlink" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -113,6 +181,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.language" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -127,7 +196,7 @@
     </option>
   </component>
   <component name="RunManager" selected="Application.UAVs_uart_interface">
-    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" EXPLICIT_BUILD_TARGET_NAME="all" />
+    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="UAVs_uart_interface" TARGET_NAME="UAVs_uart_interface" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="UAVs_uart_interface" RUN_TARGET_NAME="UAVs_uart_interface" />
     <configuration name="UAVs_uart_interface" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="UAVs_uart_interface" TARGET_NAME="UAVs_uart_interface" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="UAVs_uart_interface" RUN_TARGET_NAME="UAVs_uart_interface" />
     <list>
       <item itemvalue="Application.Build All" />
@@ -148,6 +217,24 @@
       <workItem from="1526091423014" duration="5595000" />
       <workItem from="1526172362178" duration="456000" />
       <workItem from="1526176179308" duration="6602000" />
+      <workItem from="1526430001111" duration="3691000" />
+      <workItem from="1526435727827" duration="8974000" />
+      <workItem from="1526453360341" duration="166000" />
+      <workItem from="1526453821422" duration="930000" />
+      <workItem from="1526460333982" duration="6726000" />
+      <workItem from="1526912363775" duration="267000" />
+      <workItem from="1526912674109" duration="2304000" />
+      <workItem from="1526915009257" duration="548000" />
+      <workItem from="1526915567494" duration="6000" />
+      <workItem from="1526957076522" duration="2232000" />
+      <workItem from="1526968954952" duration="1689000" />
+      <workItem from="1527209824531" duration="56000" />
+      <workItem from="1527209900461" duration="28000" />
+      <workItem from="1527209939053" duration="8514000" />
+      <workItem from="1527392843507" duration="9284000" />
+      <workItem from="1527427593416" duration="6418000" />
+      <workItem from="1527466213245" duration="10626000" />
+      <workItem from="1527486071432" duration="27557000" />
     </task>
     <task id="LOCAL-00001" summary="example!">
       <created>1526027388522</created>
@@ -177,31 +264,44 @@
       <option name="project" value="LOCAL" />
       <updated>1526196933445</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="设置舵机驱动函数Servo_Control，修改模式函数Set_mode&#10;写了一个大概的执行流程：auto模式执行任务&lt;起飞，巡视，降落&gt;，到达触发条件暂停mission，执行到达目标点指令，停留后返回mission中断位置继续执行任务巡视。一段时间后终止mission回归降落。">
+      <created>1526914306533</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1526914306533</updated>
+    </task>
+    <task id="LOCAL-00006" summary="双串口serial_port+WL_port(interface)，简单运行流程(mavlink_control)">
+      <created>1527584755531</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1527584755531</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="14082000" />
+    <option name="totallyTimeSpent" value="104115000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14824797" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.49973047" visible="true" weight="0.32991803" />
       <window_info anchor="bottom" id="CMake" order="7" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info active="true" anchor="bottom" id="Version Control" order="7" visible="true" weight="0.32991803" />
+      <window_info active="true" anchor="bottom" id="Event Log" order="7" sideWeight="0.50026953" side_tool="true" visible="true" weight="0.32991803" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32991803" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32991803" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.22438525" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.35758197" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Messages" order="7" visible="true" weight="0.32991803" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -242,14 +342,49 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="example!" />
     <MESSAGE value="local position更换成bady_ned坐标系。&#10;使用84/82/39号命令分别进行全局与局部设点运行，并将设点运行规范化。" />
-    <option name="LAST_COMMIT_MESSAGE" value="local position更换成bady_ned坐标系。&#10;使用84/82/39号命令分别进行全局与局部设点运行，并将设点运行规范化。" />
+    <MESSAGE value="设置舵机驱动函数Servo_Control，修改模式函数Set_mode&#10;写了一个大概的执行流程：auto模式执行任务&lt;起飞，巡视，降落&gt;，到达触发条件暂停mission，执行到达目标点指令，停留后返回mission中断位置继续执行任务巡视。一段时间后终止mission回归降落。" />
+    <MESSAGE value="双串口serial_port+WL_port(interface)，简单运行流程(mavlink_control)" />
+    <option name="LAST_COMMIT_MESSAGE" value="双串口serial_port+WL_port(interface)，简单运行流程(mavlink_control)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/autopilot_interface.cpp</url>
+          <line>1015</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/autopilot_interface.cpp</url>
+          <line>614</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+      </breakpoints>
+      <breakpoints-dialog>
+        <breakpoints-dialog />
+      </breakpoints-dialog>
+      <option name="time" value="37" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2700">
+          <caret line="180" column="28" lean-forward="true" selection-start-line="180" selection-start-column="28" selection-end-line="180" selection-end-column="28" />
+          <folding>
+            <element signature="e#2411#2439#0" expanded="true" />
+            <element signature="e#3120#3166#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/common.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5085">
+          <caret line="338" column="23" lean-forward="true" selection-start-line="338" selection-start-column="23" selection-end-line="338" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17415">
@@ -263,7 +398,7 @@
           <caret line="489" column="5" selection-start-line="489" selection-start-column="5" selection-end-line="489" selection-end-column="5" />
           <folding>
             <element signature="e#2411#2439#0" expanded="true" />
-            <element signature="e#3069#3115#0" expanded="true" />
+            <element signature="e#3120#3166#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -272,9 +407,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4890">
           <caret line="326" column="29" selection-start-line="326" selection-start-column="29" selection-end-line="326" selection-end-column="29" />
-          <folding>
-            <element signature="e#2453#2477#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -291,7 +423,7 @@
           <caret line="489" column="5" selection-start-line="489" selection-start-column="5" selection-end-line="489" selection-end-column="5" />
           <folding>
             <element signature="e#2411#2439#0" expanded="true" />
-            <element signature="e#3069#3115#0" expanded="true" />
+            <element signature="e#3120#3166#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -300,9 +432,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4890">
           <caret line="326" column="29" lean-forward="true" selection-start-line="326" selection-start-column="29" selection-end-line="326" selection-end-column="29" />
-          <folding>
-            <element signature="e#2453#2477#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -327,37 +456,310 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_command_long.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="18" column="3" selection-start-line="18" selection-start-column="3" selection-end-line="18" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_heartbeat.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="8" selection-start-line="3" selection-start-column="8" selection-end-line="3" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/common.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="504" column="3" selection-start-line="504" selection-start-column="3" selection-end-line="504" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1759">
-          <caret line="326" column="29" selection-start-line="326" selection-start-column="29" selection-end-line="326" selection-end-column="29" />
+        <state relative-caret-position="2460">
+          <caret line="171" column="30" selection-start-line="171" selection-start-column="30" selection-end-line="171" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-5">
+          <caret line="962" column="5" lean-forward="true" selection-start-line="962" selection-start-column="5" selection-end-line="962" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="175">
+          <caret line="246" selection-start-line="246" selection-end-line="246" />
           <folding>
-            <element signature="e#2453#2477#0" expanded="true" />
+            <element signature="e#2411#2439#0" expanded="true" />
+            <element signature="e#3120#3166#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17415">
+          <caret line="1161" column="4" selection-start-line="1161" selection-start-column="4" selection-end-line="1161" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7335">
+          <caret line="489" column="5" selection-start-line="489" selection-start-column="5" selection-end-line="489" selection-end-column="5" />
+          <folding>
+            <element signature="e#2411#2439#0" expanded="true" />
+            <element signature="e#3120#3166#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4890">
+          <caret line="326" column="29" selection-start-line="326" selection-start-column="29" selection-end-line="326" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17415">
+          <caret line="1161" column="4" selection-start-line="1161" selection-start-column="4" selection-end-line="1161" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7335">
+          <caret line="489" column="5" selection-start-line="489" selection-start-column="5" selection-end-line="489" selection-end-column="5" />
+          <folding>
+            <element signature="e#2411#2439#0" expanded="true" />
+            <element signature="e#3120#3166#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4890">
+          <caret line="326" column="29" lean-forward="true" selection-start-line="326" selection-start-column="29" selection-end-line="326" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" selection-start-line="15" selection-end-line="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="6" column="15" selection-start-line="6" selection-start-column="15" selection-end-line="6" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_local_position_ned.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="2" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/5/cmath">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1662">
+          <caret line="43" column="12" lean-forward="true" selection-start-line="43" selection-start-column="12" selection-end-line="43" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_mission_item.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="221" selection-start-line="221" selection-end-line="221" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/5/bits/stl_vector.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-52">
+          <caret line="653" column="6" selection-start-line="653" selection-start-column="6" selection-end-line="653" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="855">
+          <caret line="57" column="17" selection-start-line="57" selection-start-column="17" selection-end-line="57" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ellipse/EllipseDetectorYaed.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="28455">
+          <caret line="1897" column="93" selection-start-line="1897" selection-start-column="93" selection-end-line="1897" selection-end-column="93" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/message_definitions/common.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="262" column="109" selection-start-line="262" selection-start-column="109" selection-end-line="262" selection-end-column="109" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/unistd.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5430">
+          <caret line="362" column="17" selection-start-line="362" selection-start-column="17" selection-end-line="362" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mavlink/common/common.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="500">
-          <caret line="343" lean-forward="true" selection-start-line="343" selection-end-line="343" />
+          <caret line="467" column="17" lean-forward="true" selection-start-line="467" selection-start-column="17" selection-end-line="467" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/mavlink_helpers.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="175" column="24" selection-start-line="175" selection-start-column="24" selection-end-line="175" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/x86_64-linux-gnu/bits/termios.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="920">
+          <caret line="160" column="9" selection-start-line="160" selection-start-column="9" selection-end-line="160" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/serial_port.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1890">
+          <caret line="126" column="15" selection-start-line="126" selection-start-column="15" selection-end-line="126" selection-end-column="15" />
+          <folding>
+            <element signature="e#2421#2439#0" expanded="true" />
+            <element signature="e#3084#3106#0" expanded="true" />
+            <element signature="e#3131#3153#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/stdio.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="173" column="13" selection-start-line="173" selection-start-column="13" selection-end-line="173" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="634">
+          <caret line="402" column="8" selection-start-line="402" selection-start-column="8" selection-end-line="402" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/stdint.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="316">
+          <caret line="47" column="35" selection-start-line="47" selection-start-column="28" selection-end-line="47" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/mavlink_types.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="106">
+          <caret line="109" column="7" lean-forward="true" selection-start-line="109" selection-start-column="4" selection-end-line="109" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink_control.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="377">
+          <caret line="74" selection-start-line="74" selection-end-line="74" selection-end-column="6" />
+          <folding>
+            <element signature="e#2420#2439#0" expanded="true" />
+            <element signature="e#2678#2713#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/5/thread">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/serial_port.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4">
+          <caret line="99" column="7" selection-start-line="99" selection-start-column="7" selection-end-line="99" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_set_position_target_local_ned.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="78">
+          <caret line="20" column="15" lean-forward="true" selection-start-line="20" selection-start-column="15" selection-end-line="20" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_global_position_int.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="16" column="3" selection-start-line="16" selection-start-column="3" selection-end-line="16" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_set_position_target_global_int.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="23" column="3" selection-start-line="23" selection-start-column="3" selection-end-line="23" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="349" column="17" lean-forward="true" selection-start-line="349" selection-start-column="17" selection-end-line="349" selection-end-column="17" />
+          <folding>
+            <element signature="e#2453#2477#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="892" lean-forward="true" selection-start-line="892" selection-end-line="892" />
+        <state relative-caret-position="565">
+          <caret line="1136" column="3" selection-start-line="1136" selection-start-column="3" selection-end-line="1136" selection-end-column="3" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="437">
-          <caret line="180" column="28" lean-forward="true" selection-start-line="180" selection-start-column="28" selection-end-line="180" selection-end-column="28" />
+        <state relative-caret-position="215">
+          <caret line="144" column="8" lean-forward="true" selection-start-line="144" selection-start-column="8" selection-end-line="144" selection-end-column="8" />
           <folding>
             <element signature="e#2411#2439#0" expanded="true" />
-            <element signature="e#3069#3115#0" expanded="true" />
+            <element signature="e#3120#3166#0" expanded="true" />
           </folding>
         </state>
       </provider>

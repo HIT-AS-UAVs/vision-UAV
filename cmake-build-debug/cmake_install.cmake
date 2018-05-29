@@ -1,4 +1,4 @@
-# Install script for directory: /home/zxy/c_uart_interface_example
+# Install script for directory: /home/hitlb/HITLB/vision-UAV
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/zxy/c_uart_interface_example/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/hitlb/HITLB/vision-UAV/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
