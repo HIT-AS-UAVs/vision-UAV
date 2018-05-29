@@ -158,36 +158,55 @@ top (int argc, char **argv)
 	//   THREAD and PORT SHUTDOWN
 	// --------------------------------------------------------------------------
 	ofstream outf;
-	outf.open("location.txt");
+	outf.open("target.txt");
 	static uint32_t lasttime;
 	while (1) {
+
 		//判断是否读入GPS信号
 		if(autopilot_interface.current_messages.global_position_int.time_boot_ms == lasttime){
 			continue;
 		}
 		else {
+			cout<<"ellipse_out_size"<<ellipse_out1.size()<<endl;
 			lasttime = autopilot_interface.current_messages.global_position_int.time_boot_ms;
 			for (auto &p:ellipse_out1) {
-				if(p.flag == 0)
+				if (p.flag == 0)
 					continue;
+				else {
+					int32_t h = autopilot_interface.current_messages.global_position_int.relative_alt;
+					int32_t h1 = 740;
+					uint16_t hdg = autopilot_interface.current_messages.global_position_int.hdg;
+					float loc_x = autopilot_interface.current_messages.local_position_ned.x;
+					float loc_y = autopilot_interface.current_messages.local_position_ned.y;
 				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
-				float x = (p.x - cx) / fx * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;//单位为：m
-				float y = -(p.y - cy) / fy * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;
+				float x = (p.x - cx) / fx * h1 / 1000;//单位为：m
+				float y = -(p.y - cy) / fy * h1 / 1000;
 				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
-				float x_r = y * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) - x * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);//单位是:m
-				float y_r = x * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) + y * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);
-				float e_x = x_r + autopilot_interface.current_messages.local_position_ned.x;
-				float e_y = y_r + autopilot_interface.current_messages.local_position_ned.y;
-				for(auto i = 0; i < target_ellipse_position.size(); i++){
-					if (abs(e_x - target_ellipse_position[i].x) < 14 && abs(e_y - target_ellipse_position[i].y) < 14)
-						break;
-					else if( i != (target_ellipse_position.size() - 1)){
-						continue;
-					} else{
-						target_ellipse_position.push_back(p);
+				float x_r = y * cos( hdg * 3.1415926 / 180 / 100) - x * sin( hdg * 3.1415926 / 180 / 100);//单位是:m
+				float y_r = x * cos( hdg * 3.1415926 / 180 / 100) + y * sin( hdg * 3.1415926 / 180 / 100);
+				float e_x = x_r + loc_x;
+				float e_y = y_r + loc_y;
+				p.x = x_r;
+				p.y = y_r;
+				if (target_ellipse_position.size() == 0)
+					target_ellipse_position.push_back(p);
+				else {
+					for (auto i = 0; i < target_ellipse_position.size(); i++) {
+						if (abs(p.x - target_ellipse_position[i].x) < 0.1 &&
+							abs(p.y - target_ellipse_position[i].y) < 0.1) {
+							target_ellipse_position[i].flag = p.flag;
+							break;
+						} else if (i != (target_ellipse_position.size() - 1)) {
+							continue;
+						} else {
+							target_ellipse_position.push_back(p);
+						}
 					}
 				}
-				//				cout << "x:" << x << endl
+					cout << "ellipse_x:" << p.x << endl
+					 << "ellipse_y:" << p.y << endl
+					 << "flag:" << p.flag << endl;
+//								cout << "x:" << x << endl
 //					 << "y:" << y << endl
 //					 << "order:" << p.order << endl;
 //				cout << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
@@ -209,7 +228,7 @@ top (int argc, char **argv)
 //				outf << "result_x:" << x_r << endl
 //					 << "result_y:" << y_r << endl
 //					 << "order:" << p.order << endl;
-//				outf << "local_x:" << autopilot_interface.current_messages.local_position_ned.x << endl
+//				cout << "local_x:" << autopilot_interface.current_messages.local_position_ned.x << endl
 //					 << "local_y:" << autopilot_interface.current_messages.local_position_ned.y << endl
 //					 << "local_z:" << autopilot_interface.current_messages.local_position_ned.z << endl;
 //                cout << "target_x:" << autopilot_interface.current_messages.local_position_ned.x + x_r << endl
@@ -218,6 +237,14 @@ top (int argc, char **argv)
 //                outf << "target_x:" << autopilot_interface.current_messages.local_position_ned.x + x_r << endl
 //                     << "target_y:" << autopilot_interface.current_messages.local_position_ned.y + y_r << endl
 //					 << "TorF:" << p.flag << endl;
+			}
+		}
+		cout<<"target_ellipse_size:"<<target_ellipse_position.size()<<endl;
+			for (auto &q:target_ellipse_position) {
+				cout << "flag:" << q.flag << endl
+					 << "x:" << q.x << endl
+					 << "y:" << q.y << endl
+					 << "a" << q.a << endl;
 			}
 			ellipse_out1.clear();
 		}
@@ -563,12 +590,11 @@ void videothread(){
 		cvtColor(image, gray, COLOR_RGB2GRAY);
 
 		vector<Ellipse> ellsYaed;
-		Mat1b gray2 = gray.clone();
 		yaed->Detect(gray, ellsYaed);
 		Mat3b resultImage = image.clone();
 		vector<coordinate> ellipse_out;
 		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellsYaed);
-		Mat gauss, thresh, canny;
+		Mat thresh;
 		vector< vector<Point> > contours;
 		vector< vector<Point> > rects;
 		if(ellipse_out.size() == 0){
@@ -578,26 +604,22 @@ void videothread(){
 		}
 		else {
 			for(auto &p:ellipse_out){
-				cout<<"x:"<<p.x<<endl
-					<<"y:"<<p.y<<endl
-					<<"order:"<<(float)p.order<<endl
-					<<"a:"<<p.a<<endl;
-				cout<<"process"<<endl;
+//				cout<<"x:"<<p.x<<endl
+//					<<"y:"<<p.y<<endl
+//					<<"order:"<<(float)p.order<<endl
+//					<<"a:"<<p.a<<endl;
+//				cout<<"process"<<endl;
 				threshold(gray, thresh, 120, 255, CV_THRESH_BINARY);
-				imshow("threshold", thresh);
-//            morphologyEx(gauss, gauss, MORPH_CLOSE, (5, 5) );
-
-//			Canny(thresh, canny, 50, 150, 3);
+//				imshow("threshold", thresh);
 				findContours(thresh, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 				for (int i = 0; i < contours.size(); i++) {
 					//拟合出轮廓外侧最小的矩形
 					RotatedRect rotate_rect = minAreaRect(contours[i]);
 					Point2f *vertices = new Point2f[4];
 					rotate_rect.points(vertices);
-					if(rotate_rect.size.height < 10 || rotate_rect.size.height > p.a
-                       || abs(rotate_rect.center.x - p.x) > 10 || abs(rotate_rect.center.y - p.y) > 10){
-                        p.flag = 2;
-					    continue;
+					if(rotate_rect.size.height < (0.15 * p.a) || rotate_rect.size.height > ( 0.3 * p.a )
+                       || abs(rotate_rect.center.x - p.x) > (0.172 * p.a) || abs(rotate_rect.center.y - p.y) > ( 0.172 * p.a )){
+						continue;
 					}
 					float x12 = (vertices[1].x + vertices[2].x)/2;
 					float y12 = (vertices[1].y + vertices[2].y)/2;
@@ -621,12 +643,12 @@ void videothread(){
 
 					if(abs((gray.at<uchar>(yt12, xt12) - gray.at<uchar>(yt30, xt30))) < 90
 					   && abs((gray.at<uchar>(yt23, xt23) - gray.at<uchar>(yt01, xt01))) < 90){
-                        cout<<"decide:"<<"T"<<endl;
                         p.flag = 1;
+//						cout<<"flag:"<<p.flag<<endl;
 					}
 					else{
-                        cout<<"decide:"<<"F"<<endl;
                         p.flag = 0;
+//						cout<<"flag:"<<p.flag<<endl;
 					}
 					circle(resultImage, Point(rotate_rect.center.x,rotate_rect.center.y), 2,Scalar(255, 255, 0), 1);
 					vector<Point> contour;
@@ -638,8 +660,8 @@ void videothread(){
 					drawContours(resultImage, contours, 0, Scalar(255, 255, 0), 1);
 				}
 			}
+			ellipse_out1 = ellipse_out;
 		}
-        ellipse_out1 = ellipse_out;
 		namedWindow("Yaed",1);
 		imshow("Yaed", resultImage);
         ellipse_out.clear();
