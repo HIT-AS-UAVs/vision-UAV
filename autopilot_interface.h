@@ -116,12 +116,12 @@
 #define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_FORCE        0b0000111000111111
 #define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_ANGLE    0b0000100111111111
 #define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_RATE     0b0000010111111111
+#define Machine_Num 1
 
 
 // ------------------------------------------------------------------------------
 //   Prototypes
 // ------------------------------------------------------------------------------
-
 
 // helper functions
 uint64_t get_time_usec();
@@ -144,7 +144,8 @@ float D2R(uint16_t ghdg);
 void* start_autopilot_interface_read_thread(void *args);
 void* start_autopilot_interface_write_thread(void *args);
 
-
+void* start_WL_read_thread(void *args);
+void* start_WL_write_thread(void *args);
 // ------------------------------------------------------------------------------
 //   Data Structures
 // ------------------------------------------------------------------------------
@@ -287,19 +288,26 @@ class Autopilot_Interface
 public:
 
     Autopilot_Interface();
-    Autopilot_Interface(Serial_Port *serial_port_);
+    Autopilot_Interface(Serial_Port *serial_port_,Serial_Port *WL_port_);
     ~Autopilot_Interface();
 
     char reading_status;
     char writing_status;
     char control_status;
     uint64_t write_count;
+//    uint8_t Machine_Num ;
+
+    char WL_reading;
+    char WL_writing;
+    uint64_t WL_write_count;
+
 
     int system_id;
     int autopilot_id;
     int companion_id;
 
     Mavlink_Messages current_messages;
+    Mavlink_Messages Inter_message;
     mavlink_set_position_target_local_ned_t initial_position;
     mavlink_set_position_target_global_int_t initial_global_position;
     mavlink_global_position_int_t global_position;
@@ -315,6 +323,9 @@ public:
     void read_messages();
     int  write_message(mavlink_message_t message);
 
+    void WL_read_messages();
+    int  WL_write_message(mavlink_message_t message);
+
     void enable_offboard_control();
     void Set_Mode(unsigned int custom);
     void disable_offboard_control();
@@ -325,17 +336,24 @@ public:
     void start_read_thread();
     void start_write_thread(void);
 
+    void start_WL_read();
+    void start_WL_write(void);
+
     void handle_quit( int sig );
 
 
 private:
 
     Serial_Port *serial_port;
+    Serial_Port *WL_port;
 
     bool time_to_exit;
 
     pthread_t read_tid;
     pthread_t write_tid;
+
+    pthread_t WL_read;
+    pthread_t WL_write;
 
     //mavlink_set_position_target_local_ned_t current_setpoint;
     mavlink_set_position_target_local_ned_t current_local_setpoint;
@@ -343,6 +361,10 @@ private:
 
     void read_thread();
     void write_thread(void);
+
+    void WL_read_thread();
+    void WL_write_thread(void);
+
 
     int toggle_offboard_control( bool flag );
 //	void write_setpoint();

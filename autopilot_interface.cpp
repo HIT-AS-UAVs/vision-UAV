@@ -240,18 +240,30 @@ set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp
 //   Con/De structors
 // ------------------------------------------------------------------------------
 Autopilot_Interface::
-Autopilot_Interface(Serial_Port *serial_port_)
+Autopilot_Interface(Serial_Port *serial_port_, Serial_Port *WL_port_)
 {
 	// initialize attributes
 	write_count = 0;
+	//
+    WL_write_count = 0;
 
+    //飞控连接读写线程标志
 	reading_status = 0;      // whether the read thread is running
 	writing_status = 0;      // whether the write thread is running
-	control_status = 0;      // whether the autopilot is in offboard control mode
-	time_to_exit   = false;  // flag to signal thread exit
+
+	// 机间连接读写线程标志
+    WL_reading = 0;
+    WL_writing = 0;
+
+    control_status = 0;      // whether the autopilot is in offboard control mode
+    time_to_exit   = false;  // flag to signal thread exit
+
 
 	read_tid  = 0; // read thread id
 	write_tid = 0; // write thread id
+
+    WL_read   = 0;  //机间通信read
+    WL_write  = 0;  //机间通信write
 
 	system_id    = 0; // system id
 	autopilot_id = 0; // autopilot component id
@@ -261,6 +273,7 @@ Autopilot_Interface(Serial_Port *serial_port_)
 	current_messages.compid = autopilot_id;
 
 	serial_port = serial_port_; // serial port management object
+    WL_port = WL_port_;
 
 }
 
@@ -283,7 +296,7 @@ update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point
 
 // ------------------------------------------------------------------------------
 //	驱动舵机：<PWM_Value:1100-1900>
-//	ServoId：AUX_OUT1-6 对应148-153
+//	ServoId：AUX_OUT1-6 对应148-153/9-14
 // ------------------------------------------------------------------------------
 int
 Autopilot_Interface::
@@ -582,13 +595,134 @@ int
 Autopilot_Interface::
 write_message(mavlink_message_t message)
 {
-	// do the write
-	int len = serial_port->write_message(message);
-	// book keep
-	write_count++;
-	// Done!
-	return len;
+    // do the write
+    int len = serial_port->write_message(message);
+    // book keep
+    write_count++;
+    // Done!
+    return len;
 }
+
+
+void
+Autopilot_Interface::
+WL_read_messages()
+{
+    bool success;               // receive success flag
+    bool received_all = false;  // receive only one message
+    Time_Stamps this_timestamps;
+    while ( !received_all and !time_to_exit )
+    {
+        mavlink_message_t message;
+        success = WL_port->read_message(message);
+        if ((message.sysid != 0)&&(message.sysid != Machine_Num))
+        {
+			continue;
+        }
+        if(success)
+        {
+            Inter_message.sysid  = message.sysid;
+            Inter_message.compid = message.compid;
+            switch (message.msgid)
+            {
+                case MAVLINK_MSG_ID_HEARTBEAT:
+                {
+                    printf("MAVLINK_MSG_ID_HEARTBEAT\n");
+                    mavlink_msg_heartbeat_decode(&message, &(Inter_message.heartbeat));
+                    Inter_message.time_stamps.heartbeat = get_time_usec();
+                    this_timestamps.heartbeat = Inter_message.time_stamps.heartbeat;
+                    printf("uart2 is succeed!\n");
+                    break;
+                }
+                case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+                {
+                    printf("MAVLINK_MSG_ID_LOCAL_POSITION_NED\n");
+                    mavlink_msg_local_position_ned_decode(&message, &(Inter_message.local_position_ned));
+                    Inter_message.time_stamps.local_position_ned = get_time_usec();
+                    this_timestamps.local_position_ned = Inter_message.time_stamps.local_position_ned;
+                    break;
+                }
+
+                case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+                {
+                    printf("MAVLINK_MSG_ID_GLOBAL_POSITION_INT\n");
+                    mavlink_msg_global_position_int_decode(&message, &(Inter_message.global_position_int));
+//                    std::cout<<"lat:"<<Inter_message.global_position_int.lat<<std::endl;
+                    Inter_message.time_stamps.global_position_int = get_time_usec();
+                    this_timestamps.global_position_int = Inter_message.time_stamps.global_position_int;
+//                    global_position = Inter_message.global_position_int;
+                    break;
+                }
+
+                case MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED:
+                {
+                    printf("MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED\n");
+                    mavlink_msg_position_target_local_ned_decode(&message, &(Inter_message.position_target_local_ned));
+                    Inter_message.time_stamps.position_target_local_ned = get_time_usec();
+                    this_timestamps.position_target_local_ned = Inter_message.time_stamps.position_target_local_ned;
+                    break;
+                }
+
+                case MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT:
+                {
+                    printf("MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT\n");
+                    mavlink_msg_position_target_global_int_decode(&message, &(Inter_message.position_target_global_int));
+                    Inter_message.time_stamps.position_target_global_int = get_time_usec();
+                    this_timestamps.position_target_global_int = Inter_message.time_stamps.position_target_global_int;
+                    break;
+                }
+                case MAVLINK_MSG_ID_MISSION_ACK:
+                {
+                    printf("mavlink id mission_ack!\n");
+                    mavlink_msg_mission_ack_decode(&message,&(Inter_message.mission_ack));
+                    std::cout<<"mission_ack:"<<(float)Inter_message.mission_ack.type<<std::endl;
+                    break;
+                }
+
+                default:
+                {
+                    printf("Warning, did not handle message id %i\n",message.msgid);
+                    break;
+                }
+
+            }
+        }
+		received_all =
+				this_timestamps.heartbeat                  &&
+				//				this_timestamps.battery_status             &&
+				//				this_timestamps.radio_status               &&
+				//				this_timestamps.local_position_ned         &&
+				//				this_timestamps.global_position_int        &&
+				//				this_timestamps.position_target_local_ned  &&
+				//				this_timestamps.position_target_global_int &&
+				//				this_timestamps.highres_imu                &&
+				//				this_timestamps.attitude                   &&
+				this_timestamps.sys_status
+				;
+        if ( WL_writing > false )
+        {
+            usleep(200); // look for components of batches at 5kHz
+        }
+
+    }
+}
+
+
+// ------------------------------------------------------------------------------
+//   WL Write Message
+// ------------------------------------------------------------------------------
+int
+Autopilot_Interface::
+WL_write_message(mavlink_message_t message)
+{
+    // do the write
+    int len = WL_port->write_message(message);
+    // book keep
+    WL_write_count++;
+    // Done!
+    return len;
+}
+
 
 // ------------------------------------------------------------------------------
 //   Write Setpoint Message
@@ -761,7 +895,6 @@ int
 Autopilot_Interface::
 toggle_offboard_control( bool flag )
 {
-    // Prepare command for off-board mode
     //////////////////////自稳模式
     mavlink_set_mode_t com = { 0 };
     com.base_mode = 1;
@@ -841,6 +974,7 @@ toggle_offboard_control( bool flag )
         printf("Start Mission!\n");
     }
 
+//    mavlink_command_long_t miss = {0};
     // Done!
 
     return len;
@@ -854,6 +988,7 @@ void Autopilot_Interface::
 start()
 {
 	int result;
+	int WL_result;
 
 	// --------------------------------------------------------------------------
 	//   CHECK SERIAL PORT
@@ -861,10 +996,15 @@ start()
 
 	if ( serial_port->status != 1 ) // SERIAL_PORT_OPEN
 	{
-		fprintf(stderr,"ERROR: serial port not open\n");
-		throw 1;
+        fprintf(stderr,"ERROR: serial port not open\n");
+        throw 1;
 	}
 
+	if (WL_port->status != 1)
+    {
+        fprintf(stderr,"ERROR: serial port not open\n");
+        throw 1;
+    }
 
 	// --------------------------------------------------------------------------
 	//   READ THREAD
@@ -873,7 +1013,10 @@ start()
 	printf("START READ THREAD \n");
 
 	result = pthread_create( &read_tid, NULL, &start_autopilot_interface_read_thread, this );
+    WL_result = pthread_create(&WL_read,NULL,&start_WL_read_thread,this);
+
 	if ( result ) throw result;
+	if (WL_result) throw WL_result;
 
 	// now we're reading messages
 	printf("\n");
@@ -969,6 +1112,7 @@ start()
 	printf("START WRITE THREAD \n");
 
 	result = pthread_create( &write_tid, NULL, &start_autopilot_interface_write_thread, this );
+    WL_result = pthread_create( &WL_write, NULL, &start_WL_write_thread, this );
 	if ( result ) throw result;
 
 	// wait for it to be started
@@ -1004,6 +1148,9 @@ stop()
 	pthread_join(read_tid ,NULL);
 	pthread_join(write_tid,NULL);
 
+    pthread_join(WL_read ,NULL);
+    pthread_join(WL_write,NULL);
+
 	// now the read and write threads are closed
 	printf("\n");
 
@@ -1018,7 +1165,7 @@ Autopilot_Interface::
 start_read_thread()
 {
 
-	if ( reading_status != 0 )
+	if ( reading_status!= 0 )
 	{
 		fprintf(stderr,"read thread already running\n");
 		return;
@@ -1026,11 +1173,30 @@ start_read_thread()
 	else
 	{
 		read_thread();
+
 		return;
 	}
 
 }
 
+void
+Autopilot_Interface::
+start_WL_read()
+{
+
+	if ( WL_reading!= 0 )
+	{
+		fprintf(stderr,"WL read thread already running\n");
+		return;
+	}
+	else
+	{
+		WL_read_thread();
+
+		return;
+	}
+
+}
 
 // ------------------------------------------------------------------------------
 //   Write Thread
@@ -1039,7 +1205,7 @@ void
 Autopilot_Interface::
 start_write_thread(void)
 {
-	if ( not writing_status == false )
+	if ( writing_status != 0 )
 	{
 		fprintf(stderr,"write thread already running\n");
 		return;
@@ -1048,6 +1214,24 @@ start_write_thread(void)
 	else
 	{
 		write_thread();
+		return;
+	}
+
+}
+
+void
+Autopilot_Interface::
+start_WL_write(void)
+{
+	if ( WL_writing != 0 )
+	{
+		fprintf(stderr,"WL write thread already running\n");
+		return;
+	}
+
+	else
+	{
+		WL_write_thread();
 		return;
 	}
 
@@ -1107,21 +1291,6 @@ write_thread(void)
 	// signal startup
 	writing_status = 2;
 
-	// prepare an initial setpoint, just stay put
-	mavlink_set_position_target_local_ned_t sp;
-//	sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY &
-//				   MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE;
-//	sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-//	sp.vx       = 0.0;
-//	sp.vy       = 0.0;
-//	sp.vz       = 0.0;
-//	sp.yaw_rate = 0.0;
-//
-	// set position target
-//	current_setpoint = sp;
-
-	// write a message and signal writing
-//	write_setpoint();
 	writing_status = true;
 
 	// Pixhawk needs to see off-board commands at minimum 2Hz,
@@ -1129,7 +1298,6 @@ write_thread(void)
 	while ( !time_to_exit )
 	{
 		usleep(250000);   // Stream at 4Hz
-//		write_setpoint();
 	}
 
 	// signal end
@@ -1138,6 +1306,55 @@ write_thread(void)
 	return;
 
 }
+
+
+
+// ------------------------------------------------------------------------------
+//  WL Read Thread
+// ------------------------------------------------------------------------------
+void
+Autopilot_Interface::
+WL_read_thread()
+{
+    WL_reading = true;
+
+    while ( ! time_to_exit )
+    {
+        WL_read_messages();
+        usleep(1000); // Read batches at 10Hz
+    }
+
+    WL_reading = false;
+
+    return;
+}
+
+
+// ------------------------------------------------------------------------------
+//  WL Write Thread
+// ------------------------------------------------------------------------------
+void
+Autopilot_Interface::
+WL_write_thread()
+{
+    // signal startup
+
+    WL_writing = true;
+
+    while ( !time_to_exit )
+    {
+        usleep(250000);   // Stream at 4Hz
+//		write_setpoint();
+    }
+
+    // signal end
+    WL_writing = false;
+
+    return;
+
+}
+
+
 
 // End Autopilot_Interface
 
@@ -1160,6 +1377,15 @@ start_autopilot_interface_read_thread(void *args)
 }
 
 void*
+start_WL_read_thread(void *args)
+{
+	Autopilot_Interface *autopilot_interface = (Autopilot_Interface *)args;
+
+	autopilot_interface->start_WL_read();
+}
+
+
+void*
 start_autopilot_interface_write_thread(void *args)
 {
 	// takes an autopilot object argument
@@ -1171,6 +1397,15 @@ start_autopilot_interface_write_thread(void *args)
 	// done!
 	return NULL;
 }
+void*
+start_WL_write_thread(void *args)
+{
+	Autopilot_Interface *autopilot_interface = (Autopilot_Interface *)args;
 
+	// run the object's read thread
+	autopilot_interface->start_WL_write();
 
+	// done!
+	return NULL;
+}
 

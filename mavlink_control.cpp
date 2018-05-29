@@ -81,11 +81,13 @@ top (int argc, char **argv)
 	char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
 	char *uart_name = (char*)"/dev/ttyUSB0";
+	char *WL_uart = (char*)"/dev/ttyUSB1";
 #endif
 	int baudrate = 57600;
 
 	// do the parse, will throw an int if it fails
 	parse_commandline(argc, argv, uart_name, baudrate);
+    parse_commandline(argc, argv, WL_uart, baudrate);
 
 
 	// --------------------------------------------------------------------------
@@ -103,6 +105,7 @@ top (int argc, char **argv)
 	 *
 	 */
 	Serial_Port serial_port(uart_name, baudrate);
+	Serial_Port WL_serial_port(WL_uart,baudrate);
 
 
 	/*
@@ -120,7 +123,7 @@ top (int argc, char **argv)
 	 * otherwise the vehicle will go into failsafe.
 	 *
 	 */
-	Autopilot_Interface autopilot_interface(&serial_port);
+	Autopilot_Interface autopilot_interface(&serial_port,&WL_serial_port);
 
 	/*
 	 * Setup interrupt signal handler
@@ -140,8 +143,11 @@ top (int argc, char **argv)
 	 */
 
 //视觉定位线程
-    //thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
+    thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
+
+
 	serial_port.start();
+    WL_serial_port.start();
 	autopilot_interface.start();
 
 	// --------------------------------------------------------------------------
@@ -153,6 +159,7 @@ top (int argc, char **argv)
 	 */
 
    commands(autopilot_interface);
+//    commands(autopilot_interface,WL_serial_port);
 
 	// --------------------------------------------------------------------------
 	//   THREAD and PORT SHUTDOWN
@@ -160,58 +167,58 @@ top (int argc, char **argv)
 	ofstream outf;
 	outf.open("location.txt");
 	static uint32_t lasttime;
-	/*while (1) {
-
-		/*判断是否读入GPS信号*/
-		/*if(autopilot_interface.current_messages.global_position_int.time_boot_ms == lasttime){
-			continue;
-//			break;
-		}
-		else {
-			lasttime = autopilot_interface.current_messages.global_position_int.time_boot_ms;
-			for (auto &p:ellipse_out1) {
-
-				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
-				float x = (p.x - cx) / fx * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;//单位为：m
-				float y = -(p.y - cy) / fy * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;
-				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
-				float x_r = y * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) - x * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);//单位是:m
-				float y_r = x * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) + y * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);
-				cout << "x:" << x << endl
-					 << "y:" << y << endl
-					 << "order:" << p.order << endl;
-				cout << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
-					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
-					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
-					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
-					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
-				outf << "x:" << x << endl
-					 << "y:" << y << endl
-					 << "order:" << p.order << endl;
-				outf << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
-					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
-					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
-					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
-					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
-				cout << "result_x:" << x_r << endl
-					 << "result_y:" << y_r << endl
-					 << "order:" << p.order << endl;
-				outf << "result_x:" << x_r << endl
-					 << "result_y:" << y_r << endl
-					 << "order:" << p.order << endl;
-				outf << "local_x:" << autopilot_interface.current_messages.local_position_ned.x << endl
-					 << "local_y:" << autopilot_interface.current_messages.local_position_ned.y << endl
-					 << "local_z:" << autopilot_interface.current_messages.local_position_ned.z << endl;
-			}
-			ellipse_out1.clear();
-		}
-	}; */
+//	while (1) {
+//
+//		/*判断是否读入GPS信号*/
+//		if(autopilot_interface.current_messages.global_position_int.time_boot_ms == lasttime){
+//			continue;
+////			break;
+//		}
+//		else {
+//			lasttime = autopilot_interface.current_messages.global_position_int.time_boot_ms;
+//			for (auto &p:ellipse_out1) {
+//
+//				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
+//				float x = (p.x - cx) / fx * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;//单位为：m
+//				float y = -(p.y - cy) / fy * autopilot_interface.current_messages.global_position_int.relative_alt / 1000;
+//				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
+//				float x_r = y * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) - x * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);//单位是:m
+//				float y_r = x * cos(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100) + y * sin(autopilot_interface.current_messages.global_position_int.hdg * 3.1415926 / 180 / 100);
+//				cout << "x:" << x << endl
+//					 << "y:" << y << endl
+//					 << "order:" << p.order << endl;
+//				cout << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
+//					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
+//					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
+//					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
+//					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
+//				outf << "x:" << x << endl
+//					 << "y:" << y << endl
+//					 << "order:" << p.order << endl;
+//				outf << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
+//					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
+//					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
+//					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
+//					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
+//				cout << "result_x:" << x_r << endl
+//					 << "result_y:" << y_r << endl
+//					 << "order:" << p.order << endl;
+//				outf << "result_x:" << x_r << endl
+//					 << "result_y:" << y_r << endl
+//					 << "order:" << p.order << endl;
+//				outf << "local_x:" << autopilot_interface.current_messages.local_position_ned.x << endl
+//					 << "local_y:" << autopilot_interface.current_messages.local_position_ned.y << endl
+//					 << "local_z:" << autopilot_interface.current_messages.local_position_ned.z << endl;
+//			}
+//			ellipse_out1.clear();
+//		}
+//	};
 	/*
 	 * Now that we are done we can stop the threads and close the port
 	 */
 	autopilot_interface.stop();
 	serial_port.stop();
-	//t1.join();
+	t1.join();
 
 	// --------------------------------------------------------------------------
 	//   DONE
@@ -229,13 +236,15 @@ top (int argc, char **argv)
 
 void
 commands(Autopilot_Interface &api)
+//commands(Autopilot_Interface &api,Serial_Port &WL_serial_port)
 {
     // 设置变量，用于返回相应切换点
     mavlink_global_position_int_t gp;
-    mavlink_global_position_int_t flagPoint;
-    flagPoint.lat = 411198976;
-    flagPoint.lon = 1230987852;
-    flagPoint.relative_alt = 20;
+//    mavlink_global_position_int_t flagPoint;
+//    flagPoint.lat = 411198976;
+//    flagPoint.lon = 1230987852;
+//    flagPoint.relative_alt = 20;
+    //target = [];
     bool flag = true;
     bool goback = true;
 
@@ -245,7 +254,7 @@ commands(Autopilot_Interface &api)
     // --------------------------------------------------------------------------
 
     api.enable_offboard_control();
-    usleep(100); // give some time to let it sink in
+    usleep(100);
 
     // --------------------------------------------------------------------------
     //   SEND OFFBOARD COMMANDS
@@ -260,7 +269,8 @@ commands(Autopilot_Interface &api)
 //			break;
 //		}
 //设置触发节点
-        if (Distance(gp.lat,gp.lon,gp.relative_alt,gp.lat,gp.lon,gp.relative_alt) <  2)
+        if (ellipse_out1.size() != 0)
+//        if (Distance(gp.lat,gp.lon,gp.relative_alt,gp.lat,gp.lon,gp.relative_alt) <  2)
         {
             // --------------------------------------------------------------------------
             // 设置guided模式
@@ -276,48 +286,41 @@ commands(Autopilot_Interface &api)
             mavlink_set_position_target_local_ned_t sp;
             mavlink_local_position_ned_t locsp = api.local_position;
             sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-            // -------------------------------------------------------------------------
-            // 设置位置，速度，加速度三选一
-            // -------------------------------------------------------------------------
-
-//	    set_velocity(  -1.0       , // [m/s]
-//				       -1.0       , // [m/s]
-//				        0.0       , // [m/s]
-//				      sp        );
-
-            set_position(  locsp.x + 10, // [m]
-                           locsp.y + 5, // [m]
-                           locsp.z - 10, // [m]
-                           sp);
-
-            // Example 1.2 - Append Yaw Command
-            float yaw = D2R(gp.hdg);
-            set_yaw( yaw, // [rad]
-                     sp     );
-
-            // SEND THE COMMAND
-            api.update_local_setpoint(sp);
+			float yaw = D2R(gp.hdg);
 
             while(1)
             {
                 mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
+
+				// -------------------------------------------------------------------------
+				// 							设置位置
+				// -------------------------------------------------------------------------
+                set_position(  locsp.x + 10, // [m]
+							   locsp.y + 5, // [m]
+							   locsp.z - 10, // [m]
+							   sp);
+
+				set_yaw( yaw, // [rad]
+						 sp     );
+
+				// SEND THE COMMAND
+				api.update_local_setpoint(sp);
+
                 float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
                 if(distance < 2)
                 {
                     goback = false;
-                    usleep(200);
+                    usleep(100);
 					// ------------------------------------------------------------------------------
 					//	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
-					//	ServoId：AUX_OUT1-6 对应148-153
+					//	ServoId：AUX_OUT1-6 对应148-153/9-14
 					// ------------------------------------------------------------------------------
-                    api.Servo_Control(149,1250);
+                    api.Servo_Control(10,1250);
                     break;
                 }
                 else
                 {
                     sleep(1);
-//					goback = false;
-//					break;
                 }
             }
             printf("\n");
@@ -336,8 +339,8 @@ commands(Autopilot_Interface &api)
                 global_int_pos.vx = ggsp.vx;
                 global_int_pos.vy = ggsp.vy;
                 global_int_pos.vz = ggsp.vz;
-//				float gyaw = D2R(ggsp.hdg);
-//				global_int_pos.yaw = gyaw;
+				float gyaw = D2R(ggsp.hdg);
+				global_int_pos.yaw = gyaw;
                 gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
                 gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
                 int32_t High = 20;
@@ -365,14 +368,14 @@ commands(Autopilot_Interface &api)
                         sleep(1);
                     }
                 }
-
+			//当i=3大循环break
                 break;
             }
 
         }
         else
         {
-            usleep(10000);
+            usleep(100000);
         }
 
         printf("\n");
@@ -655,8 +658,9 @@ void videothread(){
 int
 main(int argc, char **argv)
 {
-	// This program uses throw, wrap one big try/catch here
-	try
+
+    // This program uses throw, wrap one big try/catch here
+    try
 	{
 		int result = top(argc,argv);
 		return result;
