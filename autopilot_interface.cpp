@@ -928,10 +928,11 @@ toggle_offboard_control( bool flag )
     comdata.target_component = 1;
     mavlink_message_t Rmassage;
     mavlink_msg_request_data_stream_encode(255,190,&Rmassage,&comdata);
+	int Rlen;
     //重复发送确保指令收到
     for (int i = 0; i < 3; ++i)
     {
-        int Rlen = serial_port->write_message(Rmassage);
+    	Rlen = serial_port->write_message(Rmassage);
         usleep(100);
     }
     usleep(20000);
@@ -974,7 +975,6 @@ toggle_offboard_control( bool flag )
         printf("Start Mission!\n");
     }
 
-//    mavlink_command_long_t miss = {0};
     // Done!
 
     return len;
@@ -1165,7 +1165,7 @@ Autopilot_Interface::
 start_read_thread()
 {
 
-	if ( reading_status!= 0 )
+	if ( reading_status != 0 )
 	{
 		fprintf(stderr,"read thread already running\n");
 		return;
@@ -1197,6 +1197,7 @@ start_WL_read()
 	}
 
 }
+
 
 // ------------------------------------------------------------------------------
 //   Write Thread

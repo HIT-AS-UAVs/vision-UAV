@@ -59,6 +59,8 @@ typedef struct _coordinate{
     float_t x;
     float_t y;
     int order;
+    float a;
+    int flag;//0为F，1为T，2为不确定
 }coordinate;
 /////////////GPS经纬度类型
 typedef struct _loc{

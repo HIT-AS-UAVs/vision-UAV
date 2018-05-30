@@ -1914,7 +1914,7 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 	float score = 0.80;
 	int n = ellipses.size();
 	for (int i = 0; i < n; i++) {
-		Ellipse &e_n = ellipses[i];
+		Ellipse& e_n = ellipses[i];
 		if (e_n._score > score) {
 			e1.push_back(e_n);
 		} else
@@ -1963,6 +1963,8 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 		e_c.x = e._xc;
 		e_c.y = e._yc;
 		e_c.order = j;
+		e_c.a = e._a;
+		e_c.flag = 2;
 		ellipse_out.push_back(e_c);
 	}
 

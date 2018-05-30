@@ -665,6 +665,8 @@ cv.h
 -
 ellipse/EllipseDetectorYaed.h
 /home/hitlb/HITLB/vision-UAV/ellipse/EllipseDetectorYaed.h
+autopilot_interface.h
+/home/hitlb/HITLB/vision-UAV/autopilot_interface.h
 thread
 -
 fstream
