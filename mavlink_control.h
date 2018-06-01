@@ -63,7 +63,6 @@
 #include <signal.h>
 #include <time.h>
 #include <sys/time.h>
-
 using std::string;
 using namespace std;
 
@@ -74,7 +73,8 @@ using namespace std;
 #include "ellipse/EllipseDetectorYaed.h"
 
 extern vector<loc_t> target_gps_position;
-extern vector<coordinate> ellipse_out1, target_ellipse_position;
+extern vector<coordinate> ellipse_out1;
+extern vector<target> target_ellipse_position;
 // ------------------------------------------------------------------------------
 //   Prototypes
 // ------------------------------------------------------------------------------
