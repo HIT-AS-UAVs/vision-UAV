@@ -25,6 +25,8 @@ fstream
 -
 mavlink/common/mavlink.h
 /home/zxy/c_uart_interface_example/mavlink/common/mavlink.h
+ellipse/EllipseDetectorYaed.h
+/home/zxy/c_uart_interface_example/ellipse/EllipseDetectorYaed.h
 
 /home/zxy/c_uart_interface_example/ellipse/EllipseDetectorYaed.cpp
 EllipseDetectorYaed.h
