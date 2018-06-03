@@ -63,7 +63,6 @@
 using namespace cv;
 using namespace std;
 
-vector<loc_t> target_gps_position;//全局变量——圆心目标的坐标
 vector<coordinate> ellipse_out1;
 vector<target> target_ellipse_position;
 // ------------------------------------------------------------------------------
@@ -472,10 +471,10 @@ quit_handler( int sig )
 void videothread(){
 
     float areanum = 0.215;
-	VideoCapture cap(1);
+	VideoCapture cap(0);
 	if(!cap.isOpened()) return;
-    int width = 1280;
-    int height = 720;
+    int width = 640;
+    int height = 480;
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
 	cap.set(CAP_PROP_AUTOFOCUS,0);
@@ -523,17 +522,18 @@ void videothread(){
 		cap >> image;
 		cvtColor(image, gray, COLOR_RGB2GRAY);
 
-		vector<Ellipse> ellsYaed;
+		vector<Ellipse> ellsYaed, ellipse_in;
 		yaed->Detect(gray, ellsYaed);
 		Mat3b resultImage = image.clone();
 		vector<coordinate> ellipse_out, ellipse_TF;
-		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellsYaed);
+		yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
+		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);//绘制检测到的椭圆
 		vector< vector<Point> > contours;
 		if(ellipse_out.size() == 0){
             ellipse_out1 = ellipse_out;
 		}
 		else
-			visual_rec(gray, ellipse_out, ellipse_TF, contours);
+			visual_rec(gray, ellipse_out, ellipse_TF, contours);//T和F的检测程序
 
 //		for(auto &p:ellipse_TF){
 //			cout<<"x:"<<p.x<<endl
