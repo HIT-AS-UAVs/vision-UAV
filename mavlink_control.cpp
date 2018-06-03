@@ -56,6 +56,7 @@
 #include "mavlink_control.h"
 #include <cv.h>
 #include "ellipse/EllipseDetectorYaed.h"
+#include "autopilot_interface.h"
 #include <thread>//多线程
 #include <fstream>
 #include <cmath>
@@ -134,6 +135,7 @@ top (int argc, char **argv)
 	 *
 	 */
 	serial_port_quit         = &serial_port;
+    serial_port_quit         = &WL_serial_port;
 	autopilot_interface_quit = &autopilot_interface;
 	signal(SIGINT,quit_handler);
 
@@ -143,7 +145,6 @@ top (int argc, char **argv)
 	 */
 
 //视觉定位线程
-    thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
     thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
 
 
@@ -285,10 +286,12 @@ commands(Autopilot_Interface &api)
 //    mavlink_global_position_int_t flagPoint;
 //    flagPoint.lat = 411198976;
 //    flagPoint.lon = 1230987852;
-//    flagPoint.relative_alt = 20;
+//    flagPoint.relative_alt = 20000;
     //target = [];
     bool flag = true;
     bool goback = true;
+    int TargetNum = 0;
+    int TNum = 0;
 
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
@@ -306,13 +309,9 @@ commands(Autopilot_Interface &api)
     while(flag)
     {
         gp = api.global_position;
-//		if (flag == false)
-//		{
-//			break;
-//		}
+
 //设置触发节点
-        if (ellipse_out1.size() != 0)
-//        if (Distance(gp.lat,gp.lon,gp.relative_alt,gp.lat,gp.lon,gp.relative_alt) <  2)
+        if (target_ellipse_position.size() > TargetNum)
         {
             // --------------------------------------------------------------------------
             // 设置guided模式
@@ -321,50 +320,97 @@ commands(Autopilot_Interface &api)
             usleep(100);
             api.Set_Mode(04);
             usleep(100);
-            // now the autopilot is accepting setpoint commands
-            // --------------------------------------------------------------------------
-            // 给定局部坐标(local_ned)位置，并执行
-            // --------------------------------------------------------------------------
-            mavlink_set_position_target_local_ned_t sp;
-            mavlink_local_position_ned_t locsp = api.local_position;
-            sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-			float yaw = D2R(gp.hdg);
-
-            while(1)
+            while(goback)
             {
-                mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
+                // --------------------------------------------------------------------------
+                // 给定局部坐标(local_ned)位置，并执行
+                // --------------------------------------------------------------------------
+                mavlink_set_position_target_local_ned_t sp;
+                mavlink_local_position_ned_t locsp = api.local_position;
+                sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+                float yaw = D2R(gp.hdg);
 
-				// -------------------------------------------------------------------------
-				// 							设置位置
-				// -------------------------------------------------------------------------
-                set_position(  locsp.x + 10, // [m]
-							   locsp.y + 5, // [m]
-							   locsp.z - 10, // [m]
-							   sp);
-
-				set_yaw( yaw, // [rad]
-						 sp     );
-
-				// SEND THE COMMAND
-				api.update_local_setpoint(sp);
-
-                float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
-                if(distance < 2)
+                while(1)
                 {
-                    goback = false;
-                    usleep(100);
-					// ------------------------------------------------------------------------------
-					//	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
-					//	ServoId：AUX_OUT1-6 对应148-153/9-14
-					// ------------------------------------------------------------------------------
-                    api.Servo_Control(10,1250);
+                    mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
+
+                    // -------------------------------------------------------------------------
+                    // 							设置位置
+                    // -------------------------------------------------------------------------
+//                    set_position(  locsp.x + 10, // [m]
+//                                   locsp.y + 5, // [m]
+//                                   locsp.z - 10, // [m]
+//                                   sp);
+                    set_position(  target_ellipse_position[TargetNum].x, // [m]
+                                   target_ellipse_position[TargetNum].y, // [m]
+                                   locsp.z, // [m]
+                                   sp);
+
+                    set_yaw( yaw, // [rad]
+                             sp     );
+
+                    // SEND THE COMMAND
+                    api.update_local_setpoint(sp);
+
+                    float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
+                    if(distance < 5)
+                    {
+//                        goback = false;
+                        bool TF;
+                        // ------------------------------------------------------------------------------
+                        //     调用判断T/F的函数
+                        //     若为T则将当前全局坐标系发送给从机[TagetNum]
+                        // ------------------------------------------------------------------------------
+//                        TF = visual_rec(ellipse_out1)
+                        sleep(1);
+                        if (TF == true)
+                        {
+                            mavlink_global_position_int_t Target_Global_Position;
+                            int Globallen = api.Send_WL_Global_Position(TNum,Target_Global_Position);
+                            if(Globallen ==0)
+                            {
+                                Globallen = api.Send_WL_Global_Position(TNum,Target_Global_Position);
+                            }
+                            else {
+
+                                printf("send wl message succeed!");
+                            }
+
+                            // ------------------------------------------------------------------------------
+                            //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
+                            //	ServoId：AUX_OUT1-6 对应148-153/9-14
+                            // ------------------------------------------------------------------------------
+                            api.Servo_Control(10,1700);
+                            TNum = TNum + 1;
+                            TargetNum = TargetNum + 1;
+                        }
+                        else
+                        {
+                            TargetNum = TargetNum + 1;
+                        }
+
+                        break;
+                    }
+                    else
+                    {
+                        sleep(1);
+                    }
+                }
+                if(TNum == 3)
+                {
+                    flag = false;
                     break;
                 }
                 else
                 {
-                    sleep(1);
+                    if (target_ellipse_position.size() == TargetNum)
+                    {
+                        goback = false;
+                    }
                 }
+
             }
+
             printf("\n");
 
             if(goback == false)
@@ -374,7 +420,7 @@ commands(Autopilot_Interface &api)
                 // -------------------------------------------------------------------------
                 mavlink_set_position_target_global_int_t gsp;
                 mavlink_global_position_int_t ggsp = gp; //api.global_position;
-                mavlink_set_position_target_global_int_t global_int_pos = api.initial_global_position;
+                mavlink_set_position_target_global_int_t global_int_pos;
                 global_int_pos.lat_int = ggsp.lat;
                 global_int_pos.lon_int = ggsp.lon;
                 global_int_pos.alt = ggsp.alt;
@@ -385,6 +431,10 @@ commands(Autopilot_Interface &api)
 				global_int_pos.yaw = gyaw;
                 gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
                 gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
+
+                // ------------------------------------------------------------------------
+                //			配置设定巡视高度
+                // ------------------------------------------------------------------------
                 int32_t High = 20;
                 //set global_point 经度，纬度，相对home高度
                 set_global_position(global_int_pos.lat_int,
@@ -402,22 +452,46 @@ commands(Autopilot_Interface &api)
                     if(distan < 2)
                     {
                         usleep(200);
+                        goback = true;
                         api.Set_Mode(03);
                         break;
                     }
                     else
                     {
-                        sleep(1);
+                        usleep(200000);
                     }
                 }
 			//当i=3大循环break
-                break;
+//                break;
             }
 
         }
         else
         {
             usleep(100000);
+			if(TNum == 3)
+			{
+				flag = false;
+			}
+			if(api.current_messages.mission_item_reached.seq == 8)
+            {
+                if(TNum == 1)
+                {
+                    //将F中识别出来的T概率最高的点发送给从机[TNum+1]
+                    ;
+                    //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+                    ;
+                }
+                else if(TNum == 2)
+                {
+                    //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+                    ;
+                }
+                else
+                {
+                    flag = false;
+                }
+            }
         }
 
         printf("\n");

@@ -75,6 +75,8 @@ float Distance(float x,float y,float z,float x1,float y1,float z1)
         x1 = x1*18.5/1000;
         y = y*14/1000;
         y1 = y1*14/1000;
+        z = z/1000.0;
+        z1 = z1/1000.0;
     }
     float Distance = fabsf(x - x1)+fabsf(y - y1)+fabsf(z - z1);
     return Distance ;
@@ -552,10 +554,18 @@ read_messages()
                     std::cout<<"mission_ack:"<<(float)current_messages.mission_ack.type<<std::endl;
                     break;
                 }
+                case MAVLINK_MSG_ID_MISSION_ITEM_REACHED
+                {
+                    printf("mavlink id mission_item_reached!");
+                    mavlink_msg_mission_item_reached_decode(&message,&(current_messages.mission_item_reached));
+                    std::cout<<"mission_item_reached seq :"<<current_messages.mission_item_reached.seq<<std::endl;
+                    break;
+                }
+
 
 				default:
 				{
-					 printf("Warning, did not handle message id %i\n",message.msgid);
+					printf("Warning, did not handle message id %i\n",message.msgid);
 					break;
 				}
 
@@ -579,7 +589,7 @@ read_messages()
 				;
 
 		// give the write thread time to use the port
-		if ( writing_status > false ) {
+		if ( writing_status != false ) {
 			usleep(100); // look for components of batches at 10kHz
 		}
 
@@ -617,7 +627,7 @@ WL_read_messages()
         success = WL_port->read_message(message);
         if ((message.sysid != 0)&&(message.sysid != Machine_Num))
         {
-			continue;
+            break;
         }
         if(success)
         {
@@ -699,14 +709,13 @@ WL_read_messages()
 				//				this_timestamps.attitude                   &&
 				this_timestamps.sys_status
 				;
-        if ( WL_writing > false )
+        if ( WL_writing != false )
         {
-            usleep(200); // look for components of batches at 5kHz
+            usleep(100); // look for components of batches at 5kHz
         }
 
     }
 }
-
 
 // ------------------------------------------------------------------------------
 //   WL Write Message
@@ -722,7 +731,15 @@ WL_write_message(mavlink_message_t message)
     // Done!
     return len;
 }
-
+int
+Autopilot_Interface::
+Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target_Global_Position)
+{
+    mavlink_message_t Global_messgge;
+    mavlink_msg_global_position_int_encode(Target_machine,Target_machine,&Global_messgge,&Target_Global_Position);
+    int Glolen = WL_write_message(Global_messgge);
+    return Glolen;
+}
 
 // ------------------------------------------------------------------------------
 //   Write Setpoint Message
@@ -952,6 +969,7 @@ toggle_offboard_control( bool flag )
     //设置成AUTO模式，开始mission
     Set_Mode(03);
     sleep(1);
+    Set_Mode(03);
 
     //////////////////////////////////开始misiion
     mavlink_command_long_t mission_start = { 0 };
@@ -1114,6 +1132,7 @@ start()
 	result = pthread_create( &write_tid, NULL, &start_autopilot_interface_write_thread, this );
     WL_result = pthread_create( &WL_write, NULL, &start_WL_write_thread, this );
 	if ( result ) throw result;
+    if ( WL_result ) throw WL_result;
 
 	// wait for it to be started
 	while ( not writing_status )
@@ -1290,7 +1309,7 @@ Autopilot_Interface::
 write_thread(void)
 {
 	// signal startup
-	writing_status = 2;
+//	writing_status = 2;
 
 	writing_status = true;
 

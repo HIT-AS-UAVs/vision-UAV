@@ -261,6 +261,7 @@ struct Mavlink_Messages {
 
     mavlink_mission_count_t mission_count;
     mavlink_mission_ack_t mission_ack;
+    mavlink_mission_item_reached_t mission_item_reached;
 
     // System Parameters?
 
@@ -325,6 +326,7 @@ public:
 
     void WL_read_messages();
     int  WL_write_message(mavlink_message_t message);
+    int  Send_WL_Global_Position(int Target_machine,mavlink_global_position_int_t Target_Global_Position);
 
     void enable_offboard_control();
     void Set_Mode(unsigned int custom);
