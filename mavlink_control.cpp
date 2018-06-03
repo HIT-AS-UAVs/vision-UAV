@@ -64,8 +64,8 @@
 using namespace cv;
 using namespace std;
 
-vector<loc_t> target_gps_position;//全局变量——圆心目标的坐标
-vector<coordinate> ellipse_out1, target_ellipse_position;
+vector<coordinate> ellipse_out1;
+vector<target> target_ellipse_position;
 // ------------------------------------------------------------------------------
 //   TOP
 // ------------------------------------------------------------------------------
@@ -167,97 +167,27 @@ top (int argc, char **argv)
 	// --------------------------------------------------------------------------
 	ofstream outf;
 	outf.open("target.txt");
-	static uint32_t lasttime;
-	while (1) {
-
-		//判断是否读入GPS信号
-		if(autopilot_interface.current_messages.global_position_int.time_boot_ms == lasttime){
-			continue;
+	bool finish = false;
+	while (!finish ) {
+        cout<<"ellipse_out1.size = "<<ellipse_out1.size()<<endl;
+//        for (int i = 0; i < ellipse_out1.size(); ++i) {
+//            cout<<"i = "<<i<<endl
+//				<<"x = "<<ellipse_out1[i].x<<endl
+//                <<"y = "<<ellipse_out1[i].y<<endl
+//                <<"a = "<<ellipse_out1[i].a<<endl
+//                <<"flag = "<<ellipse_out1[i].flag<<endl;
+//        }
+	    possible_ellipse(autopilot_interface, ellipse_out1, target_ellipse_position);
+		cout<<"target_ellipse.size = "<<target_ellipse_position.size()<<endl;
+		for (int i = 0; i < target_ellipse_position.size(); ++i) {
+			cout<<"x = "<<target_ellipse_position[i].x<<endl
+				<<"y = "<<target_ellipse_position[i].y<<endl
+				<<"T = "<<target_ellipse_position[i].T_N<<endl
+				<<"F = "<<target_ellipse_position[i].F_N<<endl
+				<<"flag = "<<target_ellipse_position[i].possbile<<endl;
 		}
-		else {
-			cout<<"ellipse_out_size"<<ellipse_out1.size()<<endl;
-			lasttime = autopilot_interface.current_messages.global_position_int.time_boot_ms;
-			for (auto &p:ellipse_out1) {
-				if (p.flag == 0)
-					continue;
-				else {
-					int32_t h = autopilot_interface.current_messages.global_position_int.relative_alt;
-					int32_t h1 = 740;
-					uint16_t hdg = autopilot_interface.current_messages.global_position_int.hdg;
-					float loc_x = autopilot_interface.current_messages.local_position_ned.x;
-					float loc_y = autopilot_interface.current_messages.local_position_ned.y;
-				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
-				float x = (p.x - cx) / fx * h1 / 1000;//单位为：m
-				float y = -(p.y - cy) / fy * h1 / 1000;
-				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
-				float x_r = y * cos( hdg * 3.1415926 / 180 / 100) - x * sin( hdg * 3.1415926 / 180 / 100);//单位是:m
-				float y_r = x * cos( hdg * 3.1415926 / 180 / 100) + y * sin( hdg * 3.1415926 / 180 / 100);
-				float e_x = x_r + loc_x;
-				float e_y = y_r + loc_y;
-				p.x = x_r;
-				p.y = y_r;
-				if (target_ellipse_position.size() == 0)
-					target_ellipse_position.push_back(p);
-				else {
-					for (auto i = 0; i < target_ellipse_position.size(); i++) {
-						if (abs(p.x - target_ellipse_position[i].x) < 0.1 &&
-							abs(p.y - target_ellipse_position[i].y) < 0.1) {
-							target_ellipse_position[i].flag = p.flag;
-							break;
-						} else if (i != (target_ellipse_position.size() - 1)) {
-							continue;
-						} else {
-							target_ellipse_position.push_back(p);
-						}
-					}
-				}
-					cout << "ellipse_x:" << p.x << endl
-					 << "ellipse_y:" << p.y << endl
-					 << "flag:" << p.flag << endl;
-//								cout << "x:" << x << endl
-//					 << "y:" << y << endl
-//					 << "order:" << p.order << endl;
-//				cout << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
-//					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
-//					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
-//					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
-//					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
-//				outf << "x:" << x << endl
-//					 << "y:" << y << endl
-//					 << "order:" << p.order << endl;
-//				outf << "times" << autopilot_interface.current_messages.time_stamps.global_position_int << endl
-//					 << "lat:" << autopilot_interface.current_messages.global_position_int.lat << endl
-//					 << "lon:" << autopilot_interface.current_messages.global_position_int.lon << endl
-//					 << "hight" << autopilot_interface.current_messages.global_position_int.relative_alt << endl
-//					 << "yaw" << autopilot_interface.current_messages.global_position_int.hdg << endl;
-//				cout << "result_x:" << x_r << endl
-//					 << "result_y:" << y_r << endl
-//					 << "order:" << p.order << endl;
-//				outf << "result_x:" << x_r << endl
-//					 << "result_y:" << y_r << endl
-//					 << "order:" << p.order << endl;
-//				cout << "local_x:" << autopilot_interface.current_messages.local_position_ned.x << endl
-//					 << "local_y:" << autopilot_interface.current_messages.local_position_ned.y << endl
-//					 << "local_z:" << autopilot_interface.current_messages.local_position_ned.z << endl;
-//                cout << "target_x:" << autopilot_interface.current_messages.local_position_ned.x + x_r << endl
-//                     << "target_y:" << autopilot_interface.current_messages.local_position_ned.y + y_r << endl
-//					 << "TorF:" << p.flag << endl;
-//                outf << "target_x:" << autopilot_interface.current_messages.local_position_ned.x + x_r << endl
-//                     << "target_y:" << autopilot_interface.current_messages.local_position_ned.y + y_r << endl
-//					 << "TorF:" << p.flag << endl;
-			}
-		}
-		cout<<"target_ellipse_size:"<<target_ellipse_position.size()<<endl;
-			for (auto &q:target_ellipse_position) {
-				cout << "flag:" << q.flag << endl
-					 << "x:" << q.x << endl
-					 << "y:" << q.y << endl
-					 << "a" << q.a << endl;
-			}
-			ellipse_out1.clear();
-		}
-	};
-
+		ellipse_out1.clear();
+	}
 	//  Now that we are done we can stop the threads and close the port
 
 	autopilot_interface.stop();
@@ -619,9 +549,12 @@ void videothread(){
     float areanum = 0.215;
 	VideoCapture cap(0);
 	if(!cap.isOpened()) return;
+    int width = 640;
+    int height = 480;
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
+	cap.set(CAP_PROP_AUTOFOCUS,0);
 
-	int width = 640;
-	int height = 480;
 
 //	 Parameters Settings (Sect. 4.2)
 	int		iThLength = 16;
@@ -665,79 +598,30 @@ void videothread(){
 		cap >> image;
 		cvtColor(image, gray, COLOR_RGB2GRAY);
 
-		vector<Ellipse> ellsYaed;
+		vector<Ellipse> ellsYaed, ellipse_in;
 		yaed->Detect(gray, ellsYaed);
 		Mat3b resultImage = image.clone();
-		vector<coordinate> ellipse_out;
-		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellsYaed);
-		Mat thresh;
+		vector<coordinate> ellipse_out, ellipse_TF;
+		yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
+		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);//绘制检测到的椭圆
 		vector< vector<Point> > contours;
-		vector< vector<Point> > rects;
 		if(ellipse_out.size() == 0){
             ellipse_out1 = ellipse_out;
-		    namedWindow("Yaed",1);
-			imshow("Yaed", resultImage);
 		}
-		else {
-			for(auto &p:ellipse_out){
-//				cout<<"x:"<<p.x<<endl
-//					<<"y:"<<p.y<<endl
-//					<<"order:"<<(float)p.order<<endl
-//					<<"a:"<<p.a<<endl;
-//				cout<<"process"<<endl;
-				threshold(gray, thresh, 120, 255, CV_THRESH_BINARY);
-//				imshow("threshold", thresh);
-				findContours(thresh, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
-				for (int i = 0; i < contours.size(); i++) {
-					//拟合出轮廓外侧最小的矩形
-					RotatedRect rotate_rect = minAreaRect(contours[i]);
-					Point2f *vertices = new Point2f[4];
-					rotate_rect.points(vertices);
-					if(rotate_rect.size.height < (0.15 * p.a) || rotate_rect.size.height > ( 0.3 * p.a )
-                       || abs(rotate_rect.center.x - p.x) > (0.172 * p.a) || abs(rotate_rect.center.y - p.y) > ( 0.172 * p.a )){
-						continue;
-					}
-					float x12 = (vertices[1].x + vertices[2].x)/2;
-					float y12 = (vertices[1].y + vertices[2].y)/2;
-					float xt12 = areanum * (rotate_rect.center.x - x12) + x12;
-					float yt12 = y12 - areanum * (y12 - rotate_rect.center.y);
+		else
+			visual_rec(gray, ellipse_out, ellipse_TF, contours);//T和F的检测程序
 
-					float x30 = (vertices[3].x + vertices[0].x)/2;
-					float y30 = (vertices[3].y + vertices[0].y)/2;
-					float yt30 = areanum * (rotate_rect.center.y - y30) + y30;
-					float xt30 = x30 - areanum * (x30 - rotate_rect.center.x);
-
-					float x23 = (vertices[2].x + vertices[3].x)/2;
-					float y23 = (vertices[2].y + vertices[3].y)/2;
-					float xt23 = areanum * (rotate_rect.center.x - x23) + x23;
-					float yt23 = y23 - areanum * (y23 - rotate_rect.center.y);
-
-					float x01 = (vertices[1].x + vertices[0].x)/2;
-					float y01 = (vertices[1].y + vertices[0].y)/2;
-					float yt01 = areanum * (rotate_rect.center.y - y01) + y01;
-					float xt01 = x01 - areanum * (x01 - rotate_rect.center.x);
-
-					if(abs((gray.at<uchar>(yt12, xt12) - gray.at<uchar>(yt30, xt30))) < 90
-					   && abs((gray.at<uchar>(yt23, xt23) - gray.at<uchar>(yt01, xt01))) < 90){
-                        p.flag = 1;
-//						cout<<"flag:"<<p.flag<<endl;
-					}
-					else{
-                        p.flag = 0;
-//						cout<<"flag:"<<p.flag<<endl;
-					}
-					circle(resultImage, Point(rotate_rect.center.x,rotate_rect.center.y), 2,Scalar(255, 255, 0), 1);
-					vector<Point> contour;
-					for (int i = 0; i < 4; i++) {
-						contour.push_back(vertices[i]);
-					}
-					vector< vector<Point> > contours;
-					contours.push_back(contour);
-					drawContours(resultImage, contours, 0, Scalar(255, 255, 0), 1);
-				}
-			}
-			ellipse_out1 = ellipse_out;
+//		for(auto &p:ellipse_TF){
+//			cout<<"x:"<<p.x<<endl
+//				<<"y"<<p.y<<endl
+//				<<"flag"<<p.flag<<endl;
+//		}
+		for(auto &p:contours){
+			vector< vector<Point> > contours1;
+			contours1.push_back(p);
+			drawContours(resultImage, contours1, 0, Scalar(255, 255, 0), 1);
 		}
+		ellipse_out1 = ellipse_TF;
 		namedWindow("Yaed",1);
 		imshow("Yaed", resultImage);
         ellipse_out.clear();

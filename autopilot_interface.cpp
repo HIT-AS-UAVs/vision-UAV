@@ -1429,3 +1429,79 @@ start_WL_write_thread(void *args)
 	return NULL;
 }
 
+// ------------------------------------------------------------------------------
+//  将当前时刻看到的所有可能为目标的椭圆存放在容器中
+// ------------------------------------------------------------------------------
+void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinate>& ellipse_out, vector<target>& target_ellipse){
+
+		for (auto &p:ellipse_out) {
+				int32_t h = autopilot_interface.current_messages.global_position_int.relative_alt;
+				int32_t h1 = 740;//设置高度为常量0.74M
+				uint16_t hdg = autopilot_interface.current_messages.global_position_int.hdg;
+				uint16_t hdg1 = 0;//设置机头方向为正北
+				float loc_x = autopilot_interface.current_messages.local_position_ned.x;
+				float loc_y = autopilot_interface.current_messages.local_position_ned.y;
+				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
+				float x = (p.x - cx) / fx * h / 1000;//单位为：m
+				float y = -(p.y - cy) / fy * h / 1000;
+				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
+				float x_r = y * cos( hdg * 3.1415926 / 180 / 100) - x * sin( hdg * 3.1415926 / 180 / 100);//单位是:m
+				float y_r = x * cos( hdg * 3.1415926 / 180 / 100) + y * sin( hdg * 3.1415926 / 180 / 100);
+				float e_x = x_r + loc_x;
+				float e_y = y_r + loc_y;
+				p.x = e_x;
+				p.y = e_y;
+
+				if (target_ellipse.size() == 0){
+                    target t;
+				    t.x = p.x;
+				    t.y = p.y;
+				    t.a = p.a;
+				    if(p.flag == true)
+						t.T_N = 1;
+                    else
+						t.F_N = 1;
+
+                    t.possbile = (float)t.T_N / (float)(t.T_N + t.F_N);
+                    target_ellipse.push_back(t);
+                    continue;
+				}
+					for (auto i = 0; i < target_ellipse.size(); i++) {
+						if (abs(p.x - target_ellipse[i].x) < 0.25 &&
+							abs(p.y - target_ellipse[i].y) < 0.25) {
+                            target_ellipse[i].x = p.x;
+                            target_ellipse[i].y = p.y;
+                            target_ellipse[i].a = p.a;
+						    if(p.flag == true)
+								target_ellipse[i].T_N = target_ellipse[i].T_N + 1;
+                            else
+								target_ellipse[i].F_N = target_ellipse[i].F_N + 1;
+                            target_ellipse[i].possbile = (float)target_ellipse[i].T_N / (float)(target_ellipse[i].T_N + target_ellipse[i].F_N);
+							break;
+						} else if( i != (target_ellipse.size() - 1)){
+							continue;
+						} else{
+                            target t;
+						    t.x = p.x;
+							t.y = p.y;
+							t.a = p.a;
+							if(p.flag == true)
+								t.T_N = 1;
+							else
+								t.F_N = 1;
+							t.possbile = (float)t.T_N / (float)(t.T_N + t.F_N);
+							target_ellipse.push_back(t);
+							break;
+						}
+					}
+
+
+		}
+//		cout<<"target_ellipse_size:"<<target_ellipse.size()<<endl;
+//		for (auto &q:target_ellipse) {
+//			cout << "flag:" << q.possbile << endl
+//				 << "x:" << q.x << endl
+//				 << "y:" << q.y << endl
+//				 << "a" << q.a << endl;
+//		}
+}

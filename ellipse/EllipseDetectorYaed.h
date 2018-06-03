@@ -55,22 +55,24 @@ const float cx = 316.2778, cy = 232.4590;
 
 
 /////////////椭圆坐标类型
-typedef struct _coordinate{
+struct coordinate {
     float_t x;
     float_t y;
     int order;
     float a;
-    int flag;//0为F，1为T，2为不确定
-}coordinate;
-/////////////GPS经纬度类型
-typedef struct _loc{
-    int32_t lat;
-    int32_t lon;
-    int32_t relative_alt;
-    uint16_t yaw;
-    int order;
-}loc_t;
+    bool flag;//0为F，1为T
 
+};
+
+
+struct target{
+    float_t x = 0;
+    float_t y = 0;
+    float a = 0;
+    uint32_t T_N = 0;
+    uint32_t F_N = 0;
+    float possbile = 0;
+};
 
 // Data available after selection strategy.
 // They are kept in an associative array to:
@@ -157,7 +159,9 @@ public:
 	
 	//Draw the first iTopN ellipses on output
 	void DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int iTopN=4, int thickness=2);
-	
+
+	//优化得到的椭圆
+	void OptimizEllipse( vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
 	//Set the parameters of the detector
 	void SetParameters	(	Size	szPreProcessingGaussKernelSize,
 							double	dPreProcessingGaussSigma,
@@ -271,4 +275,11 @@ private:
 
 
 };
+
+/*字符识别函数：前两个变量为输入，后两个为输出
+ * 第一个变量为输入的灰度图
+ * 第二个变量为灰度图中椭圆检测后得到的vector
+ * 第三个变量为将输入的椭圆vector进行TF识别后，改变其flag，输出椭圆vector
+ * 第四个变量为字符所在区域轮廓点集，方便后续显示在图像中*/
+void visual_rec(Mat1b& I, vector<coordinate>& ellipse_out, vector<coordinate>& ellipse_out1, vector< vector<Point> >& contours);
 

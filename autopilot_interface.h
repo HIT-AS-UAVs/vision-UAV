@@ -63,7 +63,7 @@
 #include <iostream>
 #include <fstream>
 #include "mavlink/common/mavlink.h"
-
+#include "ellipse/EllipseDetectorYaed.h"
 // ------------------------------------------------------------------------------
 //   Defines
 // ------------------------------------------------------------------------------
@@ -377,7 +377,8 @@ private:
 
 };
 
-
+/*将当前时刻看到的所有可能为目标的椭圆存放在容器中*/
+void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinate>& ellipse_out, vector<target>& target_ellipse);
 
 #endif // AUTOPILOT_INTERFACE_H_
 
