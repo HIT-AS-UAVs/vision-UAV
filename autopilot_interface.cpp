@@ -1181,21 +1181,21 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
 
 		for (auto &p:ellipse_out) {
 				int32_t h = autopilot_interface.current_messages.global_position_int.relative_alt;
-				int32_t h1 = 740;
+				int32_t h1 = 740;//设置高度为常量0.74M
 				uint16_t hdg = autopilot_interface.current_messages.global_position_int.hdg;
-				uint16_t hdg1 = 0;
+				uint16_t hdg1 = 0;//设置机头方向为正北
 				float loc_x = autopilot_interface.current_messages.local_position_ned.x;
 				float loc_y = autopilot_interface.current_messages.local_position_ned.y;
 				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
-				float x = (p.x - cx) / fx * h1 / 1000;//单位为：m
-				float y = -(p.y - cy) / fy * h1 / 1000;
+				float x = (p.x - cx) / fx * h / 1000;//单位为：m
+				float y = -(p.y - cy) / fy * h / 1000;
 				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
-				float x_r = y * cos( hdg1 * 3.1415926 / 180 / 100) - x * sin( hdg1 * 3.1415926 / 180 / 100);//单位是:m
-				float y_r = x * cos( hdg1 * 3.1415926 / 180 / 100) + y * sin( hdg1 * 3.1415926 / 180 / 100);
+				float x_r = y * cos( hdg * 3.1415926 / 180 / 100) - x * sin( hdg * 3.1415926 / 180 / 100);//单位是:m
+				float y_r = x * cos( hdg * 3.1415926 / 180 / 100) + y * sin( hdg * 3.1415926 / 180 / 100);
 				float e_x = x_r + loc_x;
 				float e_y = y_r + loc_y;
-				p.x = x_r;
-				p.y = y_r;
+				p.x = e_x;
+				p.y = e_y;
 
 				if (target_ellipse.size() == 0){
                     target t;
@@ -1212,8 +1212,8 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
                     continue;
 				}
 					for (auto i = 0; i < target_ellipse.size(); i++) {
-						if (abs(p.x - target_ellipse[i].x) < 0.08 &&
-							abs(p.y - target_ellipse[i].y) < 0.08) {
+						if (abs(p.x - target_ellipse[i].x) < 0.25 &&
+							abs(p.y - target_ellipse[i].y) < 0.25) {
                             target_ellipse[i].x = p.x;
                             target_ellipse[i].y = p.y;
                             target_ellipse[i].a = p.a;

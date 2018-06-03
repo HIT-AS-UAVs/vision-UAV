@@ -72,7 +72,6 @@ using namespace std;
 #include "serial_port.h"
 #include "ellipse/EllipseDetectorYaed.h"
 
-extern vector<loc_t> target_gps_position;
 extern vector<coordinate> ellipse_out1;
 extern vector<target> target_ellipse_position;
 // ------------------------------------------------------------------------------
