@@ -66,6 +66,9 @@ get_time_usec()
 	return _time_stamp.tv_sec*1000000 + _time_stamp.tv_usec;
 }
 
+// -------------------------------------------------------------------------------
+//  计算三维距离
+// -------------------------------------------------------------------------------
 float Distance(float x,float y,float z,float x1,float y1,float z1)
 {
     //如果是经纬度*10^7，转化为m
@@ -81,6 +84,26 @@ float Distance(float x,float y,float z,float x1,float y1,float z1)
     float Distance = fabsf(x - x1)+fabsf(y - y1)+fabsf(z - z1);
     return Distance ;
 }
+
+// -------------------------------------------------------------------------------
+//  计算二维距离
+// -------------------------------------------------------------------------------
+float XYDistance(float x, float y, float x1, float y1)
+{
+    if (x > 10000) {
+        x = x * 18.5 / 1000;
+        x1 = x1 * 18.5 / 1000;
+        y = y * 14 / 1000;
+        y1 = y1 * 14 / 1000;
+    }
+    float Distance = fabsf(x - x1)+fabsf(y - y1);
+    return Distance ;
+}
+
+
+// --------------------------------------------------------------------------------
+// 角度转化为弧度
+// --------------------------------------------------------------------------------
 float D2R(uint16_t ghdg)
 {
     float deg = (float)ghdg/100.0;
@@ -327,7 +350,7 @@ void
 Autopilot_Interface::
 update_local_setpoint(mavlink_set_position_target_local_ned_t setpoint)
 {
-	current_local_setpoint = setpoint;
+    current_local_setpoint = setpoint;
 	write_local_setpoint();
 }
 
@@ -554,7 +577,7 @@ read_messages()
                     std::cout<<"mission_ack:"<<(float)current_messages.mission_ack.type<<std::endl;
                     break;
                 }
-                case MAVLINK_MSG_ID_MISSION_ITEM_REACHED
+                case MAVLINK_MSG_ID_MISSION_ITEM_REACHED:
                 {
                     printf("mavlink id mission_item_reached!");
                     mavlink_msg_mission_item_reached_decode(&message,&(current_messages.mission_item_reached));
@@ -738,6 +761,15 @@ Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target
     mavlink_message_t Global_messgge;
     mavlink_msg_global_position_int_encode(Target_machine,Target_machine,&Global_messgge,&Target_Global_Position);
     int Glolen = WL_write_message(Global_messgge);
+    if(Glolen <= 0)
+    {
+        print("fail send wl message! try again! ")
+        Glolen = WL_write_message(Global_messgge);
+    }
+    else
+    {
+        printf("send wl message succeed!");
+    }
     return Glolen;
 }
 

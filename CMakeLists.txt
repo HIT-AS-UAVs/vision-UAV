@@ -268,10 +268,10 @@ add_executable(UAVs_uart_interface
         mavlink_control.h
         serial_port.cpp
         serial_port.h
-        ellipse/EllipseDetectorYaed.h
         ellipse/EllipseDetectorYaed.cpp
-        ellipse/common.h
+        ellipse/EllipseDetectorYaed.h
         ellipse/common.cpp
+        ellipse/common.h
         )
 target_link_libraries(UAVs_uart_interface
         pthread

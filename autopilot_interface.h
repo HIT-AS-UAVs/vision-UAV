@@ -139,6 +139,7 @@ void set_global_yaw(float yaw, mavlink_set_position_target_global_int_t &sp);
 void set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp);
 
 float Distance(float x,float y,float z,float x1,float y1,float z1);
+float XYDistance(float x, float y, float x1, float y1);
 float D2R(uint16_t ghdg);
 
 void* start_autopilot_interface_read_thread(void *args);
