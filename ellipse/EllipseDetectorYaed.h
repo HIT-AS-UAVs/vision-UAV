@@ -63,14 +63,7 @@ struct coordinate {
     bool flag;//0为F，1为T
 
 };
-/////////////GPS经纬度类型
-struct loc_t{
-    int32_t lat;
-    int32_t lon;
-    int32_t relative_alt;
-    uint16_t yaw;
-    int order;
-};
+
 
 struct target{
     float_t x = 0;
@@ -166,7 +159,9 @@ public:
 	
 	//Draw the first iTopN ellipses on output
 	void DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int iTopN=4, int thickness=2);
-	
+
+	//优化得到的椭圆
+	void OptimizEllipse( vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
 	//Set the parameters of the detector
 	void SetParameters	(	Size	szPreProcessingGaussKernelSize,
 							double	dPreProcessingGaussSigma,

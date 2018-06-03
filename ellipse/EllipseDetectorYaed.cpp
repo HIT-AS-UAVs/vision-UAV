@@ -1909,7 +1909,7 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 		ellipse(output, Point(cvRound(e._xc), cvRound(e._yc)), Size(cvRound(e._a), cvRound(e._b)), e._rad*180.0 / CV_PI, 0.0, 360.0, color, thickness);
         cout<<"the coordinate of the ellipse:"<<endl<<"x:"<<e._xc<<endl<<"y:"<<e._yc<<endl<<"a:"<<e._a<<endl<<"scores:"<<e._score<<endl;
 	}
-	 */
+
 	vector<Ellipse> e1;
 	float score = 0.80;
 	int n = ellipses.size();
@@ -1949,13 +1949,14 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 			v.push_back(Ellipse());
 		}
 	}
+ */
 	//绘制椭圆
-	for(auto i = 0; i < v.size(); i = i +2) {
+	for(auto i = 0; i < ellipses.size(); i = i +1) {
 		Scalar color(0, 255, 0);
-		Ellipse& e = v[i];
+		Ellipse& e = ellipses[i];
 		ellipse(output, Point(cvRound(e._xc), cvRound(e._yc)), Size(cvRound(e._a), cvRound(e._b)),
 				e._rad * 180.0 / CV_PI, 0.0, 360.0, color, thickness);
-		int j = i/2;
+		int j = i;
 		const string text = to_string(j);
 		putText(output, text, Point(cvRound(e._xc), cvRound(e._yc)),CV_FONT_HERSHEY_SIMPLEX,1,Scalar(0,0,255),2,8);//给目标编号
 
@@ -1971,12 +1972,104 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 
 }
 
+void CEllipseDetectorYaed::OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
+	float score = 0.74;
+	/***************************去掉评分不佳的椭圆********************************************/
+	vector<Ellipse> e0;//存放去掉评分小于0.8的椭圆
+	for(auto i = ellipses_in.begin(); i != ellipses_in.end(); ++i){
+		if((*i)._score < score)
+			continue;
+		else
+			e0.push_back(*i);
+	}
+
+	/*************延x轴方向对椭圆由小到大排序**************************/
+//	for (auto i = 0; i < (e0.size() - 1); i++) {
+//		for(auto j = 0; j < (e0.size() - 1 - i); j++){
+//			if (e0[j]._xc > e0[j + 1]._xc) {
+//				swap(e0[j], e0[j + 1]);
+//			}
+//		}
+//	}
+/*感觉这个程序和上面的没啥区别，不知道为啥就是通不过*/
+	int n_e = e0.size();
+	for (int i = 0; i < n_e - 1; i++) {
+		for (int j = 0; j < n_e - 1 - i; j++) {
+			if (e0[j]._xc > e0[j + 1]._xc) {
+				swap(e0[j], e0[j + 1]);
+			}
+		}
+	}
+	/*************判断同心圆，只留下大圆**************************/
+	vector<Ellipse> v, v1;
+	int f = 0;
+	for (auto i = 0; i < n_e;f == 0? i = i+1:i = i+2) {
+		f = 0;
+		if (abs(e0[i]._xc - e0[i + 1]._xc) < 20 && abs(e0[i]._yc - e0[i + 1]._yc) < 20) {
+			if (e0[i]._a < e0[i + 1]._a) {
+				v.push_back(e0[i + 1]);
+				f = 1;
+			} else {
+				v.push_back(e0[i]);
+				f = 1;
+			}
+		} else {
+			v.push_back(e0[i]);
+		}
+	}
+	for(auto &p:v){
+		if(v1.size() == 0){
+			v1.push_back(p);
+		} else{
+			for(auto j = 0; j <v1.size(); j++ ){
+				if (abs(v1[j]._xc - p._xc) < 20 && abs(v1[j]._yc - p._yc) < 20)
+					break;
+				else if( j != ( v1.size() - 1)){
+					continue;
+				} else{
+					v1.push_back(p);
+					break;
+				}
+			}
+		}
+	}
+	/***********************按照左下、左上、右下、右上的顺序对椭圆排序******************************/
+	vector<Ellipse> left,right;
+	for (auto &p:v1) {
+		if(p._xc < 320)
+			left.push_back(p);
+		else
+			right.push_back(p);
+	}
+	int l = left.size();
+	int r = right.size();
+	for (int i = 0; i < l - 1; i++) {
+		for (int j = 0; j < l - 1 - i; j++) {
+			if (left[j]._yc < left[j + 1]._yc) {
+				swap(left[j], left[j + 1]);
+			}
+		}
+	}
+	for (int i = 0; i < r - 1; i++) {
+		for (int j = 0; j < r - 1 - i; j++) {
+			if (right[j]._yc < right[j + 1]._yc) {
+				swap(right[j], right[j + 1]);
+			}
+		}
+	}
+	ellipse_out = left;
+	for(auto p:right){
+		ellipse_out.push_back(p);
+	}
+
+}
+
+
 void visual_rec(Mat1b& gray, vector<coordinate>& ellipse_out0, vector<coordinate>& ellipse_out00, vector< vector<Point> >& contours0){
     float areanum = 0.215;
     threshold(gray, gray, 170, 255, CV_THRESH_BINARY);
 
-  morphologyEx(gray, gray, MORPH_OPEN , (5, 5) );
-//    Canny(thresh, canny, 50, 150, 3);
+  morphologyEx(gray, gray,MORPH_DILATE , (5, 5) );
 	imshow("threshold", gray);
     vector< vector<Point> > contours;
     findContours(gray, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
