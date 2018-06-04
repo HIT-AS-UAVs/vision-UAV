@@ -139,6 +139,7 @@ void set_global_yaw(float yaw, mavlink_set_position_target_global_int_t &sp);
 void set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp);
 
 float Distance(float x,float y,float z,float x1,float y1,float z1);
+float XYDistance(float x, float y, float x1, float y1);
 float D2R(uint16_t ghdg);
 
 void* start_autopilot_interface_read_thread(void *args);
@@ -261,6 +262,7 @@ struct Mavlink_Messages {
 
     mavlink_mission_count_t mission_count;
     mavlink_mission_ack_t mission_ack;
+    mavlink_mission_item_reached_t mission_item_reached;
 
     // System Parameters?
 
@@ -325,6 +327,7 @@ public:
 
     void WL_read_messages();
     int  WL_write_message(mavlink_message_t message);
+    int  Send_WL_Global_Position(int Target_machine,mavlink_global_position_int_t Target_Global_Position);
 
     void enable_offboard_control();
     void Set_Mode(unsigned int custom);
