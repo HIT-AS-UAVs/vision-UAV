@@ -1489,3 +1489,15 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
 //				 << "a" << q.a << endl;
 //		}
 }
+void resultTF(vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
+	for(auto &p:ellipse_in){
+		if(p.possbile > 0.5 && p.T_N > 10){
+			ellipse_1.push_back(p);
+			continue;
+		} else if(p.possbile < 0.49 && p.F_N > 10){
+			ellipse_0.push_back(p);
+			continue;
+		} else
+			continue;
+	}
+}

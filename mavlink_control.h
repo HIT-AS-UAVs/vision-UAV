@@ -72,8 +72,7 @@ using namespace std;
 #include "serial_port.h"
 #include "ellipse/EllipseDetectorYaed.h"
 
-extern vector<coordinate> ellipse_out1;
-extern vector<target> target_ellipse_position;
+extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
 // ------------------------------------------------------------------------------
 //   Prototypes
 // ------------------------------------------------------------------------------
@@ -89,5 +88,5 @@ void parse_commandline(int argc, char **argv, char *&uart_name, int &baudrate);
 Autopilot_Interface *autopilot_interface_quit;
 Serial_Port *serial_port_quit;
 void quit_handler( int sig );
-void videothread();
+void videothread(Autopilot_Interface &api);
 

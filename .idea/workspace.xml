@@ -12,43 +12,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f63c1b4c-7698-4aa1-91f9-18b8f5810847" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/c_uart_interface_example.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/c_uart_interface_example.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/messageID.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vision-UAV.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/webServers.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/autopilot_interface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/autopilot_interface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.10.3/CMakeCCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.10.3/CMakeCCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.10.3/CMakeCXXCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.10.3/CMakeCXXCompiler.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/autopilot_interface.h" beforeDir="false" afterPath="$PROJECT_DIR$/autopilot_interface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/CXX.includecache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/DependInfo.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/build.make" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.internal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/EllipseDetectorYaed.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/ellipse/common.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/flags.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/serial_port.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/UAVs_uart_interface" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/UAVs_uart_interface" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/UAVs_uart_interface.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/UAVs_uart_interface.cbp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/messageID.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h" beforeDir="false" afterPath="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mavlink_control.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/mavlink_control.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mavlink_control.h" beforeDir="false" afterPath="$PROJECT_DIR$/mavlink_control.h" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -64,20 +46,8 @@
       <file leaf-file-name="mavlink_control.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="534">
-              <caret line="541" column="42" lean-forward="true" selection-start-line="541" selection-start-column="42" selection-end-line="541" selection-end-column="42" />
-              <folding>
-                <element signature="e#2411#2439#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="autopilot_interface.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="626">
-              <caret line="126" selection-start-line="126" selection-end-line="126" />
+            <state relative-caret-position="418">
+              <caret line="545" column="52" lean-forward="true" selection-start-line="545" selection-start-column="52" selection-end-line="545" selection-end-column="52" />
             </state>
           </provider>
         </entry>
@@ -85,10 +55,22 @@
       <file leaf-file-name="mavlink_control.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mavlink_control.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1480">
-              <caret line="74" selection-start-line="74" selection-end-line="74" />
+            <state relative-caret-position="123">
+              <caret line="74" column="58" selection-start-line="74" selection-start-column="58" selection-end-line="74" selection-end-column="58" />
               <folding>
                 <element signature="e#2420#2439#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EllipseDetectorYaed.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="195">
+              <caret line="67" column="7" selection-start-line="67" selection-start-column="7" selection-end-line="67" selection-end-column="7" />
+              <folding>
+                <element signature="e#831#852#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -97,38 +79,8 @@
       <file leaf-file-name="EllipseDetectorYaed.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ellipse/EllipseDetectorYaed.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="797">
-              <caret line="2126" column="41" lean-forward="true" selection-start-line="2126" selection-start-column="41" selection-end-line="2126" selection-end-column="41" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="200">
-              <caret line="10" column="48" selection-start-line="10" selection-start-column="48" selection-end-line="10" selection-end-column="48" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="EllipseDetectorYaed.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="435">
-              <caret line="62" column="10" selection-start-line="62" selection-start-column="10" selection-end-line="62" selection-end-column="10" />
-              <folding>
-                <element signature="e#831#852#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="stl_vector.h" pinned="false" current-in-tab="false">
-        <entry file="file:///usr/include/c++/5/bits/stl_vector.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5040">
-              <caret line="252" column="6" selection-start-line="252" selection-start-column="6" selection-end-line="252" selection-end-column="6" />
+            <state relative-caret-position="540">
+              <caret line="2093" column="40" selection-start-line="2093" selection-start-column="40" selection-end-line="2093" selection-end-column="40" />
             </state>
           </provider>
         </entry>
@@ -136,8 +88,20 @@
       <file leaf-file-name="autopilot_interface.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1104">
-              <caret line="1415" column="5" selection-start-line="1415" selection-start-column="5" selection-end-line="1415" selection-end-column="5" />
+            <state relative-caret-position="338">
+              <caret line="1500" column="21" selection-start-line="1500" selection-start-column="21" selection-end-line="1500" selection-end-column="21" />
+              <folding>
+                <element signature="e#43488#46437#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="autopilot_interface.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="417">
+              <caret line="379" column="96" selection-start-line="379" selection-start-column="96" selection-end-line="379" selection-end-column="96" />
             </state>
           </provider>
         </entry>
@@ -146,6 +110,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="KEEP" />
     <option name="PUSH_TAGS">
       <GitPushTagMode />
     </option>
@@ -155,10 +120,10 @@
       <list>
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/autopilot_interface.h" />
-        <option value="$PROJECT_DIR$/mavlink_control.h" />
         <option value="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h" />
         <option value="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.cpp" />
+        <option value="$PROJECT_DIR$/mavlink_control.h" />
+        <option value="$PROJECT_DIR$/autopilot_interface.h" />
         <option value="$PROJECT_DIR$/autopilot_interface.cpp" />
         <option value="$PROJECT_DIR$/mavlink_control.cpp" />
       </list>
@@ -173,11 +138,12 @@
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths />
   </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="377" />
-    <option name="y" value="115" />
+    <option name="x" value="530" />
+    <option name="y" value="255" />
     <option name="width" value="1061" />
-    <option name="height" value="890" />
+    <option name="height" value="862" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -342,56 +308,95 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20167000" />
+    <option name="totallyTimeSpent" value="24473000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17088948" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19191375" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.7606469" weight="0.45184427" />
+      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.49272236" weight="0.32991803" />
       <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4819869" weight="0.22408377" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5412399" side_tool="true" visible="true" weight="0.42315573" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="File Transfer" order="12" sideWeight="0.49595687" weight="0.32889345" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4587601" visible="true" weight="0.42315573" />
-      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32889345" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4057377" />
+      <window_info anchor="bottom" id="Version Control" order="9" weight="0.25409836" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3043033" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17088948" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32889345" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4587601" visible="true" weight="0.42315573" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3043033" />
+      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.7606469" weight="0.45184427" />
       <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5412399" side_tool="true" visible="true" weight="0.42315573" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4819869" weight="0.22408377" />
+      <window_info id="Favorites" order="2" side_tool="true" />
     </layout>
     <layout-to-restore>
+      <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4819869" weight="0.22408377" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20161726" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32889345" />
       <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4170082" />
-      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3043033" />
-      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.49272236" weight="0.32991803" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32889345" />
       <window_info anchor="bottom" id="File Transfer" order="12" sideWeight="0.49703503" weight="0.32889345" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4819869" weight="0.22408377" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.49272236" weight="0.32991803" />
       <window_info id="Favorites" order="2" side_tool="true" />
     </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -413,13 +418,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'master' of https://github.com/HIT-AS-UAVs/vision-UAV&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;autopilot_interface.cpp&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/CXX.includecache&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.internal&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o&#10;#&#9;cmake-build-debug/UAVs_uart_interface&#10;#&#9;cmake-build-debug/messageID.txt" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/mavlink/common/mavlink_msg_mission_item.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="19" column="9" selection-start-line="19" selection-start-column="9" selection-end-line="19" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ellipse/common.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="396">
@@ -607,13 +605,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/include/c++/5/thread">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3000">
-          <caret line="150" selection-start-line="150" selection-end-line="150" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/include/x86_64-linux-gnu/sys/types.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="440">
@@ -671,34 +662,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="10" column="48" selection-start-line="10" selection-start-column="48" selection-end-line="10" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mavlink_control.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1480">
-          <caret line="74" selection-start-line="74" selection-end-line="74" />
-          <folding>
-            <element signature="e#2420#2439#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/include/time.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-794">
           <caret line="58" column="18" selection-start-line="58" selection-start-column="18" selection-end-line="58" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="626">
-          <caret line="126" selection-start-line="126" selection-end-line="126" />
         </state>
       </provider>
     </entry>
@@ -709,37 +676,75 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///usr/local/include/opencv2/core/ptr.inl.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2400">
+          <caret line="120" selection-start-line="120" selection-end-line="120" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="10" column="48" selection-start-line="10" selection-start-column="48" selection-end-line="10" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/5/thread">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="588">
+          <caret line="132" column="6" selection-start-line="132" selection-start-column="6" selection-end-line="132" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
-          <caret line="62" column="10" selection-start-line="62" selection-start-column="10" selection-end-line="62" selection-end-column="10" />
+        <state relative-caret-position="195">
+          <caret line="67" column="7" selection-start-line="67" selection-start-column="7" selection-end-line="67" selection-end-column="7" />
           <folding>
             <element signature="e#831#852#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/mavlink_control.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="123">
+          <caret line="74" column="58" selection-start-line="74" selection-start-column="58" selection-end-line="74" selection-end-column="58" />
+          <folding>
+            <element signature="e#2420#2439#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="417">
+          <caret line="379" column="96" selection-start-line="379" selection-start-column="96" selection-end-line="379" selection-end-column="96" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ellipse/EllipseDetectorYaed.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="797">
-          <caret line="2126" column="41" lean-forward="true" selection-start-line="2126" selection-start-column="41" selection-end-line="2126" selection-end-column="41" />
+        <state relative-caret-position="540">
+          <caret line="2093" column="40" selection-start-line="2093" selection-start-column="40" selection-end-line="2093" selection-end-column="40" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1104">
-          <caret line="1415" column="5" selection-start-line="1415" selection-start-column="5" selection-end-line="1415" selection-end-column="5" />
+        <state relative-caret-position="338">
+          <caret line="1500" column="21" selection-start-line="1500" selection-start-column="21" selection-end-line="1500" selection-end-column="21" />
+          <folding>
+            <element signature="e#43488#46437#0" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="534">
-          <caret line="541" column="42" lean-forward="true" selection-start-line="541" selection-start-column="42" selection-end-line="541" selection-end-column="42" />
-          <folding>
-            <element signature="e#2411#2439#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="418">
+          <caret line="545" column="52" lean-forward="true" selection-start-line="545" selection-start-column="52" selection-end-line="545" selection-end-column="52" />
         </state>
       </provider>
     </entry>

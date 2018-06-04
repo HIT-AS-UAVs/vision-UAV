@@ -377,7 +377,7 @@ private:
 
 /*将当前时刻看到的所有可能为目标的椭圆存放在容器中*/
 void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinate>& ellipse_out, vector<target>& target_ellipse);
-
+void resultTF(vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0);
 #endif // AUTOPILOT_INTERFACE_H_
 
 

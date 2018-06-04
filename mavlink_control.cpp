@@ -63,8 +63,7 @@
 using namespace cv;
 using namespace std;
 
-vector<coordinate> ellipse_out1;
-vector<target> target_ellipse_position;
+vector<target> target_ellipse_position, ellipse_T, ellipse_F;
 // ------------------------------------------------------------------------------
 //   TOP
 // ------------------------------------------------------------------------------
@@ -142,14 +141,13 @@ top (int argc, char **argv)
 	 * This is where the port is opened, and read and write threads are started.
 	 */
 
-//视觉定位线程
-    thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
 
 
 //	serial_port.start();
 //    WL_serial_port.start();
 //	autopilot_interface.start();
-
+//视觉定位线程
+	thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
 	// --------------------------------------------------------------------------
 	//   RUN COMMANDS
 	// --------------------------------------------------------------------------
@@ -163,31 +161,6 @@ top (int argc, char **argv)
 	// --------------------------------------------------------------------------
 	//   THREAD and PORT SHUTDOWN
 	// --------------------------------------------------------------------------
-	ofstream outf;
-	outf.open("target.txt");
-	bool finish = false;
-	while (!finish ) {
-        cout<<"ellipse_out1.size = "<<ellipse_out1.size()<<endl;
-//        for (int i = 0; i < ellipse_out1.size(); ++i) {
-//            cout<<"i = "<<i<<endl
-//				<<"x = "<<ellipse_out1[i].x<<endl
-//                <<"y = "<<ellipse_out1[i].y<<endl
-//                <<"a = "<<ellipse_out1[i].a<<endl
-//                <<"flag = "<<ellipse_out1[i].flag<<endl;
-//        }
- 		usleep(1000000);//延迟1000毫秒
-	    possible_ellipse(autopilot_interface, ellipse_out1, target_ellipse_position);
-
-		cout<<"target_ellipse.size = "<<target_ellipse_position.size()<<endl;
-		for (int i = 0; i < target_ellipse_position.size(); ++i) {
-			cout<<"x = "<<target_ellipse_position[i].x<<endl
-				<<"y = "<<target_ellipse_position[i].y<<endl
-				<<"T = "<<target_ellipse_position[i].T_N<<endl
-				<<"F = "<<target_ellipse_position[i].F_N<<endl
-				<<"flag = "<<target_ellipse_position[i].possbile<<endl;
-		}
-		ellipse_out1.clear();
-	}
 	//  Now that we are done we can stop the threads and close the port
 
 	autopilot_interface.stop();
@@ -242,7 +215,7 @@ commands(Autopilot_Interface &api)
 //			break;
 //		}
 //设置触发节点
-        if (ellipse_out1.size() != 0)
+        if (target_ellipse_position.size() != 0)
 //        if (Distance(gp.lat,gp.lon,gp.relative_alt,gp.lat,gp.lon,gp.relative_alt) <  2)
         {
             // --------------------------------------------------------------------------
@@ -471,7 +444,7 @@ quit_handler( int sig )
 }
 
 ///////////////视觉定位线程
-void videothread(){
+void videothread(Autopilot_Interface &api){
 
     float areanum = 0.215;
 	VideoCapture cap(0);
@@ -531,11 +504,11 @@ void videothread(){
 		vector<Mat1b> img_roi;
 		yaed->Detect(gray, ellsYaed);
 		Mat3b resultImage = image_r.clone();
-		vector<coordinate> ellipse_out, ellipse_TF;
+		vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
 		yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
 		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);//绘制检测到的椭圆
 		vector< vector<Point> > contours;
-		bool stable = false;
+		bool stable = true;
 		if(stable){
 				yaed->extracrROI(gray_big, ellipse_out, img_roi);
 				visual_rec(img_roi, ellipse_out, ellipse_TF, contours);//T和F的检测程序
@@ -552,13 +525,38 @@ void videothread(){
 			contours1.push_back(p);
 			drawContours(image, contours1, 0, Scalar(255, 255, 0), 1);
 		}
+        possible_ellipse(api, ellipse_out1, target_ellipse_position);
 
+        cout<<"target_ellipse.size = "<<target_ellipse_position.size()<<endl;
+        for (int i = 0; i < target_ellipse_position.size(); ++i) {
+            cout<<"x = "<<target_ellipse_position[i].x<<endl
+                <<"y = "<<target_ellipse_position[i].y<<endl
+                <<"T = "<<target_ellipse_position[i].T_N<<endl
+                <<"F = "<<target_ellipse_position[i].F_N<<endl
+                <<"flag = "<<target_ellipse_position[i].possbile<<endl;
+        }
+        resultTF(target_ellipse_position, ellipse_T, ellipse_F);
+		/*
+        cout<<"ellipse_T.size = "<<ellipse_T.size()<<endl;
+        for (int i = 0; i <ellipse_T.size(); ++i) {
+			cout<<"x = "<< ellipse_T[i].x<<endl
+				<<"y = "<< ellipse_T[i].y<<endl
+				<<"possbile = "<<ellipse_T[i].possbile<<endl;
+		}
+		cout<<"ellipse_F.size = "<<ellipse_F.size()<<endl;
+		for (int i = 0; i < ellipse_F.size(); ++i) {
+			cout<<"x = "<<ellipse_F[i].x<<endl
+				<<"y = "<<ellipse_F[i].y<<endl
+				<<"possbile = "<<ellipse_F[i].possbile<<endl;
+		}
+*/
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
 		imshow("缩小", resultImage);
         ellipse_out.clear();
 		waitKey(10);
+		ellipse_out1.clear();
 	}
 }
 // ------------------------------------------------------------------------------
