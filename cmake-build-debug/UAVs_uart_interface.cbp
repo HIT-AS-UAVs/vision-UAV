@@ -5,7 +5,7 @@
 		<Option title="UAVs_uart_interface"/>
 		<Option makefile_is_custom="1"/>
 		<Option compiler="gcc"/>
-		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\opt\;CMake Files\..\..\..\..\opt\ros\;CMake Files\..\..\..\..\opt\ros\kinetic\;CMake Files\..\..\..\..\opt\ros\kinetic\share\;CMake Files\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1-dev\;"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\usr\;CMake Files\..\..\..\..\usr\share\;CMake Files\..\..\..\..\usr\share\OpenCV\;"/>
 		<Build>
 			<Target title="all">
 				<Option working_dir="/home/hitlb/HITLB/vision-UAV/cmake-build-debug"/>
@@ -44,8 +44,7 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="/opt/ros/kinetic/include/opencv-3.3.1-dev"/>
-					<Add directory="/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv"/>
+					<Add directory="/usr/include/opencv"/>
 				</Compiler>
 				<MakeCommands>
 					<Build command="/usr/bin/make -f &quot;/home/hitlb/HITLB/vision-UAV/cmake-build-debug/Makefile&quot;  VERBOSE=1 UAVs_uart_interface"/>
@@ -61,8 +60,7 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="/opt/ros/kinetic/include/opencv-3.3.1-dev"/>
-					<Add directory="/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv"/>
+					<Add directory="/usr/include/opencv"/>
 				</Compiler>
 				<MakeCommands>
 					<Build command="/usr/bin/make -f &quot;/home/hitlb/HITLB/vision-UAV/cmake-build-debug/Makefile&quot;  VERBOSE=1 UAVs_uart_interface/fast"/>
@@ -870,26 +868,26 @@
 		<Unit filename="/home/hitlb/HITLB/vision-UAV/serial_port.h">
 			<Option target="UAVs_uart_interface"/>
 		</Unit>
-		<Unit filename="/opt/ros/kinetic/include/opencv-3.3.1-dev">
+		<Unit filename="/usr/include">
 			<Option target="UAVs_uart_interface"/>
 		</Unit>
-		<Unit filename="/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv">
+		<Unit filename="/usr/include/opencv">
 			<Option target="UAVs_uart_interface"/>
 		</Unit>
 		<Unit filename="/home/hitlb/HITLB/vision-UAV/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
-		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVConfig-version.cmake">
-			<Option virtualFolder="CMake Files\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1-dev\"/>
+		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../usr/share/OpenCV/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\share\OpenCV\"/>
 		</Unit>
-		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVConfig.cmake">
-			<Option virtualFolder="CMake Files\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1-dev\"/>
+		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../usr/share/OpenCV/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\share\OpenCV\"/>
 		</Unit>
-		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVModules-release.cmake">
-			<Option virtualFolder="CMake Files\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1-dev\"/>
+		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../usr/share/OpenCV/OpenCVModules-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\share\OpenCV\"/>
 		</Unit>
-		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVModules.cmake">
-			<Option virtualFolder="CMake Files\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1-dev\"/>
+		<Unit filename="/home/hitlb/HITLB/vision-UAV/../../../../usr/share/OpenCV/OpenCVModules.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\share\OpenCV\"/>
 		</Unit>
 	</Project>
 </CodeBlocks_project_file>

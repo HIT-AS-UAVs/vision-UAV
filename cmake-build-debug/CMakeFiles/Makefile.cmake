@@ -29,10 +29,10 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/home/hitlb/clion-2018.1.2/bin/cmake/share/cmake-3.10/Modules/Platform/Linux-GNU.cmake"
   "/home/hitlb/clion-2018.1.2/bin/cmake/share/cmake-3.10/Modules/Platform/Linux.cmake"
   "/home/hitlb/clion-2018.1.2/bin/cmake/share/cmake-3.10/Modules/Platform/UnixPaths.cmake"
-  "/opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVConfig-version.cmake"
-  "/opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVConfig.cmake"
-  "/opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVModules-release.cmake"
-  "/opt/ros/kinetic/share/OpenCV-3.3.1-dev/OpenCVModules.cmake"
+  "/usr/share/OpenCV/OpenCVConfig-version.cmake"
+  "/usr/share/OpenCV/OpenCVConfig.cmake"
+  "/usr/share/OpenCV/OpenCVModules-release.cmake"
+  "/usr/share/OpenCV/OpenCVModules.cmake"
   )
 
 # The corresponding makefile is:
