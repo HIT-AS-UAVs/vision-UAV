@@ -5,7 +5,7 @@
       <paths name="tx2">
         <serverdata>
           <mappings>
-            <mapping deploy="/20180528" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="20180603" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

@@ -2,8 +2,8 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="8381ed36-ec11-4dfa-abf8-5838253cba70" name="tx2" url="http://192.168.1.116">
-        <fileTransfer host="192.168.1.116" port="22" rootFolder="/home/nvidia" accessType="SFTP">
+      <webServer id="c9097b30-c5bd-42ac-acb3-30ec6ce569c7" name="tx2" url="http://192.168.1.121">
+        <fileTransfer host="192.168.1.121" port="22" rootFolder="/home/nvidia" accessType="SFTP">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>

@@ -144,12 +144,11 @@ top (int argc, char **argv)
 
 //视觉定位线程
     thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
-    thread t1(videothread);//ref可以使autopilot_interface引用被正确传递给videothread.
 
 
-	serial_port.start();
-    WL_serial_port.start();
-	autopilot_interface.start();
+//	serial_port.start();
+//    WL_serial_port.start();
+//	autopilot_interface.start();
 
 	// --------------------------------------------------------------------------
 	//   RUN COMMANDS
@@ -159,7 +158,7 @@ top (int argc, char **argv)
 	 * Now we can implement the algorithm we want on top of the autopilot interface
 	 */
 
-   commands(autopilot_interface);
+//   commands(autopilot_interface);
 
 	// --------------------------------------------------------------------------
 	//   THREAD and PORT SHUTDOWN
@@ -176,7 +175,9 @@ top (int argc, char **argv)
 //                <<"a = "<<ellipse_out1[i].a<<endl
 //                <<"flag = "<<ellipse_out1[i].flag<<endl;
 //        }
+ 		usleep(1000000);//延迟1000毫秒
 	    possible_ellipse(autopilot_interface, ellipse_out1, target_ellipse_position);
+
 		cout<<"target_ellipse.size = "<<target_ellipse_position.size()<<endl;
 		for (int i = 0; i < target_ellipse_position.size(); ++i) {
 			cout<<"x = "<<target_ellipse_position[i].x<<endl
@@ -476,9 +477,9 @@ void videothread(){
 	VideoCapture cap(0);
 	if(!cap.isOpened()) return;
     int width = 640;
-    int height = 480;
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
+    int height = 360;
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
 	cap.set(CAP_PROP_AUTOFOCUS,0);
 
 
@@ -516,27 +517,31 @@ void videothread(){
 						iNs
 	);
 
-	Mat1b gray;
+	Mat1b gray, gray_big;
 	while(true)
 	{
 
-		Mat3b image;
+		Mat3b image, image_r;
 		cap >> image;
-		cvtColor(image, gray, COLOR_RGB2GRAY);
+		resize(image, image_r, Size(640, 360), 0, 0, CV_INTER_LINEAR);
+		cvtColor(image_r, gray, COLOR_RGB2GRAY);
+		cvtColor(image, gray_big, COLOR_RGB2GRAY);
 
 		vector<Ellipse> ellsYaed, ellipse_in;
+		vector<Mat1b> img_roi;
 		yaed->Detect(gray, ellsYaed);
-		Mat3b resultImage = image.clone();
+		Mat3b resultImage = image_r.clone();
 		vector<coordinate> ellipse_out, ellipse_TF;
 		yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
 		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);//绘制检测到的椭圆
 		vector< vector<Point> > contours;
-		if(ellipse_out.size() == 0){
-            ellipse_out1 = ellipse_out;
-		}
-		else
-			visual_rec(gray, ellipse_out, ellipse_TF, contours);//T和F的检测程序
-
+		bool stable = false;
+		if(stable){
+				yaed->extracrROI(gray_big, ellipse_out, img_roi);
+				visual_rec(img_roi, ellipse_out, ellipse_TF, contours);//T和F的检测程序
+				ellipse_out1 = ellipse_TF;
+			} else
+				ellipse_out1 = ellipse_out;
 //		for(auto &p:ellipse_TF){
 //			cout<<"x:"<<p.x<<endl
 //				<<"y"<<p.y<<endl
@@ -545,11 +550,13 @@ void videothread(){
 		for(auto &p:contours){
 			vector< vector<Point> > contours1;
 			contours1.push_back(p);
-			drawContours(resultImage, contours1, 0, Scalar(255, 255, 0), 1);
+			drawContours(image, contours1, 0, Scalar(255, 255, 0), 1);
 		}
-		ellipse_out1 = ellipse_TF;
-		namedWindow("Yaed",1);
-		imshow("Yaed", resultImage);
+
+//		namedWindow("原图",1);
+//		imshow("原图", image);
+		namedWindow("缩小",1);
+		imshow("缩小", resultImage);
         ellipse_out.clear();
 		waitKey(10);
 	}

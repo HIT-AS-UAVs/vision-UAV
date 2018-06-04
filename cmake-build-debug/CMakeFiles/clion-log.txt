@@ -22,7 +22,7 @@
 -- Looking for pthread_create in pthread
 -- Looking for pthread_create in pthread - found
 -- Found Threads: TRUE  
--- Found CUDA: /usr/local/cuda (found suitable exact version "8.0") 
+-- Found CUDA: /usr/local/cuda-8.0 (found suitable exact version "8.0") 
 -- Found OpenCV: /usr/local (found version "3.3.0") 
 -- Configuring done
 -- Generating done
