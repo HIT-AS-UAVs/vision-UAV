@@ -72,6 +72,8 @@ struct target{
     uint32_t T_N = 0;
     uint32_t F_N = 0;
     float possbile = 0;
+	int32_t lat = 0; /*< Latitude, expressed as degrees * 1E7*/
+	int32_t lon = 0;
 };
 
 // Data available after selection strategy.
@@ -164,7 +166,11 @@ public:
 	void OptimizEllipse( vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
 	//提取ROI
     void extracrROI(Mat1b& image, vector<coordinate>& ellipse_out, vector<Mat1b>& img_roi);
-	//Set the parameters of the detector
+
+	float computcolorpercentage(Mat3b& roi,int& e_roi_order,vector< Ellipse >& ellipse_in,vector<Ellipse>& ell_big);
+
+	void big_vector(Mat3b& resultImage2, vector< Ellipse >& ellipse_in, vector< Ellipse >& ellipse_big);
+    //Set the parameters of the detector
 	void SetParameters	(	Size	szPreProcessingGaussKernelSize,
 							double	dPreProcessingGaussSigma,
 							float 	fThPosition,

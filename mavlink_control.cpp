@@ -65,6 +65,7 @@ using namespace cv;
 using namespace std;
 
 vector<target> target_ellipse_position, ellipse_T, ellipse_F;
+
 // ------------------------------------------------------------------------------
 //   TOP
 // ------------------------------------------------------------------------------
@@ -614,16 +615,16 @@ void videothread(Autopilot_Interface &api){
 		cvtColor(image_r, gray, COLOR_RGB2GRAY);
 		cvtColor(image, gray_big, COLOR_RGB2GRAY);
 
-		vector<Ellipse> ellsYaed, ellipse_in;
+		vector<Ellipse> ellsYaed, ellipse_in, ellipse_big;
 		vector<Mat1b> img_roi;
 		yaed->Detect(gray, ellsYaed);
 		Mat3b resultImage = image_r.clone();
+        Mat3b resultImage2 = image_r.clone();
 		vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
 		yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
-		
-        yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);//绘制检测到的椭圆
-		vector< vector<Point> > contours;
-		bool stable = true;
+        yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
+        yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
+		vector< vector<Point> > contours;;
 		if(stable){
 				yaed->extracrROI(gray_big, ellipse_out, img_roi);
 				visual_rec(img_roi, ellipse_out, ellipse_TF, contours);//T和F的检测程序
