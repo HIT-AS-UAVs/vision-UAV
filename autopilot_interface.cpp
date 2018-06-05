@@ -763,7 +763,7 @@ Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target
     int Glolen = WL_write_message(Global_messgge);
     if(Glolen <= 0)
     {
-        print("fail send wl message! try again! ")
+        printf("fail send wl message! try again! ");
         Glolen = WL_write_message(Global_messgge);
     }
     else
@@ -1542,13 +1542,40 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
 }
 void resultTF(vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
 	for(auto &p:ellipse_in){
-		if(p.possbile > 0.5 && p.T_N > 10){
-			ellipse_1.push_back(p);
+	    if(p.possbile > 0.5 && p.T_N > 10) {
+			if(ellipse_1.size() == 0){
+				ellipse_1.push_back(p);
+				continue;
+			}
+	    	for (auto t = 0; t < ellipse_1.size(); t++) {
+				if ((p.x - ellipse_1[t].x) < 0.1 && (p.y - ellipse_1[t].y) < 0.1)
+					break;
+				else if( t != (ellipse_1.size() - 1))
+					continue;
+				else {
+					ellipse_1.push_back(p);
+					break;
+				}
+
+			}
+		} else if(p.possbile < 0.5 && p.F_N > 10){
+	    	if(ellipse_0.size() == 0){
+	    		ellipse_0.push_back(p);
+				continue;
+	    	}
+	    	for(auto f = 0; f < ellipse_0.size(); f++){
+				if ((p.x - ellipse_0[f].x) < 0.1 && (p.y - ellipse_0[f].y) < 0.1)
+					break;
+				else if( f != (ellipse_0.size() - 1))
+					continue;
+				else {
+					ellipse_0.push_back(p);
+					break;
+				}
+	    }
+	    } else
 			continue;
-		} else if(p.possbile < 0.49 && p.F_N > 10){
-			ellipse_0.push_back(p);
-			continue;
-		} else
-			continue;
+
 	}
+
 }

@@ -620,7 +620,8 @@ void videothread(Autopilot_Interface &api){
 		Mat3b resultImage = image_r.clone();
 		vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
 		yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
-		yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);//绘制检测到的椭圆
+		
+        yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);//绘制检测到的椭圆
 		vector< vector<Point> > contours;
 		bool stable = true;
 		if(stable){
@@ -650,7 +651,7 @@ void videothread(Autopilot_Interface &api){
                 <<"flag = "<<target_ellipse_position[i].possbile<<endl;
         }
         resultTF(target_ellipse_position, ellipse_T, ellipse_F);
-		/*
+
         cout<<"ellipse_T.size = "<<ellipse_T.size()<<endl;
         for (int i = 0; i <ellipse_T.size(); ++i) {
 			cout<<"x = "<< ellipse_T[i].x<<endl
@@ -663,7 +664,7 @@ void videothread(Autopilot_Interface &api){
 				<<"y = "<<ellipse_F[i].y<<endl
 				<<"possbile = "<<ellipse_F[i].possbile<<endl;
 		}
-*/
+
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);

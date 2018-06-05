@@ -667,6 +667,8 @@ cv.h
 -
 ellipse/EllipseDetectorYaed.h
 /home/zxy/c_uart_interface_example/ellipse/EllipseDetectorYaed.h
+autopilot_interface.h
+/home/zxy/c_uart_interface_example/autopilot_interface.h
 thread
 -
 fstream
