@@ -1474,40 +1474,42 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
 				float loc_x = autopilot_interface.current_messages.local_position_ned.x;
 				float loc_y = autopilot_interface.current_messages.local_position_ned.y;
 				//在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
-				float x = (p.x - cx) / fx * h / 1000;//单位为：m
-				float y = -(p.y - cy) / fy * h / 1000;
+				float x = (p.x - cx) / fx * h1 / 1000;//单位为：m
+				float y = -(p.y - cy) / fy * h1 / 1000;
 				//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
-				float x_r = y * cos( hdg * 3.1415926 / 180 / 100) - x * sin( hdg * 3.1415926 / 180 / 100);//单位是:m
-				float y_r = x * cos( hdg * 3.1415926 / 180 / 100) + y * sin( hdg * 3.1415926 / 180 / 100);
+				float x_r = y * cos( hdg1 * 3.1415926 / 180 / 100) - x * sin( hdg1 * 3.1415926 / 180 / 100);//单位是:m
+				float y_r = x * cos( hdg1 * 3.1415926 / 180 / 100) + y * sin( hdg1 * 3.1415926 / 180 / 100);
 				float e_x = x_r + loc_x;
 				float e_y = y_r + loc_y;
-				p.x = e_x;
-				p.y = e_y;
+				p.x = x_r;
+				p.y = y_r;
 
 				if (target_ellipse.size() == 0){
                     target t;
 				    t.x = p.x;
 				    t.y = p.y;
 				    t.a = p.a;
-				    if(p.flag == true)
+				    if(p.flag == 1)
 						t.T_N = 1;
-                    else
+                    else if(p.flag == 0)
 						t.F_N = 1;
+					else{}
 
-                    t.possbile = (float)t.T_N / (float)(t.T_N + t.F_N);
+                    t.possbile = (float)t.T_N / (float)(t.T_N + t.F_N + 0.001);
                     target_ellipse.push_back(t);
                     continue;
 				}
 					for (auto i = 0; i < target_ellipse.size(); i++) {
-						if (abs(p.x - target_ellipse[i].x) < 0.25 &&
-							abs(p.y - target_ellipse[i].y) < 0.25) {
+						if (abs(p.x - target_ellipse[i].x) < 0.05 &&
+							abs(p.y - target_ellipse[i].y) < 0.05) {
                             target_ellipse[i].x = p.x;
                             target_ellipse[i].y = p.y;
                             target_ellipse[i].a = p.a;
-						    if(p.flag == true)
+						    if(p.flag == 1)
 								target_ellipse[i].T_N = target_ellipse[i].T_N + 1;
-                            else
+                            else if (p.flag == 0)
 								target_ellipse[i].F_N = target_ellipse[i].F_N + 1;
+							else{}
                             target_ellipse[i].possbile = (float)target_ellipse[i].T_N / (float)(target_ellipse[i].T_N + target_ellipse[i].F_N);
 							break;
 						} else if( i != (target_ellipse.size() - 1)){
@@ -1517,10 +1519,11 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
 						    t.x = p.x;
 							t.y = p.y;
 							t.a = p.a;
-							if(p.flag == true)
+							if(p.flag == 1)
 								t.T_N = 1;
-							else
+							else if(p.flag == 0)
 								t.F_N = 1;
+							else{}
 							t.possbile = (float)t.T_N / (float)(t.T_N + t.F_N);
 							target_ellipse.push_back(t);
 							break;
@@ -1536,4 +1539,16 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
 //				 << "y:" << q.y << endl
 //				 << "a" << q.a << endl;
 //		}
+}
+void resultTF(vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
+	for(auto &p:ellipse_in){
+		if(p.possbile > 0.5 && p.T_N > 10){
+			ellipse_1.push_back(p);
+			continue;
+		} else if(p.possbile < 0.49 && p.F_N > 10){
+			ellipse_0.push_back(p);
+			continue;
+		} else
+			continue;
+	}
 }

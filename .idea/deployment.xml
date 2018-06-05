@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="tx2">
+  <component name="PublishConfigData">
     <serverData>
       <paths name="tx2">
         <serverdata>
           <mappings>
-            <mapping deploy="/20180528" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="20180604" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

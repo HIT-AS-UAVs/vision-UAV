@@ -1984,14 +1984,6 @@ void CEllipseDetectorYaed::OptimizEllipse(vector<Ellipse> &ellipse_out, vector<E
 	}
 
 	/*************延x轴方向对椭圆由小到大排序**************************/
-//	for (auto i = 0; i < (e0.size() - 1); i++) {
-//		for(auto j = 0; j < (e0.size() - 1 - i); j++){
-//			if (e0[j]._xc > e0[j + 1]._xc) {
-//				swap(e0[j], e0[j + 1]);
-//			}
-//		}
-//	}
-/*感觉这个程序和上面的没啥区别，不知道为啥就是通不过*/
 	int n_e = e0.size();
 	for (int i = 0; i < n_e - 1; i++) {
 		for (int j = 0; j < n_e - 1 - i; j++) {
@@ -2058,65 +2050,87 @@ void CEllipseDetectorYaed::OptimizEllipse(vector<Ellipse> &ellipse_out, vector<E
 		}
 	}
 	ellipse_out = left;
-	for(auto p:right){
+	for(auto &p:right){
 		ellipse_out.push_back(p);
 	}
 
 }
 
+void CEllipseDetectorYaed::extracrROI(Mat1b& image, vector<coordinate>& ellipse_out, vector<Mat1b>& img_roi){
 
-void visual_rec(Mat1b& gray, vector<coordinate>& ellipse_out0, vector<coordinate>& ellipse_out00, vector< vector<Point> >& contours0){
-    float areanum = 0.215;
-    threshold(gray, gray, 170, 255, CV_THRESH_BINARY);
+//	cvtColor(image, image, COLOR_RGB2GRAY);
+	GaussianBlur(image, image, Size(5, 5),0, 0);
+	threshold(image, image, 140, 255, CV_THRESH_BINARY);
+	for(auto &p:ellipse_out){
+		Mat1b ROI;
+		int r = 0.9 * p.a;
+		int x_l = 3 * p.x - r;
+		int y_l = 3 * p.y - r;
+		int width = 2 * r;
+		ROI = image(Rect(x_l, y_l, width, width));
+		imshow("ROI", ROI);
+		img_roi.push_back(ROI);
+	}
+}
 
-  morphologyEx(gray, gray,MORPH_DILATE , (5, 5) );
-	imshow("threshold", gray);
-    vector< vector<Point> > contours;
-    findContours(gray, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
-    for(auto &p:ellipse_out0) {
-        for (int i = 0; i < contours.size(); i++) {
-            //拟合出轮廓外侧最小的矩形
-            RotatedRect rotate_rect = minAreaRect(contours[i]);
-            Point2f *vertices = new Point2f[4];
-            rotate_rect.points(vertices);
-            if (rotate_rect.size.height < (0.15 * p.a) || rotate_rect.size.height > (0.3 * p.a)
-                || abs(rotate_rect.center.x - p.x) > (0.172 * p.a) || abs(rotate_rect.center.y - p.y) > (0.172 * p.a))
-                continue;
+void visual_rec(vector<Mat1b>& gray, vector<coordinate>& ellipse_out0, vector<coordinate>& ellipse_out00, vector< vector<Point> >& contours0){
+	float areanum = 0.215;
+//    threshold(gray, gray, 120, 255, CV_THRESH_BINARY);
+//  imshow("threshold", thresh);
+//  morphologyEx(gauss, gauss, MORPH_CLOSE, (5, 5) );
+//    Canny(thresh, canny, 50, 150, 3);
+	vector< vector<Point> > contours;
 
-            float x12 = (vertices[1].x + vertices[2].x) / 2;
-            float y12 = (vertices[1].y + vertices[2].y) / 2;
-            float xt12 = areanum * (rotate_rect.center.x - x12) + x12;
-            float yt12 = y12 - areanum * (y12 - rotate_rect.center.y);
+	for(auto j = 0; j < gray.size(); j++) {
+		findContours(gray[j], contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+		for (int i = 0; i < contours.size(); i++) {
+			//拟合出轮廓外侧最小的矩形
+			RotatedRect rotate_rect = minAreaRect(contours[i]);
+			Point2f *vertices = new Point2f[4];
+			rotate_rect.points(vertices);
+			float h1, h2, h3, h4;
+			h1 = 0.5 * ellipse_out0[j].a;//只要h1,h2的系数在0.68571429这个值范围内就行
+			h2 = 0.86 * ellipse_out0[j].a;
+			h3 = (0.8 * ellipse_out0[j].a - 0.5 * rotate_rect.size.width);
+			h4 = 0.5 * gray[j].cols;
+			if (rotate_rect.size.height < h1 || rotate_rect.size.height > h2 || rotate_rect.size.width < h1 || rotate_rect.size.width > h2
+				|| abs(rotate_rect.center.x - h4) > h3 || abs(rotate_rect.center.y - h4) > h3)
+				continue;
 
-            float x30 = (vertices[3].x + vertices[0].x) / 2;
-            float y30 = (vertices[3].y + vertices[0].y) / 2;
-            float yt30 = areanum * (rotate_rect.center.y - y30) + y30;
-            float xt30 = x30 - areanum * (x30 - rotate_rect.center.x);
+			float x12 = (vertices[1].x + vertices[2].x) / 2;
+			float y12 = (vertices[1].y + vertices[2].y) / 2;
+			float xt12 = areanum * (rotate_rect.center.x - x12) + x12;
+			float yt12 = y12 - areanum * (y12 - rotate_rect.center.y);
 
-            float x23 = (vertices[2].x + vertices[3].x) / 2;
-            float y23 = (vertices[2].y + vertices[3].y) / 2;
-            float xt23 = areanum * (rotate_rect.center.x - x23) + x23;
-            float yt23 = y23 - areanum * (y23 - rotate_rect.center.y);
+			float x30 = (vertices[3].x + vertices[0].x) / 2;
+			float y30 = (vertices[3].y + vertices[0].y) / 2;
+			float yt30 = areanum * (rotate_rect.center.y - y30) + y30;
+			float xt30 = x30 - areanum * (x30 - rotate_rect.center.x);
 
-            float x01 = (vertices[1].x + vertices[0].x) / 2;
-            float y01 = (vertices[1].y + vertices[0].y) / 2;
-            float yt01 = areanum * (rotate_rect.center.y - y01) + y01;
-            float xt01 = x01 - areanum * (x01 - rotate_rect.center.x);
+			float x23 = (vertices[2].x + vertices[3].x) / 2;
+			float y23 = (vertices[2].y + vertices[3].y) / 2;
+			float xt23 = areanum * (rotate_rect.center.x - x23) + x23;
+			float yt23 = y23 - areanum * (y23 - rotate_rect.center.y);
 
-            if (abs((gray.at<uchar>(yt12, xt12) - gray.at<uchar>(yt30, xt30))) < 50
-                && abs((gray.at<uchar>(yt23, xt23) - gray.at<uchar>(yt01, xt01))) < 50) {
-                p.flag = true;
-//					cout << "decide:" << "T" << endl;
-            } else {
-                p.flag = false;
-//					cout << "decide:" << "F" << endl;
-            }
-            vector<Point> contour;
-            for (int i = 0; i < 4; i++) {
-                contour.push_back(vertices[i]);
-            }
-            contours0.push_back(contour);
-        }
-        ellipse_out00.push_back(p);
-    }
+			float x01 = (vertices[1].x + vertices[0].x) / 2;
+			float y01 = (vertices[1].y + vertices[0].y) / 2;
+			float yt01 = areanum * (rotate_rect.center.y - y01) + y01;
+			float xt01 = x01 - areanum * (x01 - rotate_rect.center.x);
+
+			if (abs((gray[j].at<uchar>(yt12, xt12) - gray[j].at<uchar>(yt30, xt30))) < 60
+				&& abs((gray[j].at<uchar>(yt23, xt23) - gray[j].at<uchar>(yt01, xt01))) < 60) {
+				ellipse_out0[j].flag = 1;
+			} else {
+				ellipse_out0[j].flag = 0;
+			}
+			vector<Point> contour;
+			for (int i = 0; i < 4; i++) {
+				vertices[i].x = vertices[i].x + (3 * ellipse_out0[j].x - 0.9 * ellipse_out0[j].a);
+				vertices[i].y = vertices[i].y + (3 * ellipse_out0[j].y - 0.9 * ellipse_out0[j].a);
+				contour.push_back(vertices[i]);
+			}
+			contours0.push_back(contour);
+		}
+		ellipse_out00.push_back(ellipse_out0[j]);
+	}
 }
