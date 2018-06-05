@@ -763,7 +763,7 @@ Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target
     int Glolen = WL_write_message(Global_messgge);
     if(Glolen <= 0)
     {
-        print("fail send wl message! try again! ")
+        printf("fail send wl message! try again! ");
         Glolen = WL_write_message(Global_messgge);
     }
     else
