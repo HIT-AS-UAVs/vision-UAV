@@ -1468,7 +1468,7 @@ start_WL_write_thread(void *args)
 void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinate>& ellipse_out, vector<target>& target_ellipse){
 
 		for (auto &p:ellipse_out) {
-            int32_t h = autopilot_interface.current_messages.global_position_int.relative_alt;
+//            int32_t h1 = autopilot_interface.current_messages.global_position_int.relative_alt;
             int32_t h1 = 740;//设置高度为常量0.74M
             uint16_t hdg = autopilot_interface.current_messages.global_position_int.hdg;
             uint16_t hdg1 = 0;//设置机头方向为正北
