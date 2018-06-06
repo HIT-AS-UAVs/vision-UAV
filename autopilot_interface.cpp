@@ -1465,25 +1465,33 @@ start_WL_write_thread(void *args)
 // ------------------------------------------------------------------------------
 //  将当前时刻看到的所有可能为目标的椭圆存放在容器中
 // ------------------------------------------------------------------------------
-void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinate>& ellipse_out, vector<target>& target_ellipse){
-
-		for (auto &p:ellipse_out) {
-            int32_t h = autopilot_interface.current_messages.global_position_int.relative_alt;
-            int32_t h1 = 740;//设置高度为常量0.74M
-            uint16_t hdg = autopilot_interface.current_messages.global_position_int.hdg;
-            uint16_t hdg1 = 0;//设置机头方向为正北
-            float loc_x = autopilot_interface.current_messages.local_position_ned.x;
-            float loc_y = autopilot_interface.current_messages.local_position_ned.y;
-            //在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）
-            float x = (p.x - cx) / fx * h1 / 1000;//单位为：m
-            float y = -(p.y - cy) / fy * h1 / 1000;
-            //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为x,正北为y）
-            float x_r = y * cos(hdg1 * 3.1415926 / 180 / 100) - x * sin(hdg1 * 3.1415926 / 180 / 100);//单位是:m
-            float y_r = x * cos(hdg1 * 3.1415926 / 180 / 100) + y * sin(hdg1 * 3.1415926 / 180 / 100);
+void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse){
+    float dis = 0.1;//在室外的参数圆心相距9米内都算一个圆
+//	float dis = 0.05;//在室内测试用0.05
+    for (auto &p:ellipse_out) {
+        int32_t h = - api.current_messages.local_position_ned.z * 1000;
+        cout<<"h:"<<h<<endl;
+//        int32_t h1 = 1170;//桌子高度0.74M
+        uint16_t hdg = api.current_messages.global_position_int.hdg;
+//        uint16_t hdg1 = 0;//设置机头方向为正北
+        float loc_x = api.current_messages.local_position_ned.x;
+		cout<<"loc_x"<<loc_x<<endl;
+        float loc_y = api.current_messages.local_position_ned.y;
+		cout<<"loc_y"<<loc_y<<endl;
+        /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
+        		float x = (p.x - cx) / fx * h / 1000;//单位为：m
+            float y = - (p.y - cy) / fy * h / 1000;
+            //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
+            float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
+            float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
             float e_x = x_r + loc_x;
             float e_y = y_r + loc_y;
-            p.x = x_r;
-            p.y = y_r;
+            /*在室内测试用这个*/
+//            p.x = x_r;
+//            p.y = y_r;
+            /*在室外测试用这个*/
+		p.x = e_x;
+		p.y = e_y;
 
             if (target_ellipse.size() == 0) {
                 target t;
@@ -1501,7 +1509,7 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
                 continue;
             }
             if(stable == true || updateellipse == true) {
-                if(abs(p.x - target_ellipse[TargetNum].x) < 0.05 && abs(p.y - ellipse_out[TargetNum].y) < 0.05){
+                if(abs(p.x - target_ellipse[TargetNum].x) < dis && abs(p.y - ellipse_out[TargetNum].y) < dis){
                     target_ellipse[TargetNum].x = p.x;
                     target_ellipse[TargetNum].y = p.y;
                     target_ellipse[TargetNum].a = p.a;
@@ -1518,8 +1526,8 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
             }
             else {
 				for (auto i = 0; i < target_ellipse.size(); i++) {
-					if (abs(p.x - target_ellipse[i].x) < 0.05 &&
-						abs(p.y - target_ellipse[i].y) < 0.05) {
+					if (abs(p.x - target_ellipse[i].x) < dis &&
+						abs(p.y - target_ellipse[i].y) < dis) {
 						target_ellipse[i].x = p.x;
 						target_ellipse[i].y = p.y;
 						target_ellipse[i].a = p.a;
@@ -1551,52 +1559,48 @@ void possible_ellipse(Autopilot_Interface &autopilot_interface, vector<coordinat
 			}
 
 		}
-//		cout<<"target_ellipse_size:"<<target_ellipse.size()<<endl;
-//		for (auto &q:target_ellipse) {
-//			cout << "flag:" << q.possbile << endl
-//				 << "x:" << q.x << endl
-//				 << "y:" << q.y << endl
-//				 << "a" << q.a << endl;
-//		}
 }
-void resultTF(vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
-	for(auto &p:ellipse_in){
-		Autopilot_Interface *api;
-	    if(p.possbile > 0.5 && p.T_N > 10) {
+void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
+//	float possobile = 0.5, dis = 0.05;//室内测试设置0.5，0.05， 室外待定
+//	uint32_t num = 10;//室内测试设置10，室外待定
+	float possobile = 0.4, dis = 0.1;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
+	uint32_t num = 50;//室外测试：识别次数大于50次即可进行TF判断。
+			for(auto &p:ellipse_in){
+	    if(p.possbile > possobile && p.T_N > num) {
 			if(ellipse_1.size() == 0){
-			    p.lat = api->current_messages.global_position_int.lat;
-			    p.lon = api->current_messages.global_position_int.lon;
+			    p.lat = api.current_messages.global_position_int.lat;
+			    p.lon = api.current_messages.global_position_int.lon;
 				ellipse_1.push_back(p);
 				continue;
 			}
 	    	for (auto t = 0; t < ellipse_1.size(); t++) {
-				if ((p.x - ellipse_1[t].x) < 0.1 && (p.y - ellipse_1[t].y) < 0.1)
+				if ((p.x - ellipse_1[t].x) < dis && (p.y - ellipse_1[t].y) < dis)
 					break;
 				else if( t != (ellipse_1.size() - 1))
 					continue;
 				else {
-                    p.lat = api->current_messages.global_position_int.lat;
-                    p.lon = api->current_messages.global_position_int.lon;
+                    p.lat = api.current_messages.global_position_int.lat;
+                    p.lon = api.current_messages.global_position_int.lon;
 					ellipse_1.push_back(p);
 					break;
 				}
 
 			}
-		} else if(p.possbile < 0.5 && p.F_N > 10){
+		} else if(p.possbile < possobile && p.F_N > num){
 	    	if(ellipse_0.size() == 0){
-                p.lat = api->current_messages.global_position_int.lat;
-                p.lon = api->current_messages.global_position_int.lon;
+                p.lat = api.current_messages.global_position_int.lat;
+                p.lon = api.current_messages.global_position_int.lon;
 	    		ellipse_0.push_back(p);
 				continue;
 	    	}
 	    	for(auto f = 0; f < ellipse_0.size(); f++){
-				if ((p.x - ellipse_0[f].x) < 0.1 && (p.y - ellipse_0[f].y) < 0.1)
+				if ((p.x - ellipse_0[f].x) < dis && (p.y - ellipse_0[f].y) < dis)
 					break;
 				else if( f != (ellipse_0.size() - 1))
 					continue;
 				else {
-                    p.lat = api->current_messages.global_position_int.lat;
-                    p.lon = api->current_messages.global_position_int.lon;
+                    p.lat = api.current_messages.global_position_int.lat;
+                    p.lon = api.current_messages.global_position_int.lon;
 					ellipse_0.push_back(p);
 					break;
 				}

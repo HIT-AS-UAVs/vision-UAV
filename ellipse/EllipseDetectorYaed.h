@@ -49,9 +49,11 @@ using namespace cv;
 //#define DISCARD_CONSTRAINT_POSITION
 //#define DISCARD_CONSTRAINT_CENTER
 //const float high = 0.75;//桌子单位
-const float fx = 734.0686, fy = 737.9659;
+const float fx = 734.0686, fy = 737.9659;//c525
 const float cx = 316.2778, cy = 232.4590;
 
+//const float fx = 1140.8604 / 3, fy = 1141.4534 / 3;//c930E #1
+//const float cx = 920.9147 / 3 + 12, cy = 580.8716 / 3;
 
 
 /////////////椭圆坐标类型
