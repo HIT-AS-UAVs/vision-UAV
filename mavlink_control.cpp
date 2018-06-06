@@ -145,9 +145,9 @@ top (int argc, char **argv)
 
 
 
-//	serial_port.start();
-//    WL_serial_port.start();
-//	autopilot_interface.start();
+	serial_port.start();
+    WL_serial_port.start();
+	autopilot_interface.start();
 //视觉定位线程
 	thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
 	// --------------------------------------------------------------------------
@@ -158,7 +158,7 @@ top (int argc, char **argv)
 	 * Now we can implement the algorithm we want on top of the autopilot interface
 	 */
 
-//   commands(autopilot_interface);
+   commands(autopilot_interface);
 
 	// --------------------------------------------------------------------------
 	//   THREAD and PORT SHUTDOWN
@@ -195,7 +195,7 @@ commands(Autopilot_Interface &api)
     //target = [];
     bool flag = true;
     bool goback = true;
-    int TargetNum = 0;
+    TargetNum = 0;
     int TNum = 0;
 
     // --------------------------------------------------------------------------
@@ -225,6 +225,9 @@ commands(Autopilot_Interface &api)
             usleep(100);
             api.Set_Mode(04);
             usleep(100);
+
+            //设置成为只更新椭圆位置,不添加新的椭圆坐标
+            updateellipse = false;
             mavlink_set_position_target_local_ned_t sp;
 //            mavlink_local_position_ned_t locsp = api.local_position;
             //现在用当前高度,最终高度确定时使用
@@ -286,15 +289,16 @@ commands(Autopilot_Interface &api)
                         float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
                         if(distance < 4)
                         {
-                            bool TF;
+//                            bool TF;
+                            stable = true;
                             // ------------------------------------------------------------------------------
                             //     调用判断T/F的函数
                             //     若为T则将当前全局坐标系发送给从机[TagetNum]
                             // ------------------------------------------------------------------------------
 //                        TF = visual_rec(ellipse_out1);
-                            TF = true;
+//                            TF = true;
                             sleep(10);
-                            if (TF == true)
+                            if (ellipse_T.size() > TNum)
                             {
                                 mavlink_global_position_int_t Target_Global_Position;
                                 Target_Global_Position = api.current_messages.global_position_int;
@@ -314,6 +318,7 @@ commands(Autopilot_Interface &api)
                             {
                                 TargetNum = TargetNum + 1;
                             }
+                            stable = false;
                             break;
                         }
                         else
@@ -394,6 +399,8 @@ commands(Autopilot_Interface &api)
                         usleep(200);
                         goback = true;
                         api.Set_Mode(03);
+                        sleep(2);
+                        updateellipse = true;
                         break;
                     }
                     else

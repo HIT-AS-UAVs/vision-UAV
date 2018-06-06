@@ -58,6 +58,9 @@ using namespace std;
 #include "ellipse/EllipseDetectorYaed.h"
 
 extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
+extern bool updateellipse;
+extern bool stable;
+extern int TargetNum ;
 // ------------------------------------------------------------------------------
 //   Prototypes
 // ------------------------------------------------------------------------------
