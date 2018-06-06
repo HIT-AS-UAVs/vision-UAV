@@ -64,6 +64,9 @@
 #include <fstream>
 #include "mavlink/common/mavlink.h"
 #include "ellipse/EllipseDetectorYaed.h"
+
+extern bool stable, updateellipse;
+extern int TargetNum;
 // ------------------------------------------------------------------------------
 //   Defines
 // ------------------------------------------------------------------------------
