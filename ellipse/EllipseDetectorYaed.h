@@ -49,12 +49,14 @@ using namespace cv;
 //#define DISCARD_CONSTRAINT_POSITION
 //#define DISCARD_CONSTRAINT_CENTER
 //const float high = 0.75;//桌子单位
-const float fx = 734.0686, fy = 737.9659;//c525
-const float cx = 316.2778, cy = 232.4590;
+//const float fx = 734.0686, fy = 737.9659;//c525
+//const float cx = 316.2778, cy = 232.4590;
 
 //const float fx = 1140.8604 / 3, fy = 1141.4534 / 3;//c930E #1
 //const float cx = 920.9147 / 3 + 12, cy = 580.8716 / 3;
 
+const float fx = 1152.1080 / 3, fy = 1153.6161 / 3;//c930E #2
+const float cx = 974.8427 / 3 + 12, cy = 566.9231 / 3;
 
 /////////////椭圆坐标类型
 struct coordinate {
@@ -166,10 +168,14 @@ public:
 
 	//优化得到的椭圆
 	void OptimizEllipse( vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
+
+    //投弹的时候只识别小圆
+	void onlyforsmall(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in);
+
 	//提取ROI
     void extracrROI(Mat1b& image, vector<coordinate>& ellipse_out, vector<Mat1b>& img_roi);
 
-	float computcolorpercentage(Mat3b& roi,int& e_roi_order,vector< Ellipse >& ellipse_in,vector<Ellipse>& ell_big);
+	bool computcolorpercentage(Mat3b& roi, Ellipse& ell_in);
 
 	void big_vector(Mat3b& resultImage2, vector< Ellipse >& ellipse_in, vector< Ellipse >& ellipse_big);
     //Set the parameters of the detector

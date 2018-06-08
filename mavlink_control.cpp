@@ -124,7 +124,7 @@ top (int argc, char **argv)
 	 * otherwise the vehicle will go into failsafe.
 	 *
 	 */
-	Autopilot_Interface autopilot_interface(&serial_port,&WL_serial_port);
+	Autopilot_Interface autopilot_interface(&serial_port, &WL_serial_port);
 
 	/*
 	 * Setup interrupt signal handler
@@ -146,11 +146,41 @@ top (int argc, char **argv)
 
 
 
-	serial_port.start();
-    WL_serial_port.start();
-	autopilot_interface.start();
-//视觉定位线程
-	thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
+//	serial_port.start();
+//    WL_serial_port.start();
+//	autopilot_interface.start();
+
+    ///////请求数据流(关闭ALL)
+    mavlink_request_data_stream_t com1 = { 0 };
+    com1.target_system= 01;
+    com1.target_component = 01;
+    com1.req_stream_id = MAV_DATA_STREAM_ALL;
+    com1.req_message_rate = 2;
+    com1.start_stop = 0;
+    mavlink_message_t message1;
+    mavlink_msg_request_data_stream_encode(255, 190, &message1, &com1);
+    int len1 = serial_port.write_message(message1);
+    usleep(100);
+
+    /////////////////////////////////请求位置数据流
+    mavlink_request_data_stream_t comdata = { 0 };
+    comdata.req_message_rate = 5;
+    comdata.req_stream_id = MAV_DATA_STREAM_POSITION;
+    comdata.start_stop = 1;
+    comdata.target_system = 1;
+    comdata.target_component = 1;
+    mavlink_message_t Rmassage;
+    mavlink_msg_request_data_stream_encode(255,190,&Rmassage,&comdata);
+    int Rlen;
+    //重复发送确保指令收到
+    for (int i = 0; i < 3; ++i)
+    {
+        Rlen = serial_port.write_message(Rmassage);
+        usleep(100);
+    }
+    usleep(20000);
+/*****************************视觉定位线程**************************/
+    thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
 	// --------------------------------------------------------------------------
 	//   RUN COMMANDS
 	// --------------------------------------------------------------------------
@@ -158,13 +188,35 @@ top (int argc, char **argv)
 	/*
 	 * Now we can implement the algorithm we want on top of the autopilot interface
 	 */
-//while(1){
-//    cout<<"current_x"<<autopilot_interface.current_messages.local_position_ned.x<<endl
-//        <<"current_y"<<autopilot_interface.current_messages.local_position_ned.y<<endl
-//        <<"current_z"<<autopilot_interface.current_messages.local_position_ned.z<<endl;
-//}
-   commands(autopilot_interface);
-
+//   commands(autopilot_interface);
+while(1){
+    cout<<"current_x:"<<autopilot_interface.current_messages.local_position_ned.x<<endl;
+    cout<<"current_y:"<<autopilot_interface.current_messages.local_position_ned.y<<endl;
+    cout<<"current_z:"<<autopilot_interface.current_messages.local_position_ned.z<<endl;
+    cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
+    for (int i = 0; i < target_ellipse_position.size(); ++i) {
+        cout << "x = " << target_ellipse_position[i].x << endl
+             << "y = " << target_ellipse_position[i].y << endl
+             << "T = " << target_ellipse_position[i].T_N << endl
+             << "F = " << target_ellipse_position[i].F_N << endl
+             << "flag = " << target_ellipse_position[i].possbile << endl;
+    }
+    cout << "ellipse_T.size = " << ellipse_T.size() << endl;
+    for (int i = 0; i < ellipse_T.size(); ++i) {
+        cout << "x = " << ellipse_T[i].x << endl
+             << "y = " << ellipse_T[i].y << endl
+             << "possbile = " << ellipse_T[i].possbile << endl
+             << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
+    }
+    cout << "ellipse_F.size = " << ellipse_F.size() << endl;
+    for (int i = 0; i < ellipse_F.size(); ++i) {
+        cout << "x = " << ellipse_F[i].x << endl
+             << "y = " << ellipse_F[i].y << endl
+             << "possbile = " << ellipse_F[i].possbile << endl
+             << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
+    }
+    sleep(1);
+}
 	// --------------------------------------------------------------------------
 	//   THREAD and PORT SHUTDOWN
 	// --------------------------------------------------------------------------
@@ -203,7 +255,7 @@ commands(Autopilot_Interface &api)
     int TargetNum = 0;
     int TNum = 0;
 
-    // --------------------------------------------------------------------------
+    // ------------------mavlink_msg_global_position_int_decode--------------------------------------------------------
     //   START OFFBOARD MODE
     //   设置guided（offboard）模式/解锁、起飞
     // --------------------------------------------------------------------------
@@ -565,8 +617,11 @@ quit_handler( int sig )
 ///////////////视觉定位线程
 void videothread(Autopilot_Interface& api){
 
-	VideoCapture cap(0);
-	if(!cap.isOpened()) return;
+//	VideoCapture cap(1);
+    VideoCapture cap;
+    cap.open("T_rotation.avi");
+//    cap.open("F.avi");
+//	if(!cap.isOpened()) return;
     int width = 640;
     int height = 360;
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
@@ -624,52 +679,34 @@ void videothread(Autopilot_Interface& api){
 		Mat3b resultImage = image_r.clone();
         Mat3b resultImage2 = image_r.clone();
 		vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
-		yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
-        yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
-        yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
-		vector< vector<Point> > contours;;
-		if(stable){
-				yaed->extracrROI(gray_big, ellipse_out, img_roi);
-				visual_rec(img_roi, ellipse_out, ellipse_TF, contours);//T和F的检测程序
-				ellipse_out1 = ellipse_TF;
-			} else
-				ellipse_out1 = ellipse_out;
-//		for(auto &p:ellipse_TF){
-//			cout<<"x:"<<p.x<<endl
-//				<<"y"<<p.y<<endl
-//				<<"flag"<<p.flag<<endl;
-//		}
-		for(auto &p:contours){
-			vector< vector<Point> > contours1;
-			contours1.push_back(p);
-			drawContours(image, contours1, 0, Scalar(255, 255, 0), 1);
-		}
-            possible_ellipse(api, ellipse_out1, target_ellipse_position);
-            cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
-            for (int i = 0; i < target_ellipse_position.size(); ++i) {
-                cout << "x = " << target_ellipse_position[i].x << endl
-                     << "y = " << target_ellipse_position[i].y << endl
-                     << "T = " << target_ellipse_position[i].T_N << endl
-                     << "F = " << target_ellipse_position[i].F_N << endl
-                     << "flag = " << target_ellipse_position[i].possbile << endl;
+		if(!drop) {
+            yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
+            yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
+            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
+            vector< vector<Point> > contours;;
+            if (stable) {
+                yaed->extracrROI(gray_big, ellipse_out, img_roi);
+                visual_rec(img_roi, ellipse_out, ellipse_TF, contours);//T和F的检测程序
+                ellipse_out1 = ellipse_TF;
+            } else
+                ellipse_out1 = ellipse_out;
+            for (auto &p:contours) {
+                vector<vector<Point> > contours1;
+                contours1.push_back(p);
+                drawContours(image, contours1, 0, Scalar(255, 255, 0), 1);
             }
-            resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
+            if (getlocalposition) {
+                possible_ellipse(api, ellipse_out1, target_ellipse_position);
 
-//            cout << "ellipse_T.size = " << ellipse_T.size() << endl;
-//            for (int i = 0; i < ellipse_T.size(); ++i) {
-//                cout << "x = " << ellipse_T[i].x << endl
-//                     << "y = " << ellipse_T[i].y << endl
-//                     << "possbile = " << ellipse_T[i].possbile << endl
-//                     << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
-//            }
-//            cout << "ellipse_F.size = " << ellipse_F.size() << endl;
-//            for (int i = 0; i < ellipse_F.size(); ++i) {
-//                cout << "x = " << ellipse_F[i].x << endl
-//                     << "y = " << ellipse_F[i].y << endl
-//                     << "possbile = " << ellipse_F[i].possbile << endl
-//                     << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
-//            }
 
+                resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
+
+            }
+        } else{
+            yaed->onlyforsmall(ellipse_in, ellsYaed);
+            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);
+            getdroptarget(api, droptarget, ellipse_out);
+		}
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
@@ -677,6 +714,7 @@ void videothread(Autopilot_Interface& api){
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
+		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------
