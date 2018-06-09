@@ -12,11 +12,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f63c1b4c-7698-4aa1-91f9-18b8f5810847" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/autopilot_interface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/autopilot_interface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/autopilot_interface.h" beforeDir="false" afterPath="$PROJECT_DIR$/autopilot_interface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h" beforeDir="false" afterPath="$PROJECT_DIR$/ellipse/EllipseDetectorYaed.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mavlink_control.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/mavlink_control.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mavlink_control.h" beforeDir="false" afterPath="$PROJECT_DIR$/mavlink_control.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -32,7 +28,7 @@
       <file leaf-file-name="autopilot_interface.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
+            <state relative-caret-position="22695">
               <caret line="1513" column="54" selection-start-line="1513" selection-start-column="54" selection-end-line="1513" selection-end-column="54" />
             </state>
           </provider>
@@ -41,8 +37,8 @@
       <file leaf-file-name="mavlink_control.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret line="649" column="19" selection-start-line="649" selection-start-column="19" selection-end-line="649" selection-end-column="19" />
+            <state relative-caret-position="405">
+              <caret line="594" lean-forward="true" selection-start-line="594" selection-end-line="594" />
               <folding>
                 <element signature="e#2411#2439#0" expanded="true" />
               </folding>
@@ -53,7 +49,7 @@
       <file leaf-file-name="autopilot_interface.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
+            <state relative-caret-position="1005">
               <caret line="67" column="26" selection-start-line="67" selection-start-column="26" selection-end-line="67" selection-end-column="26" />
               <folding>
                 <element signature="e#2453#2477#0" expanded="true" />
@@ -65,7 +61,7 @@
       <file leaf-file-name="serial_port.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/serial_port.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="481">
+            <state relative-caret-position="6180">
               <caret line="412" column="26" selection-start-line="412" selection-start-column="26" selection-end-line="412" selection-end-column="26" />
               <folding>
                 <element signature="e#10857#10883#0" expanded="true" />
@@ -77,7 +73,7 @@
       <file leaf-file-name="mavlink_control.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mavlink_control.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="275">
+            <state relative-caret-position="945">
               <caret line="63" column="14" selection-start-line="63" selection-start-column="14" selection-end-line="63" selection-end-column="14" />
               <folding>
                 <element signature="e#2328#2363#0" expanded="true" />
@@ -206,6 +202,7 @@
       <workItem from="1528033451666" duration="3653000" />
       <workItem from="1528073885620" duration="10676000" />
       <workItem from="1528267881612" duration="5477000" />
+      <workItem from="1528526133817" duration="2086000" />
     </task>
     <task id="LOCAL-00001" summary="Merge branch 'master' of https://github.com/HIT-AS-UAVs/vision-UAV&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;autopilot_interface.cpp&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/CXX.includecache&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/autopilot_interface.cpp.o&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/depend.internal&#10;#&#9;cmake-build-debug/CMakeFiles/UAVs_uart_interface.dir/mavlink_control.cpp.o&#10;#&#9;cmake-build-debug/UAVs_uart_interface&#10;#&#9;cmake-build-debug/messageID.txt">
       <created>1527990569242</created>
@@ -242,12 +239,12 @@
       <option name="project" value="LOCAL" />
       <updated>1528297165687</updated>
     </task>
-    <task id="LOCAL-00006" summary="修改目标位置检测环节">
-      <created>1527388779259</created>
+    <task id="LOCAL-00006" summary="Merge">
+      <created>1528527585578</created>
       <option name="number" value="00006" />
       <option name="presentableId" value="LOCAL-00006" />
       <option name="project" value="LOCAL" />
-      <updated>1527388779259</updated>
+      <updated>1528527585578</updated>
     </task>
     <task id="LOCAL-00007" summary="过滤重复椭圆目标，并将其记入容器中">
       <created>1527433275246</created>
@@ -291,21 +288,21 @@
       <option name="project" value="LOCAL" />
       <updated>1527433522880</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="54617000" />
+    <option name="totallyTimeSpent" value="56703000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1857" height="1092" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17088948" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.75849056" weight="0.45184427" />
       <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4819869" weight="0.22408377" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50026953" side_tool="true" visible="true" weight="0.32889345" />
-      <window_info active="true" anchor="bottom" id="Version Control" order="9" sideWeight="0.49973047" visible="true" weight="0.32889345" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5008086" side_tool="true" visible="true" weight="0.32889345" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="9" sideWeight="0.49919137" visible="true" weight="0.32889345" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4555256" weight="0.42315573" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
@@ -315,30 +312,31 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.75849056" weight="0.45184427" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="File Transfer" order="12" sideWeight="0.49595687" weight="0.32889345" />
       <window_info anchor="bottom" id="Find" order="1" />
     </layout>
     <layout-to-restore>
+      <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4819869" weight="0.22408377" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20161726" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32889345" />
       <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4170082" />
-      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3043033" />
-      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.49272236" weight="0.32991803" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32889345" />
       <window_info anchor="bottom" id="File Transfer" order="12" sideWeight="0.49703503" weight="0.32889345" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4819869" weight="0.22408377" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Messages" order="7" sideWeight="0.49272236" weight="0.32991803" />
       <window_info id="Favorites" order="2" side_tool="true" />
     </layout-to-restore>
   </component>
@@ -393,7 +391,8 @@
     <MESSAGE value="merge" />
     <MESSAGE value="将识别出的TF分成两个vector" />
     <MESSAGE value="合并" />
-    <option name="LAST_COMMIT_MESSAGE" value="合并" />
+    <MESSAGE value="Merge" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -737,7 +736,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mavlink_control.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="275">
+        <state relative-caret-position="945">
           <caret line="63" column="14" selection-start-line="63" selection-start-column="14" selection-end-line="63" selection-end-column="14" />
           <folding>
             <element signature="e#2328#2363#0" expanded="true" />
@@ -747,7 +746,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/serial_port.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="481">
+        <state relative-caret-position="6180">
           <caret line="412" column="26" selection-start-line="412" selection-start-column="26" selection-end-line="412" selection-end-column="26" />
           <folding>
             <element signature="e#10857#10883#0" expanded="true" />
@@ -759,15 +758,12 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="371">
           <caret line="86" column="13" lean-forward="true" selection-start-line="86" selection-start-column="13" selection-end-line="86" selection-end-column="13" />
-          <folding>
-            <element signature="e#831#852#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/autopilot_interface.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
+        <state relative-caret-position="1005">
           <caret line="67" column="26" selection-start-line="67" selection-start-column="26" selection-end-line="67" selection-end-column="26" />
           <folding>
             <element signature="e#2453#2477#0" expanded="true" />
@@ -777,15 +773,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/autopilot_interface.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
+        <state relative-caret-position="22695">
           <caret line="1513" column="54" selection-start-line="1513" selection-start-column="54" selection-end-line="1513" selection-end-column="54" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mavlink_control.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="649" column="19" selection-start-line="649" selection-start-column="19" selection-end-line="649" selection-end-column="19" />
+        <state relative-caret-position="405">
+          <caret line="594" lean-forward="true" selection-start-line="594" selection-end-line="594" />
           <folding>
             <element signature="e#2411#2439#0" expanded="true" />
           </folding>
