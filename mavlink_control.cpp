@@ -617,11 +617,11 @@ quit_handler( int sig )
 ///////////////视觉定位线程
 void videothread(Autopilot_Interface& api){
 
-//	VideoCapture cap(1);
-    VideoCapture cap;
-    cap.open("T_rotation.avi");
+	VideoCapture cap(1);
+//    VideoCapture cap;
+//    cap.open("T_rotation.avi");
 //    cap.open("F.avi");
-//	if(!cap.isOpened()) return;
+	if(!cap.isOpened()) return;
     int width = 640;
     int height = 360;
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
@@ -670,8 +670,8 @@ void videothread(Autopilot_Interface& api){
 		Mat3b image, image_r;
 		cap >> image;
 		resize(image, image_r, Size(640, 360), 0, 0, CV_INTER_LINEAR);
-		cvtColor(image_r, gray, COLOR_RGB2GRAY);
-		cvtColor(image, gray_big, COLOR_RGB2GRAY);
+		cvtColor(image_r, gray, COLOR_BGR2GRAY);
+		cvtColor(image, gray_big, COLOR_BGR2GRAY);
 
 		vector<Ellipse> ellsYaed, ellipse_in, ellipse_big;
 		vector<Mat1b> img_roi;
