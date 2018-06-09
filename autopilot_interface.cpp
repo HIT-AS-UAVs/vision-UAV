@@ -1507,7 +1507,8 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
                 continue;
             }
             if(stable == true || updateellipse == true) {
-                if(abs(p.x - target_ellipse[TargetNum].x) < dis && abs(p.y - ellipse_out[TargetNum].y) < dis){
+                if(abs(p.x - target_ellipse[TargetNum].x) < dis &&
+                   abs(p.y - target_ellipse[TargetNum].y) < dis){
                     target_ellipse[TargetNum].x = p.x;
                     target_ellipse[TargetNum].y = p.y;
                     target_ellipse[TargetNum].a = p.a;
