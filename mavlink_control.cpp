@@ -196,7 +196,7 @@ commands(Autopilot_Interface &api)
     //target = [];
     bool flag = true;
     bool goback = true;
-    TargetNum = 0;
+    int TargetNum = 0;
     int TNum = 0;
 
     // --------------------------------------------------------------------------
@@ -566,9 +566,8 @@ quit_handler( int sig )
 }
 
 ///////////////视觉定位线程
-void videothread(Autopilot_Interface &api){
+void videothread(Autopilot_Interface& api){
 
-    float areanum = 0.215;
 	VideoCapture cap(0);
 	if(!cap.isOpened()) return;
     int width = 640;
@@ -648,30 +647,31 @@ void videothread(Autopilot_Interface &api){
 			contours1.push_back(p);
 			drawContours(image, contours1, 0, Scalar(255, 255, 0), 1);
 		}
-        possible_ellipse(api, ellipse_out1, target_ellipse_position);
+            possible_ellipse(api, ellipse_out1, target_ellipse_position);
+            cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
+            for (int i = 0; i < target_ellipse_position.size(); ++i) {
+                cout << "x = " << target_ellipse_position[i].x << endl
+                     << "y = " << target_ellipse_position[i].y << endl
+                     << "T = " << target_ellipse_position[i].T_N << endl
+                     << "F = " << target_ellipse_position[i].F_N << endl
+                     << "flag = " << target_ellipse_position[i].possbile << endl;
+            }
+            resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
 
-        cout<<"target_ellipse.size = "<<target_ellipse_position.size()<<endl;
-        for (int i = 0; i < target_ellipse_position.size(); ++i) {
-            cout<<"x = "<<target_ellipse_position[i].x<<endl
-                <<"y = "<<target_ellipse_position[i].y<<endl
-                <<"T = "<<target_ellipse_position[i].T_N<<endl
-                <<"F = "<<target_ellipse_position[i].F_N<<endl
-                <<"flag = "<<target_ellipse_position[i].possbile<<endl;
-        }
-        resultTF(target_ellipse_position, ellipse_T, ellipse_F);
-
-        cout<<"ellipse_T.size = "<<ellipse_T.size()<<endl;
-        for (int i = 0; i <ellipse_T.size(); ++i) {
-			cout<<"x = "<< ellipse_T[i].x<<endl
-				<<"y = "<< ellipse_T[i].y<<endl
-				<<"possbile = "<<ellipse_T[i].possbile<<endl;
-		}
-		cout<<"ellipse_F.size = "<<ellipse_F.size()<<endl;
-		for (int i = 0; i < ellipse_F.size(); ++i) {
-			cout<<"x = "<<ellipse_F[i].x<<endl
-				<<"y = "<<ellipse_F[i].y<<endl
-				<<"possbile = "<<ellipse_F[i].possbile<<endl;
-		}
+//            cout << "ellipse_T.size = " << ellipse_T.size() << endl;
+//            for (int i = 0; i < ellipse_T.size(); ++i) {
+//                cout << "x = " << ellipse_T[i].x << endl
+//                     << "y = " << ellipse_T[i].y << endl
+//                     << "possbile = " << ellipse_T[i].possbile << endl
+//                     << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
+//            }
+//            cout << "ellipse_F.size = " << ellipse_F.size() << endl;
+//            for (int i = 0; i < ellipse_F.size(); ++i) {
+//                cout << "x = " << ellipse_F[i].x << endl
+//                     << "y = " << ellipse_F[i].y << endl
+//                     << "possbile = " << ellipse_F[i].possbile << endl
+//                     << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
+//            }
 
 //		namedWindow("原图",1);
 //		imshow("原图", image);
