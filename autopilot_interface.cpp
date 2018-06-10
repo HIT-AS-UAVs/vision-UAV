@@ -54,7 +54,7 @@
 
 #include "autopilot_interface.h"
 
-bool stable = true, updateellipse = true, getlocalposition = true, drop = false;
+bool stable = true, updateellipse = true, getlocalposition = false, drop = false;
 int TargetNum = 0;
 coordinate droptarget;
 // ----------------------------------------------------------------------------------
@@ -1467,11 +1467,11 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
     float dis = 4;//在室外的参数圆心相距9米内都算一个圆
 //	float dis = 0.05;//在室内测试用0.05
     for (auto &p:ellipse_out) {
-        int32_t h = - api.current_messages.local_position_ned.z * 1000;
+//        int32_t h = - api.current_messages.local_position_ned.z * 1000;
 //        cout<<"h:"<<h<<endl;
-//        int32_t h1 = 1170;//桌子高度0.74M
-        uint16_t hdg = api.current_messages.global_position_int.hdg;
-//        uint16_t hdg1 = 0;//设置机头方向为正北
+        int32_t h = 25000;//桌子高度0.74M
+//        uint16_t hdg =0; api.current_messages.global_position_int.hdg;
+        uint16_t hdg = 0;//设置机头方向为正北
         float loc_x = api.current_messages.local_position_ned.x;
 //		cout<<"loc_x"<<loc_x<<endl;
         float loc_y = api.current_messages.local_position_ned.y;
@@ -1482,14 +1482,14 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
             //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
             float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
             float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
-            float e_x = x_r + loc_x;
-            float e_y = y_r + loc_y;
+//            float e_x = x_r + loc_x;
+//            float e_y = y_r + loc_y;
             /*在室内测试用这个*/
-//            p.x = x_r;
-//            p.y = y_r;
+            p.x = x_r;
+            p.y = y_r;
             /*在室外测试用这个*/
-		p.x = e_x;
-		p.y = e_y;
+//		p.x = e_x;
+//		p.y = e_y;
 
             if (target_ellipse.size() == 0) {
                 target t;
