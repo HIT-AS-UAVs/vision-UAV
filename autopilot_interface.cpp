@@ -1543,9 +1543,10 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 //	float possobile = 0.5, dis = 0.05;//室内测试设置0.5，0.05， 室外待定
 //	uint32_t num = 10;//室内测试设置10，室外待定
 	float possobile = 0.4, dis = 4;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
-	uint32_t num = 50;//室外测试：识别次数大于50次即可进行TF判断。
+	uint32_t num = 70;//室外测试：识别次数大于70次即可进行TF判断。
 			for(auto &p:ellipse_in){
 	    if(p.possbile > possobile && p.T_N > num) {
+	    	stable = false;
 			if(ellipse_1.size() == 0){
 			    p.lat = api.current_messages.global_position_int.lat;
 			    p.lon = api.current_messages.global_position_int.lon;
@@ -1566,6 +1567,7 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 
 			}
 		} else if(p.possbile < possobile && p.F_N > num){
+	    	stable = false;
 	    	if(ellipse_0.size() == 0){
                 p.lat = api.current_messages.global_position_int.lat;
                 p.lon = api.current_messages.global_position_int.lon;
@@ -1711,27 +1713,28 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 		cam.x = p._xc;
 		cam.y = p._yc;
 		realtarget(api, cam, locx, locy);
-		p.locx = locx;
-		p.locy = locy;
+		cam.locx = locx;
+		cam.locy = locy;
+		cam.a = p._a;
 		if(ellipse_pre.size() == 0){
-			p.num = 1;
-			ellipse_pre.push_back(p);
+			cam.num = 1;
+		    ellipse_pre.push_back(cam);
 			continue;
 		}
 		for(auto i = 0; i < ellipse_pre.size(); i++){
-			if(abs(p.locx - ellipse_pre[i].locx) < dis &&
-			   abs(p.locy - ellipse_pre[i].locy) < dis){
-				ellipse_pre[i].locx = p.locx;
-				ellipse_pre[i].locy = p.locy;
-				ellipse_pre[i]._xc = p._xc;
-				ellipse_pre[i]._yc = p._yc;
+			if(abs(cam.locx - ellipse_pre[i].locx) < dis &&
+			   abs(cam.locy - ellipse_pre[i].locy) < dis){
+				ellipse_pre[i].locx = cam.locx;
+				ellipse_pre[i].locy = cam.locy;
+				ellipse_pre[i].x = cam.x;
+				ellipse_pre[i].y = cam.y;
 				ellipse_pre[i].num = ellipse_pre[i].num + 1;
 				break;
 			} else if(i != (ellipse_pre.size() - 1)){
 				continue;
 			} else{
-				p.num = 1;
-				ellipse_pre.push_back(p);
+				cam.num = 1;
+				ellipse_pre.push_back(cam);
 				break;
 			}
 			}
@@ -1739,18 +1742,18 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 	uint16_t totle = 0;
 	for(auto &p: ellipse_pre){
 		totle = totle + p.num;
-		cout<<"ellipse_pre_locx:"<<p.locx<<endl;
-		cout<<"ellipse_pre_locy:"<<p.locy<<endl;
-		cout<<"ellipse_pre_num:"<<ellipse_pre.size()<<endl;
+//		cout<<"ellipse_pre_locx:"<<p.locx<<endl;
+//		cout<<"ellipse_pre_locy:"<<p.locy<<endl;
+//		cout<<"ellipse_pre_num:"<<ellipse_pre.size()<<endl;
 	}
 
 	for(auto &p: ellipse_big){
 		for(auto &q: ellipse_pre){
 			q.possible = q.num / (totle + 0.0001);
-			float disx = (p._xc - q._xc) / p._a;
-			float disy = (p._yc - q._yc) / p._b;
+			float disx = (p._xc - q.x) / p._a;
+			float disy = (p._yc - q.x) / p._b;
 			float thresh = 0.9;//该值应小于1
-			if( disx < thresh && disy < thresh && q.possible > 0.1 && q.num > 3){
+			if( disx < thresh && disy < thresh && q.possible > 0.1 && q.num > 10){
 				ellipseok.push_back(p);
 				break;
 			} else
