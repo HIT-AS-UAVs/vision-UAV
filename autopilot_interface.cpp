@@ -54,7 +54,7 @@
 
 #include "autopilot_interface.h"
 
-bool stable = true, updateellipse = true, getlocalposition = true, drop = false;
+bool stable = false, updateellipse = false, getlocalposition = true, drop = false;
 int TargetNum = 0;
 coordinate droptarget;
 // ----------------------------------------------------------------------------------
@@ -1467,31 +1467,11 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
     float dis = 4;//在室外的参数圆心相距9米内都算一个圆
 //	float dis = 0.05;//在室内测试用0.05
     for (auto &p:ellipse_out) {
-        int32_t h = - api.current_messages.local_position_ned.z * 1000;
-//        cout<<"h:"<<h<<endl;
-//        int32_t h1 = 1170;//桌子高度0.74M
-        uint16_t hdg = api.current_messages.global_position_int.hdg;
-//        uint16_t hdg1 = 0;//设置机头方向为正北
-        float loc_x = api.current_messages.local_position_ned.x;
-//		cout<<"loc_x"<<loc_x<<endl;
-        float loc_y = api.current_messages.local_position_ned.y;
-//		cout<<"loc_y"<<loc_y<<endl;
-        /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
-        		float x = (p.x - cx) / fx * h / 1000;//单位为：m
-            float y = - (p.y - cy) / fy * h / 1000;
-            //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
-            float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
-            float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
-            float e_x = x_r + loc_x;
-            float e_y = y_r + loc_y;
-            /*在室内测试用这个*/
-//            p.x = x_r;
-//            p.y = y_r;
-            /*在室外测试用这个*/
-		p.x = e_x;
-		p.y = e_y;
-
-            if (target_ellipse.size() == 0) {
+    	float x_l, y_l;
+    	realtarget(api, p, x_l, y_l);
+    	p.x = x_l;
+    	p.y = y_l;
+    	if (target_ellipse.size() == 0) {
                 target t;
                 t.x = p.x;
                 t.y = p.y;
@@ -1618,26 +1598,8 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 	float dis = 4;//在室外的参数圆心相距9米内都算一个圆
 //	float dis = 0.05;//在室内测试用0.05
 	for (auto &p:ellipse_out) {
-
-		int32_t h = -api.current_messages.local_position_ned.z * 1000;
-//        cout<<"h:"<<h<<endl;
-//        int32_t h1 = 1170;//桌子高度0.74M
-		uint16_t hdg = api.current_messages.global_position_int.hdg;
-//        uint16_t hdg1 = 0;//设置机头方向为正北
-		float loc_x = api.current_messages.local_position_ned.x;
-//		cout<<"loc_x"<<loc_x<<endl;
-		float loc_y = api.current_messages.local_position_ned.y;
-//		cout<<"loc_y"<<loc_y<<endl;
-		/*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
-
-		float x = (p.x - cx) / fx * h / 1000;//单位为：m
-		float y = -(p.y - cy) / fy * h / 1000;
-		//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
-		float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
-		float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
-		float e_x = x_r + loc_x;
-		float e_y = y_r + loc_y;
-
+		float e_x, e_y;
+		realtarget(api, p, e_x, e_y);
 		target_x = target_x + e_x;
 		target_y = target_y + e_y;
 	}
@@ -1646,4 +1608,155 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 	droptarget.y = target_y / num;
 	cout<<"target_x"<<droptarget.x<<endl;
 	cout<<"target_y"<<droptarget.y<<endl;
+}
+
+void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_l){
+//    int32_t h = -api.current_messages.local_position_ned.z;
+        int32_t h1 = 25;//桌子高度0.74M
+//    uint16_t hdg = api.current_messages.global_position_int.hdg;
+        uint16_t hdg1 = 0;//设置机头方向为正北
+    float loc_x = api.current_messages.local_position_ned.x;
+    float loc_y = api.current_messages.local_position_ned.y;
+    /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
+    float x = (cam.x - cx) / fx * h1;//单位为：m
+    float y = -(cam.y - cy) / fy * h1;
+    //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
+    float x_r = y * cos(hdg1 * 3.1415926 / 180 / 100) - x * sin(hdg1 * 3.1415926 / 180 / 100);//单位是:m
+    float y_r = x * cos(hdg1 * 3.1415926 / 180 / 100) + y * sin(hdg1 * 3.1415926 / 180 / 100);
+//    x_l = x_r + loc_x;
+//    y_l = y_r + loc_y;
+	x_l = x_r;
+	y_l = y_r;
+}
+
+void OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
+	float score = 0.7, e = 0.3;
+	/***************************去掉评分不佳的椭圆********************************************/
+	vector<Ellipse> e0,v1, v2;//存放去掉评分小于0.8的椭圆
+	for(auto i = ellipses_in.begin(); i != ellipses_in.end(); ++i){
+		if((*i)._score < score || (((*i)._a -(*i)._b) / (*i)._a) > e)
+			continue;
+		else
+			e0.push_back(*i);
+	}
+
+	/*************延x轴方向对椭圆由小到大排序**************************/
+	int n_e = e0.size();
+	for (int i = 0; i < n_e - 1; i++) {
+		for (int j = 0; j < n_e - 1 - i; j++) {
+			if (e0[j]._xc > e0[j + 1]._xc) {
+				swap(e0[j], e0[j + 1]);
+			}
+		}
+	}
+
+
+	for(auto &p:e0){
+		if(v1.size() == 0){
+			v1.push_back(p);
+		} else{
+			for(auto j = 0; j <v1.size(); j++ ){
+				if (abs(v1[j]._xc - p._xc) < 20 && abs(v1[j]._yc - p._yc) < 20)
+					break;
+				else if( j != ( v1.size() - 1)){
+					continue;
+				} else{
+					v1.push_back(p);
+					break;
+				}
+			}
+		}
+	}
+
+
+
+	/***********************按照左下、左上、右下、右上的顺序对椭圆排序******************************/
+	vector<Ellipse> left,right;
+	for (auto &p:v1) {
+		if(p._xc < 320)
+			left.push_back(p);
+		else
+			right.push_back(p);
+	}
+	int l = left.size();
+	int r = right.size();
+	for (int i = 0; i < l - 1; i++) {
+		for (int j = 0; j < l - 1 - i; j++) {
+			if (left[j]._yc < left[j + 1]._yc) {
+				swap(left[j], left[j + 1]);
+			}
+		}
+	}
+	for (int i = 0; i < r - 1; i++) {
+		for (int j = 0; j < r - 1 - i; j++) {
+			if (right[j]._yc < right[j + 1]._yc) {
+				swap(right[j], right[j + 1]);
+			}
+		}
+	}
+	ellipse_out = left;
+	for(auto &p:right){
+		ellipse_out.push_back(p);
+	}
+
+}
+
+void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<Ellipse>& ellipse_big){
+	/*将得到的圆放入vector中，并对其中数量大于一定范围的圆进行下一步处理，以滤除偶然检测出的圆*/
+
+	for(auto &p:ellipse_big){
+		float dis = 4;
+		float locx, locy;
+		coordinate cam;
+		cam.x = p._xc;
+		cam.y = p._yc;
+		realtarget(api, cam, locx, locy);
+		p.locx = locx;
+		p.locy = locy;
+		if(ellipse_pre.size() == 0){
+			p.num = 1;
+			ellipse_pre.push_back(p);
+			continue;
+		}
+		for(auto i = 0; i < ellipse_pre.size(); i++){
+			if(abs(p.locx - ellipse_pre[i].locx) < dis &&
+			   abs(p.locy - ellipse_pre[i].locy) < dis){
+				ellipse_pre[i].locx = p.locx;
+				ellipse_pre[i].locy = p.locy;
+				ellipse_pre[i]._xc = p._xc;
+				ellipse_pre[i]._yc = p._yc;
+				ellipse_pre[i].num = ellipse_pre[i].num + 1;
+				break;
+			} else if(i != (ellipse_pre.size() - 1)){
+				continue;
+			} else{
+				p.num = 1;
+				ellipse_pre.push_back(p);
+				break;
+			}
+			}
+	}
+	uint16_t totle = 0;
+	for(auto &p: ellipse_pre){
+		totle = totle + p.num;
+		cout<<"ellipse_pre_locx:"<<p.locx<<endl;
+		cout<<"ellipse_pre_locy:"<<p.locy<<endl;
+		cout<<"ellipse_pre_num:"<<ellipse_pre.size()<<endl;
+	}
+
+	for(auto &p: ellipse_big){
+		for(auto &q: ellipse_pre){
+			q.possible = q.num / (totle + 0.0001);
+			float disx = (p._xc - q._xc) / p._a;
+			float disy = (p._yc - q._yc) / p._b;
+			float thresh = 0.9;//该值应小于1
+			if( disx < thresh && disy < thresh && q.possible > 0.1 && q.num > 3){
+				ellipseok.push_back(p);
+				break;
+			} else
+				continue;
+		}
+
+	}
+
 }

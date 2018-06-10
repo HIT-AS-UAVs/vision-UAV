@@ -59,6 +59,7 @@ using namespace std;
 
 extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
 
+
 // ------------------------------------------------------------------------------
 //   Prototypes
 // ------------------------------------------------------------------------------

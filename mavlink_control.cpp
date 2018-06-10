@@ -66,6 +66,7 @@ using namespace std;
 
 vector<target> target_ellipse_position, ellipse_T, ellipse_F;
 
+
 // ------------------------------------------------------------------------------
 //   TOP
 // ------------------------------------------------------------------------------
@@ -617,10 +618,11 @@ quit_handler( int sig )
 ///////////////视觉定位线程
 void videothread(Autopilot_Interface& api){
 
-	VideoCapture cap(1);
+	VideoCapture cap(0);
 //    VideoCapture cap;
 //    cap.open("T_rotation.avi");
 //    cap.open("F.avi");
+//    cap.open("T.avi");
 	if(!cap.isOpened()) return;
     int width = 640;
     int height = 360;
@@ -664,26 +666,27 @@ void videothread(Autopilot_Interface& api){
 	);
 
 	Mat1b gray, gray_big;
-	while(true)
-	{
+	while(true) {
 
-		Mat3b image, image_r;
-		cap >> image;
-		resize(image, image_r, Size(640, 360), 0, 0, CV_INTER_LINEAR);
-		cvtColor(image_r, gray, COLOR_BGR2GRAY);
-		cvtColor(image, gray_big, COLOR_BGR2GRAY);
+        Mat3b image, image_r;
+        cap >> image;
+        resize(image, image_r, Size(640, 360), 0, 0, CV_INTER_LINEAR);
+        cvtColor(image_r, gray, COLOR_BGR2GRAY);
+        cvtColor(image, gray_big, COLOR_BGR2GRAY);
 
-		vector<Ellipse> ellsYaed, ellipse_in, ellipse_big;
-		vector<Mat1b> img_roi;
-		yaed->Detect(gray, ellsYaed);
-		Mat3b resultImage = image_r.clone();
+        vector<Ellipse> ellsYaed, ellipse_in, ellipse_big, ellipseok;
+        vector<Mat1b> img_roi;
+        yaed->Detect(gray, ellsYaed);
+        Mat3b resultImage = image_r.clone();
         Mat3b resultImage2 = image_r.clone();
-		vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
-		if(!drop) {
-            yaed->OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
+        vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
+        if(getlocalposition){
+            if (!drop) {
+            OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
             yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
+//            filtellipse(api, ellipseok, ellipse_big);
             yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
-            vector< vector<Point> > contours;;
+            vector<vector<Point> > contours;
             if (stable) {
                 yaed->extracrROI(gray_big, ellipse_out, img_roi);
                 visual_rec(img_roi, ellipse_out, ellipse_TF, contours);//T和F的检测程序
@@ -695,18 +698,18 @@ void videothread(Autopilot_Interface& api){
                 contours1.push_back(p);
                 drawContours(image, contours1, 0, Scalar(255, 255, 0), 1);
             }
-            if (getlocalposition) {
-                possible_ellipse(api, ellipse_out1, target_ellipse_position);
+            possible_ellipse(api, ellipse_out1, target_ellipse_position);
 
 
-                resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
+            resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
 
-            }
-        } else{
+
+        } else {
             yaed->onlyforsmall(ellipse_in, ellsYaed);
             yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);
             getdroptarget(api, droptarget, ellipse_out);
-		}
+        }
+    }
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
@@ -714,7 +717,7 @@ void videothread(Autopilot_Interface& api){
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
-		usleep(100000);
+//		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------

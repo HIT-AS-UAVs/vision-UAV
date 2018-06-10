@@ -21,6 +21,8 @@ last update: 23/12/2014
 
 #include "EllipseDetectorYaed.h"
 
+vector<float> white,color;
+vector<Ellipse> ellipse_pre;
 
 CEllipseDetectorYaed::CEllipseDetectorYaed(void) : _times(6, 0.0), _timesHelper(6, 0.0)
 {
@@ -1919,92 +1921,10 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 
 }
 
-void CEllipseDetectorYaed::OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
-	float score = 0.8, e = 0.3;
-	/***************************去掉评分不佳的椭圆********************************************/
-	vector<Ellipse> e0;//存放去掉评分小于0.8的椭圆
-	for(auto i = ellipses_in.begin(); i != ellipses_in.end(); ++i){
-		if((*i)._score < score || (((*i)._a -(*i)._b) / (*i)._a) > e)
-			continue;
-		else
-			e0.push_back(*i);
-	}
 
-	/*************延x轴方向对椭圆由小到大排序**************************/
-	int n_e = e0.size();
-	for (int i = 0; i < n_e - 1; i++) {
-		for (int j = 0; j < n_e - 1 - i; j++) {
-			if (e0[j]._xc > e0[j + 1]._xc) {
-				swap(e0[j], e0[j + 1]);
-			}
-		}
-	}
-	/*************判断同心圆，只留下大圆**************************/
-	vector<Ellipse> v, v1;
-	int f = 0;
-	for (auto i = 0; i < n_e;f == 0? i = i+1:i = i+2) {
-		f = 0;
-		if (abs(e0[i]._xc - e0[i + 1]._xc) < 20 && abs(e0[i]._yc - e0[i + 1]._yc) < 20) {
-			if (e0[i]._a < e0[i + 1]._a) {
-				v.push_back(e0[i + 1]);
-				f = 1;
-			} else {
-				v.push_back(e0[i]);
-				f = 1;
-			}
-		} else {
-			v.push_back(e0[i]);
-		}
-	}
-	for(auto &p:v){
-		if(v1.size() == 0){
-			v1.push_back(p);
-		} else{
-			for(auto j = 0; j <v1.size(); j++ ){
-				if (abs(v1[j]._xc - p._xc) < 20 && abs(v1[j]._yc - p._yc) < 20)
-					break;
-				else if( j != ( v1.size() - 1)){
-					continue;
-				} else{
-					v1.push_back(p);
-					break;
-				}
-			}
-		}
-	}
-	/***********************按照左下、左上、右下、右上的顺序对椭圆排序******************************/
-	vector<Ellipse> left,right;
-	for (auto &p:v1) {
-		if(p._xc < 320)
-			left.push_back(p);
-		else
-			right.push_back(p);
-	}
-	int l = left.size();
-	int r = right.size();
-	for (int i = 0; i < l - 1; i++) {
-		for (int j = 0; j < l - 1 - i; j++) {
-			if (left[j]._yc < left[j + 1]._yc) {
-				swap(left[j], left[j + 1]);
-			}
-		}
-	}
-	for (int i = 0; i < r - 1; i++) {
-		for (int j = 0; j < r - 1 - i; j++) {
-			if (right[j]._yc < right[j + 1]._yc) {
-				swap(right[j], right[j + 1]);
-			}
-		}
-	}
-	ellipse_out = left;
-	for(auto &p:right){
-		ellipse_out.push_back(p);
-	}
-
-}
 
 void CEllipseDetectorYaed::onlyforsmall(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
-	float score = 0.8, e = 0.2;
+	float score = 0.8, e = 0.1;
 	/***************************去掉评分不佳的椭圆********************************************/
 	vector<Ellipse> e0;//存放去掉评分小于0.8的椭圆
 	for(auto i = ellipses_in.begin(); i != ellipses_in.end(); ++i){
@@ -2066,10 +1986,10 @@ void CEllipseDetectorYaed::extracrROI(Mat1b& image, vector<coordinate>& ellipse_
 
 //	cvtColor(image, image, COLOR_RGB2GRAY);
 	GaussianBlur(image, image, Size(5, 5),0, 0);
-	threshold(image, image, 140, 255, CV_THRESH_BINARY);
+	threshold(image, image, 180, 255, CV_THRESH_BINARY);
 	for(auto &p:ellipse_out){
 		Mat1b ROI;
-		int r = 0.9 * p.a;
+		int r = 3 * p.a;
 		int x_l = 3 * p.x - r;
 		int y_l = 3 * p.y - r;
 		int width = 2 * r;
@@ -2183,16 +2103,23 @@ bool CEllipseDetectorYaed::computcolorpercentage(Mat3b& roi, Ellipse& ell_in)
     //定义并计算百分比，此时计算的是降噪后的结果
     float percentage_white;
     percentage_white = add_w / ell_S_b * 100;
-
-
-
-
-    if((percentage_color>=80)&&(percentage_white>=20)&&(percentage_color<=110)&&(percentage_white<=40))
+/*
+	white.push_back(percentage_white);
+	color.push_back(percentage_color);
+	sort(white.begin(), white.end());
+	sort(color.begin(), color.end());
+	cout<<"white_l"<<white[0]<<endl;
+	cout<<"white_h"<<white[white.size() - 1]<<endl;
+	cout<<"color_l"<<color[0]<<endl;
+	cout<<"color_h"<<color[color.size() - 1]<<endl;
+	imshow("HSV提取", imageth_r);
+//	cout<<"大圆面积为"<<ell_S_b<<endl;
+//	cout<<"彩色占大圆比例为："<<percentage_color<<"%"<<endl;
+//	cout<<"白色占圆比例为："<< percentage_white <<"%"<<endl;
+*/
+    if((percentage_color>=70)&&(percentage_white>= 0)&&(percentage_color<=125)&&(percentage_white<=40))
     {
-//		imshow("HSV提取", imageth_r);
-//		cout<<"大圆面积为"<<ell_S_b<<endl;
-//		cout<<"彩色占大圆比例为："<<percentage_color<<"%"<<endl;
-//		cout<<"白色占圆比例为："<< percentage_white <<"%"<<endl;
+
     	return true;
     }
     else
@@ -2217,15 +2144,30 @@ void visual_rec(vector<Mat1b>& gray, vector<coordinate>& ellipse_out0, vector<co
 			RotatedRect rotate_rect = minAreaRect(contours[i]);
 			Point2f *vertices = new Point2f[4];
 			rotate_rect.points(vertices);
-			float h1, h2, h3, h4;
-			h1 = 0.5 * ellipse_out0[j].a;//只要h1,h2的系数在0.68571429这个值范围内就行
-			h2 = 0.86 * ellipse_out0[j].a;//h1:0.5,h2:0.86
-			h3 = (0.8 * ellipse_out0[j].a - 0.5 * rotate_rect.size.width);
+			float h1_s, h2_s, h3_s, h4, h1_b, h2_b, h3_b;
+			/*****************************************************************
+			 * 大圆的参数
+			*****************************************************************/
+			h1_b = 0.6 * ellipse_out0[j].a;//只要h1,h2的系数在0.68571429这个值范围内就行1.8
+			h2_b = 0.9 * ellipse_out0[j].a;//h1:0.5,h2:0.86
+			h3_b = 0.16 * gray[j].cols;//0.55
 			h4 = 0.5 * gray[j].cols;
-			if (rotate_rect.size.height < h1 || rotate_rect.size.height > h2 || rotate_rect.size.width < h1 || rotate_rect.size.width > h2
-				|| abs(rotate_rect.center.x - h4) > h3 || abs(rotate_rect.center.y - h4) > h3)
-				continue;
+			/*****************************************************************
+			 * 小圆的参数
+			*****************************************************************/
+			h1_s = 1.8 * ellipse_out0[j].a;//只要h1,h2的系数在0.68571429这个值范围内就行1.8
+			h2_s = 3 * ellipse_out0[j].a;//h1:0.5,h2:0.86
+			h3_s = 0.55 * gray[j].cols;//0.55
 
+//			rotate_rect.size.height < h1_s || rotate_rect.size.height > h2_s || rotate_rect.size.width < h1_s ||
+//			rotate_rect.size.width > h2_s || abs(rotate_rect.center.x - h4) > h3_s || abs(rotate_rect.center.y - h4) > h3_s
+			if ((rotate_rect.size.height > h1_s && rotate_rect.size.height < h2_s && rotate_rect.size.width > h1_s &&
+				 rotate_rect.size.width < h2_s && abs(rotate_rect.center.x - h4) < h3_s &&
+				 abs(rotate_rect.center.y - h4) < h3_s)
+				|| (rotate_rect.size.height > h1_b && rotate_rect.size.height < h2_b && rotate_rect.size.width > h1_b &&
+					rotate_rect.size.width < h2_b && abs(rotate_rect.center.x - h4) < h3_b &&
+					abs(rotate_rect.center.y - h4) < h3_b)
+					){
 			float x12 = (vertices[1].x + vertices[2].x) / 2;
 			float y12 = (vertices[1].y + vertices[2].y) / 2;
 			float xt12 = areanum * (rotate_rect.center.x - x12) + x12;
@@ -2254,12 +2196,15 @@ void visual_rec(vector<Mat1b>& gray, vector<coordinate>& ellipse_out0, vector<co
 			}
 			vector<Point> contour;
 			for (int i = 0; i < 4; i++) {
-				vertices[i].x = vertices[i].x + (3 * ellipse_out0[j].x - 0.9 * ellipse_out0[j].a);
-				vertices[i].y = vertices[i].y + (3 * ellipse_out0[j].y - 0.9 * ellipse_out0[j].a);
+				vertices[i].x = vertices[i].x + (3 * ellipse_out0[j].x - 3 * ellipse_out0[j].a);
+				vertices[i].y = vertices[i].y + (3 * ellipse_out0[j].y - 3 * ellipse_out0[j].a);
 				contour.push_back(vertices[i]);
 			}
 			contours0.push_back(contour);
+		}else
+		continue;
 		}
 		ellipse_out00.push_back(ellipse_out0[j]);
 	}
 }
+

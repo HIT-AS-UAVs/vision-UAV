@@ -386,6 +386,9 @@ private:
 void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse);
 void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0);
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out);
+void realtarget(Autopilot_Interface& api, coordinate& cam, float& x, float& y);
+void OptimizEllipse(vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
+void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<Ellipse>& ellipse_big);
 #endif // AUTOPILOT_INTERFACE_H_
 
 
