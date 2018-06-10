@@ -1897,59 +1897,6 @@ void CEllipseDetectorYaed::ClusterEllipses(vector<Ellipse>& ellipses)
 //Draw at most iTopN detected ellipses.
 void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int iTopN, int thickness) {
 
-/*
-	int sz_ell = int(ellipses.size());
-	int n = (iTopN == 0) ? sz_ell : min(iTopN, sz_ell);
-    cout<<"the number of ellipse:"<<n<<endl;
-	for (int i = 0; i < n; ++i)
-	{
-		Ellipse& e = ellipses[n - i - 1];
-		int g = cvRound(e._score * 255.f);
-		Scalar color(0, g, 0);
-		ellipse(output, Point(cvRound(e._xc), cvRound(e._yc)), Size(cvRound(e._a), cvRound(e._b)), e._rad*180.0 / CV_PI, 0.0, 360.0, color, thickness);
-        cout<<"the coordinate of the ellipse:"<<endl<<"x:"<<e._xc<<endl<<"y:"<<e._yc<<endl<<"a:"<<e._a<<endl<<"scores:"<<e._score<<endl;
-	}
-
-	vector<Ellipse> e1;
-	float score = 0.80;
-	int n = ellipses.size();
-	for (int i = 0; i < n; i++) {
-		Ellipse& e_n = ellipses[i];
-		if (e_n._score > score) {
-			e1.push_back(e_n);
-		} else
-			continue;
-	}
-	//用冒泡法将得到的椭圆序列按照x方向坐标由小到大排序
-	int n_e = e1.size();
-	for (int i = 0; i < n_e - 1; i++) {
-		for (int j = 0; j < n_e - 1 - i; j++) {
-			if (e1[j]._xc > e1[j + 1]._xc) {
-				swap(e1[j], e1[j + 1]);
-			}
-		}
-	}
-	//将容器中的椭圆按照同心圆与否排列
-	vector<Ellipse> v;
-	int f = 0;
-	for (auto i = 0; i < n_e;f == 0?i = i+1:i = i+2) {
-		f = 0;
-		if (abs(e1[i]._xc - e1[i + 1]._xc) < 20 && abs(e1[i]._yc - e1[i + 1]._yc) < 20) {
-			if (e1[i]._a < e1[i + 1]._a) {
-				v.push_back(e1[i + 1]);
-				v.push_back(e1[i]);
-				f = 1;
-			} else {
-				v.push_back(e1[i]);
-				v.push_back(e1[i + 1]);
-				f = 1;
-			}
-		} else {
-			v.push_back(e1[i]);
-			v.push_back(Ellipse());
-		}
-	}
- */
 	//绘制椭圆
 	for(auto i = 0; i < ellipses.size(); i = i +1) {
 		Scalar color(0, 255, 0);
@@ -1973,7 +1920,7 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 }
 
 void CEllipseDetectorYaed::OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
-	float score = 0.7, e = 0.4;
+	float score = 0.8, e = 0.3;
 	/***************************去掉评分不佳的椭圆********************************************/
 	vector<Ellipse> e0;//存放去掉评分小于0.8的椭圆
 	for(auto i = ellipses_in.begin(); i != ellipses_in.end(); ++i){
@@ -2056,6 +2003,65 @@ void CEllipseDetectorYaed::OptimizEllipse(vector<Ellipse> &ellipse_out, vector<E
 
 }
 
+void CEllipseDetectorYaed::onlyforsmall(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
+	float score = 0.8, e = 0.2;
+	/***************************去掉评分不佳的椭圆********************************************/
+	vector<Ellipse> e0;//存放去掉评分小于0.8的椭圆
+	for(auto i = ellipses_in.begin(); i != ellipses_in.end(); ++i){
+		if((*i)._score < score || (((*i)._a -(*i)._b) / (*i)._a) > e)
+			continue;
+		else
+			e0.push_back(*i);
+	}
+	/*************延x轴方向对椭圆由小到大排序**************************/
+	int n_e = e0.size();
+	for (int i = 0; i < n_e - 1; i++) {
+		for (int j = 0; j < n_e - 1 - i; j++) {
+			if (e0[j]._xc > e0[j + 1]._xc) {
+				swap(e0[j], e0[j + 1]);
+			}
+		}
+	}
+	/*************判断同心圆，只留下大圆**************************/
+	vector<Ellipse> v, v1;
+	int f = 0;
+	for (auto i = 0; i < n_e;f == 0? i = i+1:i = i+2) {
+		f = 0;
+		if (abs(e0[i]._xc - e0[i + 1]._xc) < 20 && abs(e0[i]._yc - e0[i + 1]._yc) < 20) {
+			if (e0[i]._a < e0[i + 1]._a) {
+				v.push_back(e0[i]);
+				f = 1;
+			} else {
+				v.push_back(e0[i + 1]);
+				f = 1;
+			}
+		} else {
+			v.push_back(e0[i]);
+		}
+	}
+	for(auto &p:v){
+		if(v1.size() == 0){
+			v1.push_back(p);
+		} else{
+			for(auto j = 0; j <v1.size(); j++ ){
+				if (abs(v1[j]._xc - p._xc) < 20 && abs(v1[j]._yc - p._yc) < 20)
+					break;
+				else if( j != ( v1.size() - 1)){
+					continue;
+				} else{
+					v1.push_back(p);
+					break;
+				}
+			}
+		}
+	}
+	for(auto & p:v1){
+		ellipse_out.push_back(p);
+	}
+
+
+}
+
 void CEllipseDetectorYaed::extracrROI(Mat1b& image, vector<coordinate>& ellipse_out, vector<Mat1b>& img_roi){
 
 //	cvtColor(image, image, COLOR_RGB2GRAY);
@@ -2079,30 +2085,24 @@ void CEllipseDetectorYaed::extracrROI(Mat1b& image, vector<coordinate>& ellipse_
 void CEllipseDetectorYaed::big_vector(Mat3b& resultImage2, vector< Ellipse >& ellipse_in, vector< Ellipse >& ellipse_big)
 {
     CEllipseDetectorYaed* gv;
-    Mat3b roiin=resultImage2.clone();
     Mat3b ROI;
-    //vector<Ellipse>ell_big;
 
-    for(int i=0;i<ellipse_in.size();i++)
+    for(int i = 0; i < ellipse_in.size(); i++)
     {
-        int x_l=ellipse_in[i]._xc-ellipse_in[i]._a;
-        int y_l=ellipse_in[i]._yc-ellipse_in[i]._a;
-        int width_roi=abs(2*ellipse_in[i]._a);
-        int height_roi=abs(2*ellipse_in[i]._a);
-        int order=i;
-        /*
-        coordinate ell;
-        ell.a=ellipse_in[i]._a;
-        ell.x=ellipse_in[i]._xc;
-        ell.y=ellipse_in[i]._yc;
-        */
+        int x_l=ellipse_in[i]._xc - ellipse_in[i]._a;
+        int y_l=ellipse_in[i]._yc - ellipse_in[i]._b;
+        int width_roi=abs(2 * ellipse_in[i]._a);
+        int height_roi=abs(2 * ellipse_in[i]._b);
 
         if((x_l>=0)&&(y_l>=0)&&((x_l+width_roi)<=resultImage2.cols)&&((y_l+height_roi)<=resultImage2.rows))
         {
-            ROI=resultImage2(Rect(x_l,y_l,width_roi,height_roi));
-            //imshow("roi",ROI);
-            gv->computcolorpercentage(ROI,order,ellipse_in,ellipse_big);
-            //cout<<ellipse_big[i]._xc<<endl;
+            ROI=resultImage2(Rect(x_l, y_l, width_roi, height_roi));
+            bool use;
+            use = gv->computcolorpercentage(ROI, ellipse_in[i]);
+            if(use){
+            	ellipse_big.push_back(ellipse_in[i]);
+            } else
+				continue;
 
         }
         else
@@ -2112,174 +2112,93 @@ void CEllipseDetectorYaed::big_vector(Mat3b& resultImage2, vector< Ellipse >& el
     }
 }
 
-float CEllipseDetectorYaed::computcolorpercentage(Mat3b& roi,int& e_roi_order,vector< Ellipse >& ellipse_in,vector<Ellipse>& ell_big)
+bool CEllipseDetectorYaed::computcolorpercentage(Mat3b& roi, Ellipse& ell_in)
 {
     //############################蓝色百分比##################################
-    Mat imaged_b;
-    Mat imagehsv_b;
-    Mat imageth_b;
+
+    Mat imageth_r;
+    /*
     //红色为0°，绿色为120°,蓝色为240°。它们的补色是：黄色为60°，青色为180°,品红为300°；
     //给出希望保留的hsv的取值范围
-    int iLowH_b = 200/2;
-    int iHighH_b = 250/2;
-    int iLowS_b = 15;
-    int iHighS_b = 240;//值越大，颜色越饱和
-    int iLowV_b = 20;//值越小越黑
-    int iHighV_b = 255;
+    int iLowH_b = 0;//zwy:100;浅色圆：0；
+    int iHighH_b = 239;//张婉莹：125；浅色圆：239
+    int iLowS_b = 17;//张婉莹：15；浅色圆17
+    int iHighS_b = 145;//值越大，颜色越饱和张婉莹：240；浅色圆：145
+    int iLowV_b = 0;//值越小越黑张婉莹：20；浅色圆：0
+    int iHighV_b = 255;//张婉莹：255
+    */
+	//############################红色百分比##################################
+	//红色为0°，绿色为120°,蓝色为240°。它们的补色是：黄色为60°，青色为180°,品红为300°；
+	//给出希望保留的hsv的取值范围
+	int iLowH = 0;//0
+	int iHighH = 360;//224
+	int iLowS = 64;//29
+	int iHighS = 255;//值越大，颜色越饱和218
+	int iLowV = 0;//值越小越黑235
+	int iHighV = 255;//255
+
 
     //计算像素总数,椭圆面积
-    int order_b;
-    int width_b,height_b;
-    float sum_b,ell_S_b,a_b,b_b;
+    int width_b,height_b, extro;
+    float ell_S_b,a_b,b_b;
     width_b = roi.cols;
     height_b = roi.rows;
-    order_b=e_roi_order;
-    a_b=ellipse_in[order_b]._a;
-    b_b=ellipse_in[order_b]._b;
-    ell_S_b=CV_PI*a_b*b_b;
-    //cout<<"图像宽为"<<imageo.cols<<",高为"<<imageo.rows<<",通道数为"<<imageo.channels()<<endl;
+    a_b=ell_in._a;
+    b_b=ell_in._b;
+    ell_S_b=CV_PI * a_b * b_b;
+    extro = width_b * height_b - ell_S_b;
 
     //对原始图像进行高斯滤波
-    GaussianBlur(roi,imaged_b,Size(5,5),0,0);
-
-    cvtColor(imaged_b, imagehsv_b, COLOR_BGR2HSV);
+    GaussianBlur(roi, roi,Size(5,5),0,0);
+    cvtColor(roi, roi, COLOR_BGR2HSV);
 
     //按阈值分割
-    inRange(imagehsv_b, Scalar(iLowH_b, iLowS_b, iLowV_b), Scalar(iHighH_b, iHighS_b, iHighV_b), imageth_b);//提取出的为白色部分
-    //imshow("蓝色提取",imageth);
-    //-----------------统计提取部分占整张图片的百分比
-    //遍历imageth，分别统计白色区域与黑色区域的点的个数，求百分比,灰度图中255代表白色
-    float add_b=0;
-    for(int i = 0;i < height_b; i++)
-    {
-        for(int j = 0;j < width_b; j++)
-        {
-            // 若像素值为255，add加一
-            if(imageth_b.at<uchar>(i,j) == 255)
-            {
-                add_b++;
-            }
-            else
-            {
-                add_b=add_b;
-            }
+//    inRange(roi, Scalar(iLowH_b, iLowS_b, iLowV_b), Scalar(iHighH_b, iHighS_b, iHighV_b), imageth_b);//提取出的蓝色为白色部分
+	inRange(roi, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imageth_r);//提取出的红色为黑色部分
 
-        }
-    }
+	float add_w = 0,add_c = 0;
+	for(int i = 0;i < height_b; i++)
+	{
+		for(int j = 0;j < width_b; j++)
+		{
+			// 若像素值为255，add加一
+			if(imageth_r.at<uchar>(i,j) == 0)
+			{
+				add_w++;
+			} else{
+				add_c++;
+			}
+		}
+	}
 
     //-------------------计算百分比-------------------------
     //定义并计算百分比
-    float percentage_blue;
-    percentage_blue=add_b/ell_S_b*100;
-    //cout<<"大圆面积为"<<ell_S<<endl;
-//	  cout<<"蓝色占大圆比例为："<<percentage_blue<<"%"<<endl;
-    //############################蓝色百分比##################################
-    Mat imaged;
-    Mat imagehsv;
-    Mat imageth1;
-    Mat imageth2;
-    //红色为0°，绿色为120°,蓝色为240°。它们的补色是：黄色为60°，青色为180°,品红为300°；
-    //给出希望保留的hsv的取值范围
-    int iLowH = 0/2;
-    int iHighH = 40/2;
-    int iLowS = 20;
-    int iHighS = 240;//值越大，颜色越饱和
-    int iLowV = 20;//值越小越黑
-    int iHighV = 255;
+    float percentage_color;
+    percentage_color = add_c / ell_S_b * 100;
 
-    int raLowH = 300/2;
-    int raHighH = 380/2;
-    int raLowS = 10;
-    int raHighS = 250;//值越大，颜色越饱和
-    int raLowV = 20;//值越小越黑
-    int raHighV = 255;
 
-    int width,height,sum;
-    int order;
-    float a,b,ell_S;
-    width = roi.cols;
-    height = roi.rows;
-    order=e_roi_order;
-    a=ellipse_in[order]._a;
-    b=ellipse_in[order]._b;
-    sum = width*height;
-    ell_S=CV_PI*a*b;
-    //对原始图像进行高斯滤波
-    GaussianBlur(roi,imaged,Size(5,5),0,0);
+	  //############################蓝色百分比##################################
 
-    cvtColor(imaged, imagehsv, COLOR_BGR2HSV);
-
-    //按阈值分割
-    inRange(imagehsv, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imageth1);//提取出的为白色部分
-    inRange(imagehsv, Scalar(raLowH, raLowS, raLowV), Scalar(raHighH, raHighS, raHighV), imageth2);
-    //imshow("颜色提取",imageth1);
-    //imshow("颜色提取2",imageth2);
-    //-----------------统计提取部分占整张图片的百分比
-    //遍历imageth，分别统计白色区域与黑色区域的点的个数，求百分比,灰度图中255代表白色
-    float add=0;
-    for(int i = 0;i < height; i++)
-    {
-        for(int j = 0;j < width; j++)
-        {
-            // 若像素值为255，add加一
-            if(imageth1.at<uchar>(i,j) == 255)
-            {
-                add++;
-            }
-            else
-            {
-                add=add;
-            }
-
-        }
-    }
-    //cout<<"add="<<add<<endl;
-
-    float add2=0;
-    for(int i = 0;i < height; i++)
-    {
-        for(int j = 0;j < width; j++)
-        {
-            // 若像素值为255，add加一
-            if(imageth2.at<uchar>(i,j) == 255)
-            {
-                add2++;
-            }
-            else
-            {
-                add2=add2;
-            }
-
-        }
-    }
-    float sumrad=add+add2;
-    //cout<<"sumrad="<<sumrad<<endl;
-    //cout<<"圆面积="<<ell_S;
     //-------------------计算百分比-------------------------
     //定义并计算百分比，此时计算的是降噪后的结果
-    float percentage_rad;
-    //percentage_rad_sm=sumrad/ell_S12[1]*100;
-    percentage_rad=sumrad/ell_S*100;
-
-//	  cout<<"红色占圆比例为："<<percentage_rad<<"%"<<endl;
-
-    Ellipse ell_better;
-    ell_better._xc=ellipse_in[order]._xc;
-    ell_better._yc=ellipse_in[order]._yc;
-    ell_better._a=ellipse_in[order]._a;
-    ell_better._b=ellipse_in[order]._b;
+    float percentage_white;
+    percentage_white = add_w / ell_S_b * 100;
 
 
-    if((percentage_blue>=60)&&(percentage_rad>=4))
+
+
+    if((percentage_color>=80)&&(percentage_white>=20)&&(percentage_color<=110)&&(percentage_white<=40))
     {
-        ell_big.push_back(ellipse_in[order]);
-        //cout<<"testell"<< ell_better._xc<<endl;
+//		imshow("HSV提取", imageth_r);
+//		cout<<"大圆面积为"<<ell_S_b<<endl;
+//		cout<<"彩色占大圆比例为："<<percentage_color<<"%"<<endl;
+//		cout<<"白色占圆比例为："<< percentage_white <<"%"<<endl;
+    	return true;
     }
     else
     {
-//			ell_big.push_back(Ellipse());
+		return false;
     }
-    return 0;
 
 }
 
@@ -2300,7 +2219,7 @@ void visual_rec(vector<Mat1b>& gray, vector<coordinate>& ellipse_out0, vector<co
 			rotate_rect.points(vertices);
 			float h1, h2, h3, h4;
 			h1 = 0.5 * ellipse_out0[j].a;//只要h1,h2的系数在0.68571429这个值范围内就行
-			h2 = 0.86 * ellipse_out0[j].a;
+			h2 = 0.86 * ellipse_out0[j].a;//h1:0.5,h2:0.86
 			h3 = (0.8 * ellipse_out0[j].a - 0.5 * rotate_rect.size.width);
 			h4 = 0.5 * gray[j].cols;
 			if (rotate_rect.size.height < h1 || rotate_rect.size.height > h2 || rotate_rect.size.width < h1 || rotate_rect.size.width > h2

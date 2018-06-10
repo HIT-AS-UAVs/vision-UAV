@@ -54,8 +54,9 @@
 
 #include "autopilot_interface.h"
 
-bool stable = false, updateellipse = false;
+bool stable = true, updateellipse = true, getlocalposition = true, drop = false;
 int TargetNum = 0;
+coordinate droptarget;
 // ----------------------------------------------------------------------------------
 //   Time
 // ------------------- ---------------------------------------------------------------
@@ -366,8 +367,6 @@ read_messages()
 	bool success;               // receive success flag
 	bool received_all = false;  // receive only one message
 	Time_Stamps this_timestamps;
-	std::ofstream outf1;
-	outf1.open("messageID.txt");
 	// Blocking wait for new data
 	while ( !received_all and !time_to_exit )
 	{
@@ -387,8 +386,6 @@ read_messages()
 			// Note this doesn't handle multiple message sources.
 			current_messages.sysid  = message.sysid;
 			current_messages.compid = message.compid;
-			std::cout<<"messageID:"<<(float)message.msgid<<std::endl;
-			outf1 << "messageID:"<<(float)message.msgid<<std::endl;
 
 			// Handle Message ID
 			switch (message.msgid)
@@ -396,7 +393,7 @@ read_messages()
 
 				case MAVLINK_MSG_ID_HEARTBEAT:
 				{
-					printf("MAVLINK_MSG_ID_HEARTBEAT\n");
+//					printf("MAVLINK_MSG_ID_HEARTBEAT\n");
 					mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
 					current_messages.time_stamps.heartbeat = get_time_usec();
 					this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
@@ -432,22 +429,23 @@ read_messages()
 
 				case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
 				{
-					printf("MAVLINK_MSG_ID_LOCAL_POSITION_NED\n");
+//					printf("MAVLINK_MSG_ID_LOCAL_POSITION_NED\n");
+					getlocalposition = true;
 					mavlink_msg_local_position_ned_decode(&message, &(current_messages.local_position_ned));
 					current_messages.time_stamps.local_position_ned = get_time_usec();
 					this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
-                    std::cout<<"local_position.x:"<<current_messages.local_position_ned.x<<std::endl
-                             <<"local_position.y:"<<current_messages.local_position_ned.y<<std::endl
-                             <<"local_position.z:"<<current_messages.local_position_ned.z<<std::endl;
+//                    std::cout<<"local_position.x:"<<current_messages.local_position_ned.x<<std::endl
+//                             <<"local_position.y:"<<current_messages.local_position_ned.y<<std::endl
+//                             <<"local_position.z:"<<current_messages.local_position_ned.z<<std::endl;
                     local_position = current_messages.local_position_ned;
 					break;
 				}
 
 				case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 				{
-					printf("MAVLINK_MSG_ID_GLOBAL_POSITION_INT\n");
+//					printf("MAVLINK_MSG_ID_GLOBAL_POSITION_INT\n");
 					mavlink_msg_global_position_int_decode(&message, &(current_messages.global_position_int));
-                    std::cout<<"lat:"<<current_messages.global_position_int.lat<<std::endl;
+//                    std::cout<<"lat:"<<current_messages.global_position_int.lat<<std::endl;
 					current_messages.time_stamps.global_position_int = get_time_usec();
 					this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
                     global_position = current_messages.global_position_int;
@@ -661,7 +659,7 @@ WL_read_messages()
             {
                 case MAVLINK_MSG_ID_HEARTBEAT:
                 {
-                    printf("MAVLINK_MSG_ID_HEARTBEAT\n");
+//                    printf("MAVLINK_MSG_ID_HEARTBEAT\n");
                     mavlink_msg_heartbeat_decode(&message, &(Inter_message.heartbeat));
                     Inter_message.time_stamps.heartbeat = get_time_usec();
                     this_timestamps.heartbeat = Inter_message.time_stamps.heartbeat;
@@ -670,7 +668,7 @@ WL_read_messages()
                 }
                 case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
                 {
-                    printf("MAVLINK_MSG_ID_LOCAL_POSITION_NED\n");
+//                    printf("MAVLINK_MSG_ID_LOCAL_POSITION_NED\n");
                     mavlink_msg_local_position_ned_decode(&message, &(Inter_message.local_position_ned));
                     Inter_message.time_stamps.local_position_ned = get_time_usec();
                     this_timestamps.local_position_ned = Inter_message.time_stamps.local_position_ned;
@@ -679,7 +677,7 @@ WL_read_messages()
 
                 case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
                 {
-                    printf("MAVLINK_MSG_ID_GLOBAL_POSITION_INT\n");
+//                    printf("MAVLINK_MSG_ID_GLOBAL_POSITION_INT\n");
                     mavlink_msg_global_position_int_decode(&message, &(Inter_message.global_position_int));
 //                    std::cout<<"lat:"<<Inter_message.global_position_int.lat<<std::endl;
                     Inter_message.time_stamps.global_position_int = get_time_usec();
@@ -1466,18 +1464,18 @@ start_WL_write_thread(void *args)
 //  将当前时刻看到的所有可能为目标的椭圆存放在容器中
 // ------------------------------------------------------------------------------
 void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse){
-    float dis = 0.1;//在室外的参数圆心相距9米内都算一个圆
+    float dis = 4;//在室外的参数圆心相距9米内都算一个圆
 //	float dis = 0.05;//在室内测试用0.05
     for (auto &p:ellipse_out) {
         int32_t h = - api.current_messages.local_position_ned.z * 1000;
-        cout<<"h:"<<h<<endl;
+//        cout<<"h:"<<h<<endl;
 //        int32_t h1 = 1170;//桌子高度0.74M
         uint16_t hdg = api.current_messages.global_position_int.hdg;
 //        uint16_t hdg1 = 0;//设置机头方向为正北
         float loc_x = api.current_messages.local_position_ned.x;
-		cout<<"loc_x"<<loc_x<<endl;
+//		cout<<"loc_x"<<loc_x<<endl;
         float loc_y = api.current_messages.local_position_ned.y;
-		cout<<"loc_y"<<loc_y<<endl;
+//		cout<<"loc_y"<<loc_y<<endl;
         /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
         		float x = (p.x - cx) / fx * h / 1000;//单位为：m
             float y = - (p.y - cy) / fy * h / 1000;
@@ -1509,7 +1507,8 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
                 continue;
             }
             if(stable == true || updateellipse == true) {
-                if(abs(p.x - target_ellipse[TargetNum].x) < dis && abs(p.y - ellipse_out[TargetNum].y) < dis){
+                if(abs(p.x - target_ellipse[TargetNum].x) < dis &&
+                   abs(p.y - target_ellipse[TargetNum].y) < dis){
                     target_ellipse[TargetNum].x = p.x;
                     target_ellipse[TargetNum].y = p.y;
                     target_ellipse[TargetNum].a = p.a;
@@ -1563,7 +1562,7 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
 void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
 //	float possobile = 0.5, dis = 0.05;//室内测试设置0.5，0.05， 室外待定
 //	uint32_t num = 10;//室内测试设置10，室外待定
-	float possobile = 0.4, dis = 0.1;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
+	float possobile = 0.4, dis = 4;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
 	uint32_t num = 50;//室外测试：识别次数大于50次即可进行TF判断。
 			for(auto &p:ellipse_in){
 	    if(p.possbile > possobile && p.T_N > num) {
@@ -1610,4 +1609,41 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 
 	}
 
+}
+
+void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out){
+	float target_x = 0, target_y = 0;
+	int num;
+
+	float dis = 4;//在室外的参数圆心相距9米内都算一个圆
+//	float dis = 0.05;//在室内测试用0.05
+	for (auto &p:ellipse_out) {
+
+		int32_t h = -api.current_messages.local_position_ned.z * 1000;
+//        cout<<"h:"<<h<<endl;
+//        int32_t h1 = 1170;//桌子高度0.74M
+		uint16_t hdg = api.current_messages.global_position_int.hdg;
+//        uint16_t hdg1 = 0;//设置机头方向为正北
+		float loc_x = api.current_messages.local_position_ned.x;
+//		cout<<"loc_x"<<loc_x<<endl;
+		float loc_y = api.current_messages.local_position_ned.y;
+//		cout<<"loc_y"<<loc_y<<endl;
+		/*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
+
+		float x = (p.x - cx) / fx * h / 1000;//单位为：m
+		float y = -(p.y - cy) / fy * h / 1000;
+		//将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
+		float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
+		float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
+		float e_x = x_r + loc_x;
+		float e_y = y_r + loc_y;
+
+		target_x = target_x + e_x;
+		target_y = target_y + e_y;
+	}
+	num = ellipse_out.size();
+	droptarget.x = target_x / num;
+	droptarget.y = target_y / num;
+	cout<<"target_x"<<droptarget.x<<endl;
+	cout<<"target_y"<<droptarget.y<<endl;
 }

@@ -65,8 +65,9 @@
 #include "mavlink/common/mavlink.h"
 #include "ellipse/EllipseDetectorYaed.h"
 
-extern bool stable, updateellipse;
+extern bool stable, updateellipse, getlocalposition, drop;
 extern int TargetNum;
+extern coordinate droptarget;
 // ------------------------------------------------------------------------------
 //   Defines
 // ------------------------------------------------------------------------------
@@ -384,6 +385,7 @@ private:
 /*将当前时刻看到的所有可能为目标的椭圆存放在容器中*/
 void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse);
 void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0);
+void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out);
 #endif // AUTOPILOT_INTERFACE_H_
 
 
