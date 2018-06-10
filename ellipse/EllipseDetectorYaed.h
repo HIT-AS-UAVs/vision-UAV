@@ -58,6 +58,8 @@ using namespace cv;
 const float fx = 1152.1080 / 3, fy = 1153.6161 / 3;//c930E #2
 const float cx = 974.8427 / 3 + 12, cy = 566.9231 / 3;
 
+extern vector<float> color, white;
+extern vector<Ellipse> ellipse_pre;
 /////////////椭圆坐标类型
 struct coordinate {
     float_t x;
@@ -167,7 +169,7 @@ public:
 	void DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int iTopN=4, int thickness=2);
 
 	//优化得到的椭圆
-	void OptimizEllipse( vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
+
 
     //投弹的时候只识别小圆
 	void onlyforsmall(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in);

@@ -59,9 +59,7 @@ using namespace std;
 
 extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
 
-//extern bool updateellipse;
-//extern bool stable;
-//extern int TargetNum ;
+
 // ------------------------------------------------------------------------------
 //   Prototypes
 // ------------------------------------------------------------------------------
