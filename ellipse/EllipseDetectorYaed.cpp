@@ -22,7 +22,7 @@ last update: 23/12/2014
 #include "EllipseDetectorYaed.h"
 
 vector<float> white,color;
-vector<Ellipse> ellipse_pre;
+vector<coordinate> ellipse_pre;
 
 CEllipseDetectorYaed::CEllipseDetectorYaed(void) : _times(6, 0.0), _timesHelper(6, 0.0)
 {
@@ -1986,7 +1986,7 @@ void CEllipseDetectorYaed::extracrROI(Mat1b& image, vector<coordinate>& ellipse_
 
 //	cvtColor(image, image, COLOR_RGB2GRAY);
 	GaussianBlur(image, image, Size(5, 5),0, 0);
-	threshold(image, image, 180, 255, CV_THRESH_BINARY);
+	threshold(image, image, 170, 255, CV_THRESH_BINARY);
 	for(auto &p:ellipse_out){
 		Mat1b ROI;
 		int r = 3 * p.a;

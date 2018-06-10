@@ -59,17 +59,20 @@ const float fx = 1152.1080 / 3, fy = 1153.6161 / 3;//c930E #2
 const float cx = 974.8427 / 3 + 12, cy = 566.9231 / 3;
 
 extern vector<float> color, white;
-extern vector<Ellipse> ellipse_pre;
 /////////////椭圆坐标类型
 struct coordinate {
     float_t x;
     float_t y;
+    float locx;
+    float locy;
+    int16_t num;
+    float possible;
     int order;
     float a;
     uchar flag;//0为F，1为T, 2为未识别
 
 };
-
+extern vector<coordinate> ellipse_pre;
 
 struct target{
     float_t x = 0;

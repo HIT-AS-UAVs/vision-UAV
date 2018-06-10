@@ -121,12 +121,8 @@ struct Ellipse
 	float _b;
 	float _rad;
 	float _score;
-	float locx;
-	float locy;
-	float possible;
-	uint16_t num;
 
-	Ellipse() : _xc(0.f), _yc(0.f), _a(0.f), _b(0.f), _rad(0.f), _score(0.f), locx(0.f), locy(0.f), possible(0.f), num(0.f) {};
+	Ellipse() : _xc(0.f), _yc(0.f), _a(0.f), _b(0.f), _rad(0.f), _score(0.f) {};
 	Ellipse(float xc, float yc, float a, float b, float rad, float score = 0.f) : _xc(xc), _yc(yc), _a(a), _b(b), _rad(rad), _score(score) {};
 	Ellipse(const Ellipse& other) : _xc(other._xc), _yc(other._yc), _a(other._a), _b(other._b), _rad(other._rad), _score(other._score) {};
 
