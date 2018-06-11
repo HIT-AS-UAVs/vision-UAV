@@ -1763,3 +1763,6 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 	}
 
 }
+
+void SortF(vector<target>& ellipse_F){
+}

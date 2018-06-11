@@ -389,6 +389,7 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x, float& y);
 void OptimizEllipse(vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
 void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<Ellipse>& ellipse_big);
+void SortF(vector<target>& ellipse_F);
 #endif // AUTOPILOT_INTERFACE_H_
 
 
