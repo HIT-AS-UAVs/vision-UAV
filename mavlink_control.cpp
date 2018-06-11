@@ -164,32 +164,7 @@ top (int argc, char **argv)
 
 //   commands(autopilot_interface);
     while(1){
-        cout<<"current_x:"<<autopilot_interface.current_messages.local_position_ned.x<<endl;
-        cout<<"current_y:"<<autopilot_interface.current_messages.local_position_ned.y<<endl;
-        cout<<"current_z:"<<autopilot_interface.current_messages.local_position_ned.z<<endl;
-        cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
-        for (int i = 0; i < target_ellipse_position.size(); ++i) {
-            cout << "x = " << target_ellipse_position[i].x << endl
-                 << "y = " << target_ellipse_position[i].y << endl
-                 << "T = " << target_ellipse_position[i].T_N << endl
-                 << "F = " << target_ellipse_position[i].F_N << endl
-                 << "flag = " << target_ellipse_position[i].possbile << endl;
-        }
-        cout << "ellipse_T.size = " << ellipse_T.size() << endl;
-        for (int i = 0; i < ellipse_T.size(); ++i) {
-            cout << "x = " << ellipse_T[i].x << endl
-                 << "y = " << ellipse_T[i].y << endl
-                 << "possbile = " << ellipse_T[i].possbile << endl
-                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
-        }
-        cout << "ellipse_F.size = " << ellipse_F.size() << endl;
-        for (int i = 0; i < ellipse_F.size(); ++i) {
-            cout << "x = " << ellipse_F[i].x << endl
-                 << "y = " << ellipse_F[i].y << endl
-                 << "possbile = " << ellipse_F[i].possbile << endl
-                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
-        }
-        sleep(1);
+               sleep(1);
     }
     // --------------------------------------------------------------------------
     //   THREAD and PORT SHUTDOWN
@@ -221,11 +196,11 @@ commands(Autopilot_Interface &api)
     float dist, distance, XYdis;
     bool flag = true;
     bool goback = true;
-    int TargetNum = 0;
+    TargetNum = 0;
     int TNum = 0;
     stable = false;
     updateellipse = false;
-    TargetNum = 0;
+    drop = false;
 
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
@@ -243,7 +218,8 @@ commands(Autopilot_Interface &api)
     while(flag)
     {
         gp = api.global_position;
-
+        stable = false;
+        updateellipse = false;
         //设置触发节点
         if (target_ellipse_position.size() > TargetNum)
         {
@@ -317,15 +293,15 @@ commands(Autopilot_Interface &api)
                         sleep(1);
 
                         float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
-                        if(distance < 4)
+                        if(distance < 5)
                         {
-                            int TF;
+                            int TF=0;
                             stable = true;
-                            // ------------------------------------------------------------------------------
-                            //     调用判断T/F的函数
-                            //     若为T则将当前全局坐标系发送给从机[TagetNum+1]
-                            // ------------------------------------------------------------------------------
-                            //需添加固定时间内未检测到任何东西直接break
+                             //------------------------------------------------------------------------------
+                             //    调用判断T/F的函数
+                             //    若为T则将当前全局坐标系发送给从机[TagetNum+1]
+                             //------------------------------------------------------------------------------
+                           // 需添加固定时间内未检测到任何东西直接break
                             while (stable)
                             {
                                 sleep(1);
@@ -347,6 +323,7 @@ commands(Autopilot_Interface &api)
                                     ;
                                 }
                             }
+//                            sleep(30);
                             if (ellipse_T.size() > TNum)
                             {
                                 if (ellipse_T.size() == 3)
@@ -523,7 +500,7 @@ commands(Autopilot_Interface &api)
             {
                 usleep(100000);
             }
-            if(api.current_messages.mission_item_reached.seq == 8)
+            if(api.current_messages.mission_item_reached.seq == 5)
             {
                 if(TNum == 1)
                 {
@@ -555,13 +532,13 @@ commands(Autopilot_Interface &api)
     // STOP OFFBOARD MODE
     // --------------------------------------------------------------------------
     sleep(5);
-    mavlink_mission_clear_all_t comclearall;
-    comclearall.target_system = 01;
-    comclearall.target_component = 01;
-
-    mavlink_message_t Clearcom;
-    mavlink_msg_mission_clear_all_encode(255,190,&Clearcom,&comclearall);
-    int Clearlen = api.write_message(Clearcom);
+//    mavlink_mission_clear_all_t comclearall;
+//    comclearall.target_system = 01;
+//    comclearall.target_component = 01;
+//
+//    mavlink_message_t Clearcom;
+//    mavlink_msg_mission_clear_all_encode(255,190,&Clearcom,&comclearall);
+//    int Clearlen = api.write_message(Clearcom);
     sleep(1);
 
     //返航
@@ -733,8 +710,8 @@ Mat1b gray, gray_big;
             if (!drop) {
             OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
             yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
-            filtellipse(api, ellipseok, ellipse_big);
-            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipseok);//绘制检测到的椭圆
+//            filtellipse(api, ellipseok, ellipse_big);
+            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
             vector<vector<Point> > contours;
             if (stable) {
                 yaed->extracrROI(gray_big, ellipse_out, img_roi);
@@ -749,9 +726,9 @@ Mat1b gray, gray_big;
             }
             possible_ellipse(api, ellipse_out1, target_ellipse_position);
 
-
-            resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
-
+            if(stable) {
+                resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
+            }
 
         } else {
             yaed->onlyforsmall(ellipse_in, ellsYaed);
@@ -759,6 +736,32 @@ Mat1b gray, gray_big;
             getdroptarget(api, droptarget, ellipse_out);
         }
     }
+        cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
+        for (int i = 0; i < target_ellipse_position.size(); ++i) {
+            cout << "x = " << target_ellipse_position[i].x << endl
+                 << "y = " << target_ellipse_position[i].y << endl
+                 << "T = " << target_ellipse_position[i].T_N << endl
+                 << "F = " << target_ellipse_position[i].F_N << endl
+                 << "flag = " << target_ellipse_position[i].possbile << endl;
+        }
+        cout << "ellipse_T.size = " << ellipse_T.size() << endl;
+        for (int i = 0; i < ellipse_T.size(); ++i) {
+            cout << "x = " << ellipse_T[i].x << endl
+                 << "y = " << ellipse_T[i].y << endl
+                 << "possbile = " << ellipse_T[i].possbile << endl
+                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
+        }
+        cout << "ellipse_F.size = " << ellipse_F.size() << endl;
+        for (int i = 0; i < ellipse_F.size(); ++i) {
+            cout << "x = " << ellipse_F[i].x << endl
+                 << "y = " << ellipse_F[i].y << endl
+                 << "possbile = " << ellipse_F[i].possbile << endl
+                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
+        }
+        cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
+            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
+            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
+        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl;
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
@@ -766,7 +769,7 @@ Mat1b gray, gray_big;
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
-//		usleep(100000);
+		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------

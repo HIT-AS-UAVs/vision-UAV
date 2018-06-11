@@ -52,11 +52,11 @@ using namespace cv;
 //const float fx = 734.0686, fy = 737.9659;//c525
 //const float cx = 316.2778, cy = 232.4590;
 
-//const float fx = 1140.8604 / 3, fy = 1141.4534 / 3;//c930E #1
-//const float cx = 920.9147 / 3 + 12, cy = 580.8716 / 3;
+const float fx = 1140.8604 / 3, fy = 1141.4534 / 3;//c930E #1
+const float cx = 920.9147 / 3 , cy = 580.8716 / 3;
 
-const float fx = 1152.1080 / 3, fy = 1153.6161 / 3;//c930E #2
-const float cx = 974.8427 / 3 + 12, cy = 566.9231 / 3;
+//const float fx = 1152.1080 / 3, fy = 1153.6161 / 3;//c930E #2
+//const float cx = 974.8427 / 3 + 12, cy = 566.9231 / 3;
 
 extern vector<float> color, white;
 /////////////椭圆坐标类型
