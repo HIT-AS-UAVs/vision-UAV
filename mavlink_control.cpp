@@ -74,138 +74,138 @@ int
 top (int argc, char **argv)
 {
 
-	// --------------------------------------------------------------------------
-	//   PARSE THE COMMANDS
-	// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    //   PARSE THE COMMANDS
+    // --------------------------------------------------------------------------
 
-	// Default input arguments
+    // Default input arguments
 #ifdef __APPLE__
-	char *uart_name = (char*)"/dev/tty.usbmodem1";
+    char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
-	char *uart_name = (char*)"/dev/ttyUSB0";
-	char *WL_uart = (char*)"/dev/ttyUSB1";
+    char *uart_name = (char*)"/dev/ttyUSB0";
+    char *WL_uart = (char*)"/dev/ttyUSB1";
 #endif
-	int baudrate = 57600;
+    int baudrate = 57600;
 
-	// do the parse, will throw an int if it fails
-	parse_commandline(argc, argv, uart_name, baudrate);
+    // do the parse, will throw an int if it fails
+    parse_commandline(argc, argv, uart_name, baudrate);
     parse_commandline(argc, argv, WL_uart, baudrate);
 
 
-	// --------------------------------------------------------------------------
-	//   PORT and THREAD STARTUP
-	// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    //   PORT and THREAD STARTUP
+    // --------------------------------------------------------------------------
 
-	/*
-	 * Instantiate a serial port object
-	 *
-	 * This object handles the opening and closing of the offboard computer's
-	 * serial port over which it will communicate to an autopilot.  It has
-	 * methods to read and write a mavlink_message_t object.  To help with read
-	 * and write in the context of pthreading, it gaurds port operations with a
-	 * pthread mutex lock.
-	 *
-	 */
-	Serial_Port serial_port(uart_name, baudrate);
-	Serial_Port WL_serial_port(WL_uart,baudrate);
+    /*
+     * Instantiate a serial port object
+     *
+     * This object handles the opening and closing of the offboard computer's
+     * serial port over which it will communicate to an autopilot.  It has
+     * methods to read and write a mavlink_message_t object.  To help with read
+     * and write in the context of pthreading, it gaurds port operations with a
+     * pthread mutex lock.
+     *
+     */
+    Serial_Port serial_port(uart_name, baudrate);
+    Serial_Port WL_serial_port(WL_uart,baudrate);
 
 
-	/*
-	 * Instantiate an autopilot interface object
-	 *
-	 * This starts two threads for read and write over MAVlink. The read thread
-	 * listens for any MAVlink message and pushes it to the current_messages
-	 * attribute.  The write thread at the moment only streams a position target
-	 * in the local NED frame (mavlink_set_position_target_local_ned_t), which
-	 * is changed by using the method update_setpoint().  Sending these messages
-	 * are only half the requirement to get response from the autopilot, a signal
-	 * to enter "offboard_control" mode is sent by using the enable_offboard_control()
-	 * method.  Signal the exit of this mode with disable_offboard_control().  It's
-	 * important that one way or another this program signals offboard mode exit,
-	 * otherwise the vehicle will go into failsafe.
-	 *
-	 */
-	Autopilot_Interface autopilot_interface(&serial_port, &WL_serial_port);
+    /*
+     * Instantiate an autopilot interface object
+     *
+     * This starts two threads for read and write over MAVlink. The read thread
+     * listens for any MAVlink message and pushes it to the current_messages
+     * attribute.  The write thread at the moment only streams a position target
+     * in the local NED frame (mavlink_set_position_target_local_ned_t), which
+     * is changed by using the method update_setpoint().  Sending these messages
+     * are only half the requirement to get response from the autopilot, a signal
+     * to enter "offboard_control" mode is sent by using the enable_offboard_control()
+     * method.  Signal the exit of this mode with disable_offboard_control().  It's
+     * important that one way or another this program signals offboard mode exit,
+     * otherwise the vehicle will go into failsafe.
+     *
+     */
+    Autopilot_Interface autopilot_interface(&serial_port, &WL_serial_port);
 
-	/*
-	 * Setup interrupt signal handler
-	 *
-	 * Responds to early exits signaled with Ctrl-C.  The handler will command
-	 * to exit offboard mode if required, and close threads and the port.
-	 * The handler in this example needs references to the above objects.
-	 *
-	 */
-	serial_port_quit         = &serial_port;
+    /*
+     * Setup interrupt signal handler
+     *
+     * Responds to early exits signaled with Ctrl-C.  The handler will command
+     * to exit offboard mode if required, and close threads and the port.
+     * The handler in this example needs references to the above objects.
+     *
+     */
+    serial_port_quit         = &serial_port;
     serial_port_quit         = &WL_serial_port;
-	autopilot_interface_quit = &autopilot_interface;
-	signal(SIGINT,quit_handler);
+    autopilot_interface_quit = &autopilot_interface;
+    signal(SIGINT,quit_handler);
 
-	/*
-	 * Start the port and autopilot_interface
-	 * This is where the port is opened, and read and write threads are started.
-	 */
+    /*
+     * Start the port and autopilot_interface
+     * This is where the port is opened, and read and write threads are started.
+     */
 
 
 
-	serial_port.start();
+    serial_port.start();
     WL_serial_port.start();
-	autopilot_interface.start();
+    autopilot_interface.start();
 //视觉定位线程
-	thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
-	// --------------------------------------------------------------------------
-	//   RUN COMMANDS
-	// --------------------------------------------------------------------------
+    thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
+    // --------------------------------------------------------------------------
+    //   RUN COMMANDS
+    // --------------------------------------------------------------------------
 
-	/*
-	 * Now we can implement the algorithm we want on top of the autopilot interface
-	 */
+    /*
+     * Now we can implement the algorithm we want on top of the autopilot interface
+     */
 
-   commands(autopilot_interface);
+    commands(autopilot_interface);
 
 //   commands(autopilot_interface);
-while(1){
-    cout<<"current_x:"<<autopilot_interface.current_messages.local_position_ned.x<<endl;
-    cout<<"current_y:"<<autopilot_interface.current_messages.local_position_ned.y<<endl;
-    cout<<"current_z:"<<autopilot_interface.current_messages.local_position_ned.z<<endl;
-    cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
-    for (int i = 0; i < target_ellipse_position.size(); ++i) {
-        cout << "x = " << target_ellipse_position[i].x << endl
-             << "y = " << target_ellipse_position[i].y << endl
-             << "T = " << target_ellipse_position[i].T_N << endl
-             << "F = " << target_ellipse_position[i].F_N << endl
-             << "flag = " << target_ellipse_position[i].possbile << endl;
+    while(1){
+        cout<<"current_x:"<<autopilot_interface.current_messages.local_position_ned.x<<endl;
+        cout<<"current_y:"<<autopilot_interface.current_messages.local_position_ned.y<<endl;
+        cout<<"current_z:"<<autopilot_interface.current_messages.local_position_ned.z<<endl;
+        cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
+        for (int i = 0; i < target_ellipse_position.size(); ++i) {
+            cout << "x = " << target_ellipse_position[i].x << endl
+                 << "y = " << target_ellipse_position[i].y << endl
+                 << "T = " << target_ellipse_position[i].T_N << endl
+                 << "F = " << target_ellipse_position[i].F_N << endl
+                 << "flag = " << target_ellipse_position[i].possbile << endl;
+        }
+        cout << "ellipse_T.size = " << ellipse_T.size() << endl;
+        for (int i = 0; i < ellipse_T.size(); ++i) {
+            cout << "x = " << ellipse_T[i].x << endl
+                 << "y = " << ellipse_T[i].y << endl
+                 << "possbile = " << ellipse_T[i].possbile << endl
+                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
+        }
+        cout << "ellipse_F.size = " << ellipse_F.size() << endl;
+        for (int i = 0; i < ellipse_F.size(); ++i) {
+            cout << "x = " << ellipse_F[i].x << endl
+                 << "y = " << ellipse_F[i].y << endl
+                 << "possbile = " << ellipse_F[i].possbile << endl
+                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
+        }
+        sleep(1);
     }
-    cout << "ellipse_T.size = " << ellipse_T.size() << endl;
-    for (int i = 0; i < ellipse_T.size(); ++i) {
-        cout << "x = " << ellipse_T[i].x << endl
-             << "y = " << ellipse_T[i].y << endl
-             << "possbile = " << ellipse_T[i].possbile << endl
-             << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
-    }
-    cout << "ellipse_F.size = " << ellipse_F.size() << endl;
-    for (int i = 0; i < ellipse_F.size(); ++i) {
-        cout << "x = " << ellipse_F[i].x << endl
-             << "y = " << ellipse_F[i].y << endl
-             << "possbile = " << ellipse_F[i].possbile << endl
-             << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
-    }
-    sleep(1);
-}
-	// --------------------------------------------------------------------------
-	//   THREAD and PORT SHUTDOWN
-	// --------------------------------------------------------------------------
-	//  Now that we are done we can stop the threads and close the port
+    // --------------------------------------------------------------------------
+    //   THREAD and PORT SHUTDOWN
+    // --------------------------------------------------------------------------
+    //  Now that we are done we can stop the threads and close the port
 
-	autopilot_interface.stop();
-	serial_port.stop();
-	t1.join();
+    autopilot_interface.stop();
+    serial_port.stop();
+    t1.join();
 
-	// --------------------------------------------------------------------------
-	//   DONE
-	// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    //   DONE
+    // --------------------------------------------------------------------------
 
-	// woot!
-	return 0;
+    // woot!
+    return 0;
 
 }
 
@@ -217,17 +217,15 @@ while(1){
 void
 commands(Autopilot_Interface &api)
 {
-    // 设置变量，用于返回相应切换点
     mavlink_global_position_int_t gp;
-//    mavlink_global_position_int_t flagPoint;
-//    flagPoint.lat = 411198976;
-//    flagPoint.lon = 1230987852;
-//    flagPoint.relative_alt = 20000;
-    //target = [];
+    float dist, distance, XYdis;
     bool flag = true;
     bool goback = true;
     int TargetNum = 0;
     int TNum = 0;
+    stable = false;
+    updateellipse = false;
+    TargetNum = 0;
 
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
@@ -258,18 +256,18 @@ commands(Autopilot_Interface &api)
             usleep(100);
 
             //设置成为只更新椭圆位置,不添加新的椭圆坐标
-            updateellipse = false;
+            updateellipse = true;
             mavlink_set_position_target_local_ned_t sp;
-//            mavlink_local_position_ned_t locsp = api.local_position;
             //现在用当前高度,最终高度确定时使用
-            float local_alt = gp.relative_alt/1000.0;
+            float local_alt = -gp.relative_alt/1000.0;
             sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+            float yaw = D2R(gp.hdg);
             while(goback)
             {
                 // --------------------------------------------------------------------------
                 // 给定局部坐标(local_ned)位置，并执行
                 // --------------------------------------------------------------------------
-                float yaw = D2R(gp.hdg);
+
                 // -------------------------------------------------------------------------
                 // 							设置位置/朝向
                 // -------------------------------------------------------------------------
@@ -289,22 +287,22 @@ commands(Autopilot_Interface &api)
                     float XYdis = XYDistance(pos.x,pos.y,sp.x,sp.y);
                     if(XYdis >10 && XYdis< 20)
                     {
-                        local_alt = 20;
+                        local_alt = -25;
                         // -------------------------------------------------------------------------
                         // 							设置位置/朝向
                         // -------------------------------------------------------------------------
-                        set_position(  target_ellipse_position[TargetNum].x, // [m]
-                                       target_ellipse_position[TargetNum].y, // [m]
-                                       local_alt, // [m]
-                                       sp);
-
+                        //                       set_position(  target_ellipse_position[TargetNum].x, // [m]
+                        //                                      target_ellipse_position[TargetNum].y, // [m]
+                        //                                      local_alt, // [m]
+                        //                                      sp);
+                        sp.z = local_alt;
                         // SEND THE COMMAND
                         api.update_local_setpoint(sp);
                         sleep(1);
                     }
                     else if (XYdis < 10)
                     {
-                        local_alt = 15;
+                        local_alt = -20;
                         // -------------------------------------------------------------------------
                         // 							设置位置/朝向
                         // -------------------------------------------------------------------------
@@ -312,7 +310,8 @@ commands(Autopilot_Interface &api)
                                        target_ellipse_position[TargetNum].y, // [m]
                                        local_alt, // [m]
                                        sp);
-
+                        set_yaw(yaw, // [rad]
+                                sp);
                         // SEND THE COMMAND
                         api.update_local_setpoint(sp);
                         sleep(1);
@@ -320,36 +319,107 @@ commands(Autopilot_Interface &api)
                         float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
                         if(distance < 4)
                         {
-//                            bool TF;
+                            int TF;
                             stable = true;
                             // ------------------------------------------------------------------------------
                             //     调用判断T/F的函数
-                            //     若为T则将当前全局坐标系发送给从机[TagetNum]
+                            //     若为T则将当前全局坐标系发送给从机[TagetNum+1]
                             // ------------------------------------------------------------------------------
-//                        TF = visual_rec(ellipse_out1);
-//                            TF = true;
-                            sleep(10);
+                            //需添加固定时间内未检测到任何东西直接break
+                            while (stable)
+                            {
+                                sleep(1);
+                                TF++;
+                                if (TF==10)
+                                {
+                                    int TplusF = target_ellipse_position[TargetNum].T_N + target_ellipse_position[TargetNum].F_N;
+                                    if(TplusF <= 10 )
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    ;
+                                }
+                            }
                             if (ellipse_T.size() > TNum)
                             {
-                                mavlink_global_position_int_t Target_Global_Position;
-                                Target_Global_Position = api.current_messages.global_position_int;
+                                if (ellipse_T.size() == 3)
+                                {
+                                    //执行仍的过程
+                                    drop = true;
+                                    local_alt = -15;
+                                    while (true)
+                                    {
+                                        set_position(target_ellipse_position[TargetNum].x, // [m]
+                                                     target_ellipse_position[TargetNum].y, // [m]
+                                                     local_alt, // [m]
+                                                     sp);
+                                        set_yaw(yaw, // [rad]
+                                                sp);
+                                        // SEND THE COMMAND
+                                        api.update_local_setpoint(sp);
+                                        mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
+                                        float MXY = XYDistance(pos.x, pos.y, sp.x, sp.y);
+                                        if (MXY < 2)
+                                        {
+                                            //后续加上速度
+                                            usleep(200);
+                                            if ((pos.z+10.5)>0)
+                                            {
+                                                // ------------------------------------------------------------------------------
+                                                //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
+                                                //	ServoId：AUX_OUT1-6 对应148-153/9-14
+                                                // ------------------------------------------------------------------------------
+                                                sleep(1);
+                                                api.Servo_Control(10, 1700);
+                                                TNum = TNum + 1;
+                                                TargetNum = TargetNum + 1;
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                ;
+                                            }
 
-                                //后续添加判断采集全局坐标的正确性,如果错误重新选择
-                                int Globallen = api.Send_WL_Global_Position(TNum,Target_Global_Position);
+                                        }
+                                        else
+                                        {
+                                            usleep(200000);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    mavlink_global_position_int_t Target_Global_Position;
+                                    Target_Global_Position = api.current_messages.global_position_int;
+                                    if (Target_Global_Position.lat < 10000000)
+                                    {
+                                        Target_Global_Position = api.current_messages.global_position_int;
+                                    }
+                                    //后续添加判断采集全局坐标的正确性,如果错误重新选择
+                                    int Globallen = api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                                    // ------------------------------------------------------------------------------
+                                    //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
+                                    //	ServoId：AUX_OUT1-6 对应148-153/9-14
+                                    // ------------------------------------------------------------------------------
+                                    api.Servo_Control(10, 1700);
+                                    TNum = TNum + 1;
+                                    TargetNum = TargetNum + 1;
+                                }
 
-                                // ------------------------------------------------------------------------------
-                                //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
-                                //	ServoId：AUX_OUT1-6 对应148-153/9-14
-                                // ------------------------------------------------------------------------------
-                                api.Servo_Control(10,1700);
-                                TNum = TNum + 1;
-                                TargetNum = TargetNum + 1;
                             }
                             else
                             {
                                 TargetNum = TargetNum + 1;
                             }
                             stable = false;
+                            drop = false;
                             break;
                         }
                         else
@@ -358,7 +428,7 @@ commands(Autopilot_Interface &api)
                         }
 
                     }
-                    //目标位于20m以外,向目标靠近
+                        //目标位于20m以外,向目标靠近
                     else
                     {
                         sleep(1);
@@ -403,15 +473,15 @@ commands(Autopilot_Interface &api)
                 global_int_pos.vx = ggsp.vx;
                 global_int_pos.vy = ggsp.vy;
                 global_int_pos.vz = ggsp.vz;
-				float gyaw = D2R(ggsp.hdg);
-				global_int_pos.yaw = gyaw;
+                float gyaw = D2R(ggsp.hdg);
+                global_int_pos.yaw = gyaw;
                 gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
                 gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
 
                 // ------------------------------------------------------------------------
                 //			配置设定巡视高度
                 // ------------------------------------------------------------------------
-                int32_t High = 20;
+                int32_t High = 25;
                 //set global_point 经度，纬度，相对home高度
                 set_global_position(global_int_pos.lat_int,
                                     global_int_pos.lon_int,
@@ -425,13 +495,13 @@ commands(Autopilot_Interface &api)
                 {
                     mavlink_global_position_int_t current_global = api.global_position;
                     float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,gp.lat,gp.lon,gp.relative_alt);
-                    if(distan < 4)
+                    if(distan < 5)
                     {
                         usleep(200);
                         goback = true;
                         api.Set_Mode(03);
                         sleep(2);
-                        updateellipse = true;
+                        updateellipse = false;
                         break;
                     }
                     else
@@ -439,23 +509,21 @@ commands(Autopilot_Interface &api)
                         usleep(200000);
                     }
                 }
-			//当i=3大循环break
-//                break;
             }
 
         }
         else
         {
 
-			if(TNum == 3)
-			{
-				flag = false;
-			}
-			else
+            if(TNum == 3)
+            {
+                flag = false;
+            }
+            else
             {
                 usleep(100000);
             }
-			if(api.current_messages.mission_item_reached.seq == 8)
+            if(api.current_messages.mission_item_reached.seq == 8)
             {
                 if(TNum == 1)
                 {
@@ -472,6 +540,7 @@ commands(Autopilot_Interface &api)
                 else
                 {
                     flag = false;
+                    updateellipse = true;
                 }
             }
         }
@@ -525,45 +594,45 @@ void
 parse_commandline(int argc, char **argv, char *&uart_name, int &baudrate)
 {
 
-	// string for command line usage
-	const char *commandline_usage = "usage: mavlink_serial -d <devicename> -b <baudrate>";
+    // string for command line usage
+    const char *commandline_usage = "usage: mavlink_serial -d <devicename> -b <baudrate>";
 
-	// Read input arguments
-	for (int i = 1; i < argc; i++) { // argv[0] is "mavlink"
+    // Read input arguments
+    for (int i = 1; i < argc; i++) { // argv[0] is "mavlink"
 
-		// Help
-		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-			printf("%s\n",commandline_usage);
-			throw EXIT_FAILURE;
-		}
+        // Help
+        if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+            printf("%s\n",commandline_usage);
+            throw EXIT_FAILURE;
+        }
 
-		// UART device ID
-		if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--device") == 0) {
-			if (argc > i + 1) {
-				uart_name = argv[i + 1];
+        // UART device ID
+        if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--device") == 0) {
+            if (argc > i + 1) {
+                uart_name = argv[i + 1];
 
-			} else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
+            } else {
+                printf("%s\n",commandline_usage);
+                throw EXIT_FAILURE;
+            }
+        }
 
-		// Baud rate
-		if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--baud") == 0) {
-			if (argc > i + 1) {
-				baudrate = atoi(argv[i + 1]);
+        // Baud rate
+        if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--baud") == 0) {
+            if (argc > i + 1) {
+                baudrate = atoi(argv[i + 1]);
 
-			} else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
+            } else {
+                printf("%s\n",commandline_usage);
+                throw EXIT_FAILURE;
+            }
+        }
 
-	}
-	// end: for each input argument
+    }
+    // end: for each input argument
 
-	// Done!
-	return;
+    // Done!
+    return;
 }
 
 
@@ -574,78 +643,78 @@ parse_commandline(int argc, char **argv, char *&uart_name, int &baudrate)
 void
 quit_handler( int sig )
 {
-	printf("\n");
-	printf("TERMINATING AT USER REQUEST\n");
-	printf("\n");
+    printf("\n");
+    printf("TERMINATING AT USER REQUEST\n");
+    printf("\n");
 
-	// autopilot interface
-	try {
-		autopilot_interface_quit->handle_quit(sig);
-	}
-	catch (int error){}
+    // autopilot interface
+    try {
+        autopilot_interface_quit->handle_quit(sig);
+    }
+    catch (int error){}
 
-	// serial port
-	try {
-		serial_port_quit->handle_quit(sig);
-	}
-	catch (int error){}
+    // serial port
+    try {
+        serial_port_quit->handle_quit(sig);
+    }
+    catch (int error){}
 
-	// end program here
-	exit(0);
+    // end program here
+    exit(0);
 
 }
 
 ///////////////视觉定位线程
 void videothread(Autopilot_Interface& api){
 
-	VideoCapture cap(0);
+    VideoCapture cap(0);
 //    VideoCapture cap;
 //    cap.open("T_rotation.avi");
 //    cap.open("F.avi");
 //    cap.open("T.avi");
-	if(!cap.isOpened()) return;
+    if(!cap.isOpened()) return;
     int width = 640;
     int height = 360;
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
-	cap.set(CAP_PROP_AUTOFOCUS,0);
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
+    cap.set(CAP_PROP_AUTOFOCUS,0);
 
 
 //	 Parameters Settings (Sect. 4.2)
-	int		iThLength = 16;
-	float	fThObb = 3.0f;
-	float	fThPos = 1.0f;
-	float	fTaoCenters = 0.05f;
-	int 	iNs = 16;
-	float	fMaxCenterDistance = sqrt(float(width*width + height*height)) * fTaoCenters;
+    int		iThLength = 16;
+    float	fThObb = 3.0f;
+    float	fThPos = 1.0f;
+    float	fTaoCenters = 0.05f;
+    int 	iNs = 16;
+    float	fMaxCenterDistance = sqrt(float(width*width + height*height)) * fTaoCenters;
 
-	float	fThScoreScore = 0.4f;
+    float	fThScoreScore = 0.4f;
 
-	// Other constant parameters settings.
+    // Other constant parameters settings.
 
-	// Gaussian filter parameters, in pre-processing
-	Size	szPreProcessingGaussKernelSize = Size(5, 5);
-	double	dPreProcessingGaussSigma = 1.0;
+    // Gaussian filter parameters, in pre-processing
+    Size	szPreProcessingGaussKernelSize = Size(5, 5);
+    double	dPreProcessingGaussSigma = 1.0;
 
-	float	fDistanceToEllipseContour = 0.1f;	// (Sect. 3.3.1 - Validation)
-	float	fMinReliability = 0.4f;	// Const parameters to discard bad ellipses
+    float	fDistanceToEllipseContour = 0.1f;	// (Sect. 3.3.1 - Validation)
+    float	fMinReliability = 0.4f;	// Const parameters to discard bad ellipses
 
 
-	// Initialize Detector with selected parameters
+    // Initialize Detector with selected parameters
     CEllipseDetectorYaed* yaed = new CEllipseDetectorYaed();
-	yaed->SetParameters(szPreProcessingGaussKernelSize,
-						dPreProcessingGaussSigma,
-						fThPos,
-						fMaxCenterDistance,
-						iThLength,
-						fThObb,
-						fDistanceToEllipseContour,
-						fThScoreScore,
-						fMinReliability,
-						iNs
-	);
+    yaed->SetParameters(szPreProcessingGaussKernelSize,
+                        dPreProcessingGaussSigma,
+                        fThPos,
+                        fMaxCenterDistance,
+                        iThLength,
+                        fThObb,
+                        fDistanceToEllipseContour,
+                        fThScoreScore,
+                        fMinReliability,
+                        iNs
+    );
 
-	Mat1b gray, gray_big;
+Mat1b gray, gray_big;
 	while(true) {
 
         Mat3b image, image_r;
