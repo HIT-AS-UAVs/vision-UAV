@@ -1487,23 +1487,28 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
                 continue;
             }
             if(stable == true || updateellipse == true) {
-                if(abs(p.x - target_ellipse[TargetNum].x) < dis &&
-                   abs(p.y - target_ellipse[TargetNum].y) < dis){
-                    target_ellipse[TargetNum].x = p.x;
-                    target_ellipse[TargetNum].y = p.y;
-                    target_ellipse[TargetNum].a = p.a;
+                int temp;
+    	        if(target_ellipse.size() == (TargetNum + 1)){
+                    temp = TargetNum;
+                } else{
+    	            temp = TargetNum - 1;
+    	        }
+    	        if(abs(p.x - target_ellipse[temp].x) < dis &&
+                   abs(p.y - target_ellipse[temp].y) < dis){
+                    target_ellipse[temp].x = p.x;
+                    target_ellipse[temp].y = p.y;
+                    target_ellipse[temp].a = p.a;
                     if (p.flag == 1)
-                        target_ellipse[TargetNum].T_N = target_ellipse[TargetNum].T_N + 1;
+                        target_ellipse[temp].T_N = target_ellipse[temp].T_N + 1;
                     else if (p.flag == 0)
-                        target_ellipse[TargetNum].F_N = target_ellipse[TargetNum].F_N + 1;
+                        target_ellipse[temp].F_N = target_ellipse[temp].F_N + 1;
                     else {}
-                    target_ellipse[TargetNum].possbile =
-                            (float) target_ellipse[TargetNum].T_N / (float) (target_ellipse[TargetNum].T_N + target_ellipse[TargetNum].F_N);
+                    target_ellipse[temp].possbile =
+                            (float) target_ellipse[temp].T_N / (float) (target_ellipse[temp].T_N + target_ellipse[temp].F_N);
                     break;
                 } else
                     continue;
-            }
-            else {
+            } else {
 				for (auto i = 0; i < target_ellipse.size(); i++) {
 					if (abs(p.x - target_ellipse[i].x) < dis &&
 						abs(p.y - target_ellipse[i].y) < dis) {
@@ -1543,55 +1548,54 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 //	float possobile = 0.5, dis = 0.05;//室内测试设置0.5，0.05， 室外待定
 //	uint32_t num = 10;//室内测试设置10，室外待定
 	float possobile = 0.4, dis = 4;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
-	uint32_t num = 70;//室外测试：识别次数大于70次即可进行TF判断。
+	uint32_t num = 50;//室外测试：识别次数大于50次即可进行TF判断。
 	if(ellipse_in.size() == 0){
 
 	} else {
-		target p = ellipse_in[TargetNum];
-		if (p.possbile > possobile && p.T_N > num) {
-			stable = false;
-			if (ellipse_1.size() == 0) {
-				p.lat = api.current_messages.global_position_int.lat;
-				p.lon = api.current_messages.global_position_int.lon;
-				ellipse_1.push_back(p);
-			} else {
-				for (auto t = 0; t < ellipse_1.size(); t++) {
-					if ((p.x - ellipse_1[t].x) < dis && (p.y - ellipse_1[t].y) < dis)
-						break;
-					else if (t != (ellipse_1.size() - 1))
-						continue;
-					else {
-						p.lat = api.current_messages.global_position_int.lat;
-						p.lon = api.current_messages.global_position_int.lon;
-						ellipse_1.push_back(p);
-						break;
-					}
+        target p = ellipse_in[TargetNum];
+        if (p.possbile > possobile && p.T_N > num) {
+            stable = false;
+            if (ellipse_1.size() == 0) {
+                p.lat = api.current_messages.global_position_int.lat;
+                p.lon = api.current_messages.global_position_int.lon;
+                ellipse_1.push_back(p);
+            }
+            for (auto t = 0; t < ellipse_1.size(); t++) {
+                if ((p.x - ellipse_1[t].x) < dis && (p.y - ellipse_1[t].y) < dis)
+                    break;
+                else if (t != (ellipse_1.size() - 1))
+                    continue;
+                else {
+                    p.lat = api.current_messages.global_position_int.lat;
+                    p.lon = api.current_messages.global_position_int.lon;
+                    ellipse_1.push_back(p);
+                    break;
+                }
 
-				}
-			}
-		} else if (p.possbile < possobile && p.F_N > num) {
-			stable = false;
-			if (ellipse_0.size() == 0) {
-				p.lat = api.current_messages.global_position_int.lat;
-				p.lon = api.current_messages.global_position_int.lon;
-				ellipse_0.push_back(p);
-			} else {
-				for (auto f = 0; f < ellipse_0.size(); f++) {
-					if ((p.x - ellipse_0[f].x) < dis && (p.y - ellipse_0[f].y) < dis)
-						break;
-					else if (f != (ellipse_0.size() - 1))
-						continue;
-					else {
-						p.lat = api.current_messages.global_position_int.lat;
-						p.lon = api.current_messages.global_position_int.lon;
-						ellipse_0.push_back(p);
-						break;
-					}
-				}
-			}
-		}
+            }
+        } else if (p.possbile < possobile && p.F_N > num) {
+            stable = false;
+            if (ellipse_0.size() == 0) {
+                p.lat = api.current_messages.global_position_int.lat;
+                p.lon = api.current_messages.global_position_int.lon;
+                ellipse_0.push_back(p);
+            }
+            for (auto f = 0; f < ellipse_0.size(); f++) {
+                if ((p.x - ellipse_0[f].x) < dis && (p.y - ellipse_0[f].y) < dis)
+                    break;
+                else if (f != (ellipse_0.size() - 1))
+                    continue;
+                else {
+                    p.lat = api.current_messages.global_position_int.lat;
+                    p.lon = api.current_messages.global_position_int.lon;
+                    ellipse_0.push_back(p);
+                    break;
+                }
+            }
+        }
+    }
 	}
-}
+
 
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out){
 	float target_x = 0, target_y = 0;
@@ -1713,9 +1717,8 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 		cam.x = p._xc;
 		cam.y = p._yc;
 		realtarget(api, cam, locx, locy);
-		cam.locx = locx;
-		cam.locy = locy;
-		cam.a = p._a;
+		p.locx = locx;
+		p.locy = locy;
 		if(ellipse_pre.size() == 0){
 			cam.num = 1;
 		    ellipse_pre.push_back(cam);
