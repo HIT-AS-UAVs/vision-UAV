@@ -54,7 +54,7 @@
 
 #include "autopilot_interface.h"
 
-bool stable = false, updateellipse = false, getlocalposition = false, drop = false;
+bool stable = false, updateellipse = false, getlocalposition = true, drop = true;
 int TargetNum = 0;
 coordinate droptarget;
 // ----------------------------------------------------------------------------------
@@ -1597,23 +1597,28 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 	}
 
 
-void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out){
-	float target_x = 0, target_y = 0;
-	int num;
+void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out) {
+    float target_x = 0, target_y = 0;
+    int num;
 
-	float dis = 4;//在室外的参数圆心相距9米内都算一个圆
+    float dis = 4;//在室外的参数圆心相距9米内都算一个圆
 //	float dis = 0.05;//在室内测试用0.05
-	for (auto &p:ellipse_out) {
-		float e_x, e_y;
-		realtarget(api, p, e_x, e_y);
-		target_x = target_x + e_x;
-		target_y = target_y + e_y;
-	}
-	num = ellipse_out.size();
-	droptarget.x = target_x / num;
-	droptarget.y = target_y / num;
-	cout<<"target_x"<<droptarget.x<<endl;
-	cout<<"target_y"<<droptarget.y<<endl;
+    if (ellipse_out.size() != 0){
+        for (auto &p:ellipse_out) {
+            float e_x, e_y;
+            realtarget(api, p, e_x, e_y);
+            target_x = target_x + e_x;
+            target_y = target_y + e_y;
+        }
+    num = ellipse_out.size();
+    droptarget.x = target_x / num;
+    droptarget.y = target_y / num;
+    cout << "target_x" << droptarget.x << endl;
+    cout << "target_y" << droptarget.y << endl;
+} else{
+        cout << "target_x" << droptarget.x << endl;
+        cout << "target_y" << droptarget.y << endl;
+    }
 }
 
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_l){
