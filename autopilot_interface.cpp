@@ -54,7 +54,7 @@
 
 #include "autopilot_interface.h"
 
-bool stable = false, updateellipse = false, getlocalposition = true, drop = false;
+bool stable = false, updateellipse = false, getlocalposition = false, drop = false;
 int TargetNum = 0;
 coordinate droptarget;
 // ----------------------------------------------------------------------------------
@@ -1717,8 +1717,8 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 		cam.x = p._xc;
 		cam.y = p._yc;
 		realtarget(api, cam, locx, locy);
-		p.locx = locx;
-		p.locy = locy;
+		cam.locx = locx;
+		cam.locy = locy;
 		if(ellipse_pre.size() == 0){
 			cam.num = 1;
 		    ellipse_pre.push_back(cam);
@@ -1745,18 +1745,15 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 	uint16_t totle = 0;
 	for(auto &p: ellipse_pre){
 		totle = totle + p.num;
-//		cout<<"ellipse_pre_locx:"<<p.locx<<endl;
-//		cout<<"ellipse_pre_locy:"<<p.locy<<endl;
-//		cout<<"ellipse_pre_num:"<<ellipse_pre.size()<<endl;
 	}
 
 	for(auto &p: ellipse_big){
 		for(auto &q: ellipse_pre){
 			q.possible = q.num / (totle + 0.0001);
 			float disx = (p._xc - q.x) / p._a;
-			float disy = (p._yc - q.x) / p._b;
+			float disy = (p._yc - q.y) / p._b;
 			float thresh = 0.9;//该值应小于1
-			if( disx < thresh && disy < thresh && q.possible > 0.1 && q.num > 10){
+			if( (disx < thresh && disy < thresh) && (q.possible > 0.1 && q.num > 5)){
 				ellipseok.push_back(p);
 				break;
 			} else
@@ -1764,7 +1761,16 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 		}
 
 	}
-
+/*
+	for(auto &p:ellipse_pre){
+		cout<<"ellipse_pre_locx:"<<p.locx<<endl;
+		cout<<"ellipse_pre_locy:"<<p.locy<<endl;
+		cout<<"ellipse_pre_number:"<<p.num<<endl;
+		cout<<"ellipse_pre_possible:"<<p.possible<<endl;
+		cout<<"ellipse_pre_size:"<<ellipse_pre.size()<<endl;
+		cout<<"ellipse_ok_size:"<<ellipseok.size()<<endl;
+	}
+*/
 }
 
 void SortF(vector<target>& ellipse_F){
