@@ -173,10 +173,6 @@ public:
 
 	//优化得到的椭圆
 
-
-    //投弹的时候只识别小圆
-	void onlyforsmall(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in);
-
 	//提取ROI
     void extracrROI(Mat1b& image, vector<coordinate>& ellipse_out, vector<Mat1b>& img_roi);
 

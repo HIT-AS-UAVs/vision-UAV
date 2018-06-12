@@ -54,7 +54,7 @@
 
 #include "autopilot_interface.h"
 
-bool stable = false, updateellipse = false, getlocalposition = true, drop = false;
+bool stable = false, updateellipse = false, getlocalposition = false, drop = false;
 int TargetNum = 0;
 coordinate droptarget;
 // ----------------------------------------------------------------------------------
@@ -1721,7 +1721,7 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 		cam.locy = locy;
 		if(ellipse_pre.size() == 0){
 			cam.num = 1;
-			ellipse_pre.push_back(cam);
+		    ellipse_pre.push_back(cam);
 			continue;
 		}
 		for(auto i = 0; i < ellipse_pre.size(); i++){
@@ -1729,8 +1729,8 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 			   abs(cam.locy - ellipse_pre[i].locy) < dis){
 				ellipse_pre[i].locx = cam.locx;
 				ellipse_pre[i].locy = cam.locy;
-				ellipse_pre[i].x = p._xc;
-				ellipse_pre[i].y = p._yc;
+				ellipse_pre[i].x = cam.x;
+				ellipse_pre[i].y = cam.y;
 				ellipse_pre[i].num = ellipse_pre[i].num + 1;
 				break;
 			} else if(i != (ellipse_pre.size() - 1)){
@@ -1745,9 +1745,6 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 	uint16_t totle = 0;
 	for(auto &p: ellipse_pre){
 		totle = totle + p.num;
-//		cout<<"ellipse_pre_locx:"<<p.locx<<endl;
-//		cout<<"ellipse_pre_locy:"<<p.locy<<endl;
-//		cout<<"ellipse_pre_num:"<<ellipse_pre.size()<<endl;
 	}
 
 	for(auto &p: ellipse_big){
@@ -1756,7 +1753,7 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 			float disx = (p._xc - q.x) / p._a;
 			float disy = (p._yc - q.y) / p._b;
 			float thresh = 0.9;//该值应小于1
-			if( disx < thresh && disy < thresh && q.possible > 0.1 && q.num > 3){
+			if( (disx < thresh && disy < thresh) && (q.possible > 0.1 && q.num > 5)){
 				ellipseok.push_back(p);
 				break;
 			} else
@@ -1764,5 +1761,17 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 		}
 
 	}
+/*
+	for(auto &p:ellipse_pre){
+		cout<<"ellipse_pre_locx:"<<p.locx<<endl;
+		cout<<"ellipse_pre_locy:"<<p.locy<<endl;
+		cout<<"ellipse_pre_number:"<<p.num<<endl;
+		cout<<"ellipse_pre_possible:"<<p.possible<<endl;
+		cout<<"ellipse_pre_size:"<<ellipse_pre.size()<<endl;
+		cout<<"ellipse_ok_size:"<<ellipseok.size()<<endl;
+	}
+*/
+}
 
+void SortF(vector<target>& ellipse_F){
 }

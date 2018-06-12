@@ -160,9 +160,7 @@ top (int argc, char **argv)
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
 
-    commands(autopilot_interface);
-
-//   commands(autopilot_interface);
+//    commands(autopilot_interface);
     while(1){
                sleep(1);
     }
@@ -707,11 +705,12 @@ Mat1b gray, gray_big;
         Mat3b resultImage2 = image_r.clone();
         vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
         if(getlocalposition){
-            if (!drop) {
+
             OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
             yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
-//            filtellipse(api, ellipseok, ellipse_big);
-            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
+            filtellipse(api, ellipseok, ellipse_big);
+            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipseok);//绘制检测到的椭圆
+            if (!drop) {
             vector<vector<Point> > contours;
             if (stable) {
                 yaed->extracrROI(gray_big, ellipse_out, img_roi);
@@ -731,8 +730,6 @@ Mat1b gray, gray_big;
             }
 
         } else {
-            yaed->onlyforsmall(ellipse_in, ellsYaed);
-            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);
             getdroptarget(api, droptarget, ellipse_out);
         }
     }
@@ -758,10 +755,10 @@ Mat1b gray, gray_big;
                  << "possbile = " << ellipse_F[i].possbile << endl
                  << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
         }
-        cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
-            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
-            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
-        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl;
+//        cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
+//            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
+//            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
+//        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl;
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
@@ -769,7 +766,7 @@ Mat1b gray, gray_big;
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
-		usleep(100000);
+//		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------
