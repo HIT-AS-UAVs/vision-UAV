@@ -706,10 +706,7 @@ void videothread(Autopilot_Interface& api){
             }
             possible_ellipse(api, ellipse_out1, target_ellipse_position);
 
-
             resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
-
-
         } else {
             yaed->onlyforsmall(ellipse_in, ellsYaed);
             yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);
