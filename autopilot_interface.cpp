@@ -1717,27 +1717,27 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 		cam.x = p._xc;
 		cam.y = p._yc;
 		realtarget(api, cam, locx, locy);
-		p.locx = locx;
-		p.locy = locy;
+		cam.locx = locx;
+		cam.locy = locy;
 		if(ellipse_pre.size() == 0){
-			p.num = 1;
-			ellipse_pre.push_back(p);
+			cam.num = 1;
+			ellipse_pre.push_back(cam);
 			continue;
 		}
 		for(auto i = 0; i < ellipse_pre.size(); i++){
-			if(abs(p.locx - ellipse_pre[i].locx) < dis &&
-			   abs(p.locy - ellipse_pre[i].locy) < dis){
-				ellipse_pre[i].locx = p.locx;
-				ellipse_pre[i].locy = p.locy;
-				ellipse_pre[i]._xc = p._xc;
-				ellipse_pre[i]._yc = p._yc;
+			if(abs(cam.locx - ellipse_pre[i].locx) < dis &&
+			   abs(cam.locy - ellipse_pre[i].locy) < dis){
+				ellipse_pre[i].locx = cam.locx;
+				ellipse_pre[i].locy = cam.locy;
+				ellipse_pre[i].x = p._xc;
+				ellipse_pre[i].y = p._yc;
 				ellipse_pre[i].num = ellipse_pre[i].num + 1;
 				break;
 			} else if(i != (ellipse_pre.size() - 1)){
 				continue;
 			} else{
-				p.num = 1;
-				ellipse_pre.push_back(p);
+				cam.num = 1;
+				ellipse_pre.push_back(cam);
 				break;
 			}
 			}
@@ -1753,8 +1753,8 @@ void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<El
 	for(auto &p: ellipse_big){
 		for(auto &q: ellipse_pre){
 			q.possible = q.num / (totle + 0.0001);
-			float disx = (p._xc - q._xc) / p._a;
-			float disy = (p._yc - q._yc) / p._b;
+			float disx = (p._xc - q.x) / p._a;
+			float disy = (p._yc - q.y) / p._b;
 			float thresh = 0.9;//该值应小于1
 			if( disx < thresh && disy < thresh && q.possible > 0.1 && q.num > 3){
 				ellipseok.push_back(p);
