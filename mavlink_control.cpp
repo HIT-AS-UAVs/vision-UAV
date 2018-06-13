@@ -147,9 +147,9 @@ top (int argc, char **argv)
 
 
 
-    serial_port.start();
-    WL_serial_port.start();
-    autopilot_interface.start();
+//    serial_port.start();
+//    WL_serial_port.start();
+//    autopilot_interface.start();
 //视觉定位线程
     thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
     // --------------------------------------------------------------------------
@@ -160,7 +160,7 @@ top (int argc, char **argv)
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
 
-    commands(autopilot_interface);
+//    commands(autopilot_interface);
     while(1){
                sleep(1);
     }
@@ -697,6 +697,7 @@ void videothread(Autopilot_Interface& api){
     );
 
 Mat1b gray, gray_big;
+VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 360));
 	while(true) {
 
         Mat3b image, image_r;
@@ -771,6 +772,7 @@ Mat1b gray, gray_big;
 //		imshow("原图", image);
 		namedWindow("缩小",1);
 		imshow("缩小", resultImage);
+		writer1.write(resultImage);
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
