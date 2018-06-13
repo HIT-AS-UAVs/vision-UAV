@@ -477,12 +477,14 @@ commands(Autopilot_Interface &api)
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
                     api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
                     TNum = TNum + 1;
+                    flag = false;
                 }
                 else if(TNum == 2)
                 {
 
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
                     api.ThrowF(yaw,ellipse_F[0].lat,ellipse_F[0].lon,ellipse_F[0].num);
+                    flag = false;
                 }
                 else
                 {
