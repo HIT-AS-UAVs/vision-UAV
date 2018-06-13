@@ -1430,6 +1430,7 @@ Autopilot_Interface::ThrowF(float yaw,int32_t lat,int32_t lon,int Num)
 
 	}
 	Throw(yaw,2);
+	TargetNum = Targetnum;
 
 }
 
