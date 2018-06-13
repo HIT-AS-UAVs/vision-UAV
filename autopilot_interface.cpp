@@ -54,7 +54,7 @@
 
 #include "autopilot_interface.h"
 
-bool stable = false, updateellipse = false, getlocalposition = true, drop = false;
+bool stable = false, updateellipse = false, getlocalposition = false, drop = false;
 int TargetNum = 0;
 coordinate droptarget;
 // ----------------------------------------------------------------------------------
@@ -341,6 +341,7 @@ Servo_Control(float ServoId, float PWM_Value)
     // Send the message
     int ServoLen = serial_port->write_message(RCC);
     usleep(100);
+    printf("drop succeed!/n");
     return ServoLen;
 }
 
@@ -549,7 +550,8 @@ read_messages()
 					this_timestamps.param_value = current_messages.time_stamps.param_value;
 					std::cout<<"param_id:"<<current_messages.param_value.param_id<<std::endl
 							 <<"param_value:"<<current_messages.param_value.param_value<<std::endl
-							 <<"param_type:"<<(float)current_messages.param_value.param_type<<std::endl;
+							 <<"param_type:"<<(float)current_messages.param_value.param_type<<std::endl
+							 <<"param_index:"<<current_messages.param_value.param_index<<std::endl;
 					break;
 				}
 				case MAVLINK_MSG_ID_STATUSTEXT:
@@ -758,14 +760,18 @@ Autopilot_Interface::
 Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target_Global_Position)
 {
     mavlink_message_t Global_messgge;
+	int Glolen = 0;
     mavlink_msg_global_position_int_encode(Target_machine,Target_machine,&Global_messgge,&Target_Global_Position);
-    int Glolen = WL_write_message(Global_messgge);
-    while(Glolen <= 0)
-    {
-        printf("fail send wl message! try again! ");
-        Glolen = WL_write_message(Global_messgge);
-    }
-        printf("send wl message succeed!");
+//    int Glolen = WL_write_message(Global_messgge);
+	for (int i = 0; i < 10; ++i) {
+		Glolen = WL_write_message(Global_messgge);
+		while(Glolen <= 0)
+		{
+			printf("fail send wl message! try again! ");
+			Glolen = WL_write_message(Global_messgge);
+		}
+		printf("send wl message succeed!");
+	}
 
     return Glolen;
 }
@@ -868,12 +874,10 @@ enable_offboard_control()
 
 // ----------------------------------------------------------------------------------
 //                                     设置模式
-//      STABILIZE=0,    ACRO=1,     ALT_HOLD=2,AUTO=3,GUIDED=4,
-//       LOITER=5,      RTL=6,          CIRCLE=7,
-//       LAND=9,    DRIFT=11,       SPORT=13,
-//       FLIP=14,   AUTOTUNE=15,    POSHOLD=16,
-//       BRAKE=17,  HROW=18,       AVOID_ADSB=19,
-//       GUIDED_NOGPS=20,            SMART_RTL=21,
+//      STABILIZE=0,    ACRO=1,     ALT_HOLD=2,    AUTO=3,    GUIDED=4,
+//      LOITER=5,       RTL=6,      CIRCLE=7,      LAND=9,    DRIFT=11,
+//      SPORT=13,       FLIP=14,    AUTOTUNE=15,   POSHOLD=16,BRAKE=17,
+//      HROW=18,    	AVOID_ADSB=19,  GUIDED_NOGPS=20,     SMART_RTL=21,
 // -----------------------------------------------------------------------------------
 void
 Autopilot_Interface::
@@ -941,6 +945,7 @@ int
 Autopilot_Interface::
 toggle_offboard_control( bool flag )
 {
+	/*
     //////////////////////自稳模式
     mavlink_set_mode_t com = { 0 };
     com.base_mode = 1;
@@ -952,7 +957,7 @@ toggle_offboard_control( bool flag )
     int len = serial_port->write_message(message);
     usleep(100);
     // Done!
-
+*/
 	Servo_Control(10,1250);
 
     ///////请求数据流(关闭ALL)
@@ -983,10 +988,10 @@ toggle_offboard_control( bool flag )
     	Rlen = serial_port->write_message(Rmassage);
         usleep(100);
     }
-    usleep(20000);
+    usleep(200);
 
     ////////////////////////////////////////解锁
-    mavlink_command_long_t Armdata = { 0 };
+    /*mavlink_command_long_t Armdata = { 0 };
     Armdata.target_system= 01;
     Armdata.target_component = 01;
     Armdata.command = MAV_CMD_COMPONENT_ARM_DISARM;
@@ -995,11 +1000,11 @@ toggle_offboard_control( bool flag )
     mavlink_msg_command_long_encode(255, 190, &Armmes, &Armdata);
     // Send the message
     int Armlen = serial_port->write_message(Armmes);
-    usleep(100);
+    usleep(100);*/
 
     //设置成AUTO模式，开始mission
     Set_Mode(03);
-    sleep(1);
+    usleep(1000);
     Set_Mode(03);
 
     //////////////////////////////////开始misiion
@@ -1026,7 +1031,7 @@ toggle_offboard_control( bool flag )
 
     // Done!
 
-    return len;
+    return Rlen;
 }
 
 
@@ -1313,7 +1318,7 @@ int
 Autopilot_Interface::
 Throw(float yaw,int Tnum)
 {
-    //执行仍的过程
+    //执行reng的过程
     drop = true;
 
     //给响应时间识别小圆,需加判断是否写入目标点
@@ -1331,7 +1336,7 @@ Throw(float yaw,int Tnum)
 	}
     int local_alt = -10;
     mavlink_set_position_target_local_ned_t locsp;
-    while (true)
+    while (drop)
     {
 
     	set_position(droptarget.locx, // [m]
@@ -1348,7 +1353,8 @@ Throw(float yaw,int Tnum)
         {
             //后续加上速度
             usleep(200);
-            if ((locpos.z+10.5)>0)
+            printf("input drop process!!!");
+            if ((locpos.z+10.5)>= 0)
             {
                 // ------------------------------------------------------------------------------
                 //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
@@ -1358,6 +1364,7 @@ Throw(float yaw,int Tnum)
                 int lenn = Servo_Control(10, 1700);
                 Tnum = Tnum + 1;
                 sleep(1);
+                drop = false;
                 break;
             }
             else
@@ -1430,6 +1437,7 @@ Autopilot_Interface::ThrowF(float yaw,int32_t lat,int32_t lon,int Num)
 
 	}
 	Throw(yaw,2);
+	TargetNum = Targetnum;
 
 }
 
@@ -1748,10 +1756,10 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 }
 
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_l){
-    int32_t h = -api.current_messages.local_position_ned.z;
-//        int32_t h1 = 25;//桌子高度0.74M
-    uint16_t hdg = api.current_messages.global_position_int.hdg;
-//        uint16_t hdg1 = 0;//设置机头方向为正北
+//    int32_t h = -api.current_messages.local_position_ned.z;
+        int32_t h = 25;//桌子高度0.74M
+//    uint16_t hdg = api.current_messages.global_position_int.hdg;
+        uint16_t hdg = 0;//设置机头方向为正北
     float loc_x = api.current_messages.local_position_ned.x;
     float loc_y = api.current_messages.local_position_ned.y;
     /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
@@ -1760,10 +1768,10 @@ void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_
     //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
     float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
     float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
-    x_l = x_r + loc_x;
-    y_l = y_r + loc_y;
-//	x_l = x_r;
-//	y_l = y_r;
+//    x_l = x_r + loc_x;
+//    y_l = y_r + loc_y;
+	x_l = x_r;
+	y_l = y_r;
 }
 
 void OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){

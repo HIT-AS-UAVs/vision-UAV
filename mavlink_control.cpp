@@ -82,8 +82,10 @@ top (int argc, char **argv)
 #ifdef __APPLE__
     char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
-    char *uart_name = (char*)"/dev/ttyTHS2";
-    char *WL_uart = (char*)"/dev/ttyS0";
+//    char *uart_name = (char*)"/dev/ttyTHS2";
+//    char *WL_uart = (char*)"/dev/ttyS0";
+    char *uart_name = (char*)"/dev/ttyUSB0";
+    char *WL_uart = (char*)"/dev/ttyUSB1";
 #endif
     int baudrate = 57600;
 
@@ -160,9 +162,8 @@ top (int argc, char **argv)
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
 
-    commands(autopilot_interface);
 
-//   commands(autopilot_interface);
+   commands(autopilot_interface);
     while(1){
                sleep(1);
     }
@@ -201,12 +202,21 @@ commands(Autopilot_Interface &api)
     stable = false;
     updateellipse = false;
     drop = false;
-
+    while(flag)
+    {
+        if((api.current_messages.param_value.param_type==9)&&(api.current_messages.param_value.param_index == 65535))
+        {
+            break;
+        }
+        else
+        {
+            usleep(1000);
+        }
+    }
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
     //   设置guided（offboard）模式/解锁、起飞
     // --------------------------------------------------------------------------
-
     api.enable_offboard_control();
     usleep(100); // give some time to let it sink in
 
@@ -214,7 +224,7 @@ commands(Autopilot_Interface &api)
     //   SEND OFFBOARD COMMANDS
     // --------------------------------------------------------------------------
     printf("Start Mission!\n");
-
+sleep(100);
     while(flag)
     {
         gp = api.global_position;
@@ -327,16 +337,24 @@ commands(Autopilot_Interface &api)
 //                            sleep(30);
                             if (ellipse_T.size() > TNum)
                             {
-                                if ((ellipse_T.size() == 3)&&(TNum == 2))
+                                if ((ellipse_T.size() == 1)&&(TNum == 0))
                                 {
                                     TNum = api.Throw(yaw,TNum);
+                                    mavlink_global_position_int_t Target_Global_Position;
+                                    Target_Global_Position = api.current_messages.global_position_int;
+                                    if (Target_Global_Position.lat < 1000)
+                                    {
+                                        Target_Global_Position = api.current_messages.global_position_int;
+                                    }
+                                    //后续添加判断采集全局坐标的正确性,如果错误重新选择
+                                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
                                     TargetNum = TargetNum + 1;
                                 }
                                 else
                                 {
                                     mavlink_global_position_int_t Target_Global_Position;
                                     Target_Global_Position = api.current_messages.global_position_int;
-                                    if (Target_Global_Position.lat < 10000000)
+                                    if (Target_Global_Position.lat < 1000)
                                     {
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
@@ -477,12 +495,14 @@ commands(Autopilot_Interface &api)
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
                     api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
                     TNum = TNum + 1;
+                    flag = false;
                 }
                 else if(TNum == 2)
                 {
 
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
                     api.ThrowF(yaw,ellipse_F[0].lat,ellipse_F[0].lon,ellipse_F[0].num);
+                    flag = false;
                 }
                 else
                 {
@@ -742,7 +762,7 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
-//		usleep(100000);
+		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------
