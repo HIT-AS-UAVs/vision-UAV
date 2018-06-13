@@ -52,11 +52,14 @@ using namespace cv;
 //const float fx = 734.0686, fy = 737.9659;//c525
 //const float cx = 316.2778, cy = 232.4590;
 
-const float fx = 1140.8604 / 3, fy = 1141.4534 / 3;//c930E #1
-const float cx = 920.9147 / 3 , cy = 580.8716 / 3;
+//const float fx = 1140.8604 / 3, fy = 1141.4534 / 3;//c930E #1
+//const float cx = 920.9147 / 3 , cy = 580.8716 / 3;
 
 //const float fx = 1152.1080 / 3, fy = 1153.6161 / 3;//c930E #2
 //const float cx = 974.8427 / 3 + 12, cy = 566.9231 / 3;
+
+const float fx = 1148.9655 / 3, fy = 1148.8481 / 3;//c930E #4
+const float cx = 949.7131 / 3 + 12, cy = 549.0170 / 3;
 
 extern vector<float> color, white;
 /////////////椭圆坐标类型
@@ -83,6 +86,7 @@ struct target{
     float possbile;
 	int32_t lat; /*< Latitude, expressed as degrees * 1E7*/
 	int32_t lon;
+	int num;
 
 	bool operator<(const target& other) const{
 		if(possbile == other.possbile){
@@ -179,10 +183,6 @@ public:
 	void DrawDetectedEllipses(Mat3b& output, vector<coordinate>& ellipse_out, vector<Ellipse>& ellipses, int iTopN=4, int thickness=2);
 
 	//优化得到的椭圆
-
-
-    //投弹的时候只识别小圆
-	void onlyforsmall(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in);
 
 	//提取ROI
     void extracrROI(Mat1b& image, vector<coordinate>& ellipse_out, vector<Mat1b>& img_roi);

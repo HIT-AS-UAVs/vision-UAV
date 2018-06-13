@@ -75,3 +75,4 @@ Serial_Port *serial_port_quit;
 void quit_handler( int sig );
 void videothread(Autopilot_Interface& api);
 
+

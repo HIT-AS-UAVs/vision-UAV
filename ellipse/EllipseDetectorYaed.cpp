@@ -1921,67 +1921,6 @@ void CEllipseDetectorYaed::DrawDetectedEllipses(Mat3b& output, vector<coordinate
 
 }
 
-
-
-void CEllipseDetectorYaed::onlyforsmall(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
-	float score = 0.8, e = 0.1;
-	/***************************去掉评分不佳的椭圆********************************************/
-	vector<Ellipse> e0;//存放去掉评分小于0.8的椭圆
-	for(auto i = ellipses_in.begin(); i != ellipses_in.end(); ++i){
-		if((*i)._score < score || (((*i)._a -(*i)._b) / (*i)._a) > e)
-			continue;
-		else
-			e0.push_back(*i);
-	}
-	/*************延x轴方向对椭圆由小到大排序**************************/
-	int n_e = e0.size();
-	for (int i = 0; i < n_e - 1; i++) {
-		for (int j = 0; j < n_e - 1 - i; j++) {
-			if (e0[j]._xc > e0[j + 1]._xc) {
-				swap(e0[j], e0[j + 1]);
-			}
-		}
-	}
-	/*************判断同心圆，只留下大圆**************************/
-	vector<Ellipse> v, v1;
-	int f = 0;
-	for (auto i = 0; i < n_e;f == 0? i = i+1:i = i+2) {
-		f = 0;
-		if (abs(e0[i]._xc - e0[i + 1]._xc) < 20 && abs(e0[i]._yc - e0[i + 1]._yc) < 20) {
-			if (e0[i]._a < e0[i + 1]._a) {
-				v.push_back(e0[i]);
-				f = 1;
-			} else {
-				v.push_back(e0[i + 1]);
-				f = 1;
-			}
-		} else {
-			v.push_back(e0[i]);
-		}
-	}
-	for(auto &p:v){
-		if(v1.size() == 0){
-			v1.push_back(p);
-		} else{
-			for(auto j = 0; j <v1.size(); j++ ){
-				if (abs(v1[j]._xc - p._xc) < 20 && abs(v1[j]._yc - p._yc) < 20)
-					break;
-				else if( j != ( v1.size() - 1)){
-					continue;
-				} else{
-					v1.push_back(p);
-					break;
-				}
-			}
-		}
-	}
-	for(auto & p:v1){
-		ellipse_out.push_back(p);
-	}
-
-
-}
-
 void CEllipseDetectorYaed::extracrROI(Mat1b& image, vector<coordinate>& ellipse_out, vector<Mat1b>& img_roi){
 
 //	cvtColor(image, image, COLOR_RGB2GRAY);

@@ -82,8 +82,8 @@ top (int argc, char **argv)
 #ifdef __APPLE__
     char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
-    char *uart_name = (char*)"/dev/ttyUSB0";
-    char *WL_uart = (char*)"/dev/ttyUSB1";
+    char *uart_name = (char*)"/dev/ttyTHS2";
+    char *WL_uart = (char*)"/dev/ttyS0";
 #endif
     int baudrate = 57600;
 
@@ -663,6 +663,7 @@ void videothread(Autopilot_Interface& api){
     );
 
 Mat1b gray, gray_big;
+VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 360));
 	while(true) {
 
         Mat3b image, image_r;
@@ -678,11 +679,11 @@ Mat1b gray, gray_big;
         Mat3b resultImage2 = image_r.clone();
         vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
         if(getlocalposition){
-            if (!drop) {
             OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
             yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
-//            filtellipse(api, ellipseok, ellipse_big);
-            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
+            filtellipse(api, ellipseok, ellipse_big);
+            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipseok);//绘制检测到的椭圆
+            if (!drop) {
             vector<vector<Point> > contours;
             if (stable) {
                 yaed->extracrROI(gray_big, ellipse_out, img_roi);
@@ -702,8 +703,6 @@ Mat1b gray, gray_big;
             }
 
         } else {
-            yaed->onlyforsmall(ellipse_in, ellsYaed);
-            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_in);
             getdroptarget(api, droptarget, ellipse_out);
         }
     }
@@ -720,27 +719,30 @@ Mat1b gray, gray_big;
             cout << "x = " << ellipse_T[i].x << endl
                  << "y = " << ellipse_T[i].y << endl
                  << "possbile = " << ellipse_T[i].possbile << endl
-                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
+                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl
+                 <<"No.:"<<ellipse_T[i].num<<endl;
         }
         cout << "ellipse_F.size = " << ellipse_F.size() << endl;
         for (int i = 0; i < ellipse_F.size(); ++i) {
             cout << "x = " << ellipse_F[i].x << endl
                  << "y = " << ellipse_F[i].y << endl
                  << "possbile = " << ellipse_F[i].possbile << endl
-                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
+                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl
+                 <<"No.:"<<ellipse_F[i].num<<endl;
         }
         cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
             <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
             <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
-        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl;
+        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl<<"drop:"<<drop<<endl;
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
 		imshow("缩小", resultImage);
+		writer1.write(resultImage);
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
-		usleep(100000);
+//		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------
