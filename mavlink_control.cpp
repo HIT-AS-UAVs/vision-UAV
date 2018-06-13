@@ -82,8 +82,8 @@ top (int argc, char **argv)
 #ifdef __APPLE__
     char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
-    char *uart_name = (char*)"/dev/ttyUSB0";
-    char *WL_uart = (char*)"/dev/ttyUSB1";
+    char *uart_name = (char*)"/dev/ttyTHS2";
+    char *WL_uart = (char*)"/dev/ttyS0";
 #endif
     int baudrate = 57600;
 
@@ -147,9 +147,9 @@ top (int argc, char **argv)
 
 
 
-//    serial_port.start();
-//    WL_serial_port.start();
-//    autopilot_interface.start();
+    serial_port.start();
+    WL_serial_port.start();
+    autopilot_interface.start();
 //视觉定位线程
     thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
     // --------------------------------------------------------------------------
@@ -160,7 +160,7 @@ top (int argc, char **argv)
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
 
-//    commands(autopilot_interface);
+    commands(autopilot_interface);
     while(1){
                sleep(1);
     }
@@ -324,28 +324,33 @@ commands(Autopilot_Interface &api)
 //                            sleep(30);
                             if (ellipse_T.size() > TNum)
                             {
-                                if (ellipse_T.size() == 3)
+                                if ((ellipse_T.size() == 1)&&TNum==0)
                                 {
                                     //执行仍的过程
                                     drop = true;
+//                                    sleep(10);
                                     local_alt = -15;
                                     while (true)
                                     {
-                                        set_position(target_ellipse_position[TargetNum].x, // [m]
-                                                     target_ellipse_position[TargetNum].y, // [m]
+                                        set_position(droptarget.locx, // [m]
+                                                     droptarget.locy, // [m]
                                                      local_alt, // [m]
                                                      sp);
+//                                        set_position(  target_ellipse_position[TargetNum].x, // [m]
+//                                                       target_ellipse_position[TargetNum].y, // [m]
+//                                                       local_alt, // [m]
+//                                                       sp);
                                         set_yaw(yaw, // [rad]
                                                 sp);
                                         // SEND THE COMMAND
                                         api.update_local_setpoint(sp);
                                         mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
                                         float MXY = XYDistance(pos.x, pos.y, sp.x, sp.y);
-                                        if (MXY < 2)
+                                        if (MXY < 3)
                                         {
                                             //后续加上速度
                                             usleep(200);
-                                            if ((pos.z+10.5)>0)
+                                            if ((pos.z+16)>= 0)
                                             {
                                                 // ------------------------------------------------------------------------------
                                                 //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
@@ -355,6 +360,8 @@ commands(Autopilot_Interface &api)
                                                 api.Servo_Control(10, 1700);
                                                 TNum = TNum + 1;
                                                 TargetNum = TargetNum + 1;
+                                                sleep(2);
+//                                                api.Servo_Control(10,1250);
                                                 break;
                                             }
                                             else
@@ -705,7 +712,6 @@ Mat1b gray, gray_big;
         Mat3b resultImage2 = image_r.clone();
         vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
         if(getlocalposition){
-
             OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
             yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
             filtellipse(api, ellipseok, ellipse_big);
@@ -746,19 +752,21 @@ Mat1b gray, gray_big;
             cout << "x = " << ellipse_T[i].x << endl
                  << "y = " << ellipse_T[i].y << endl
                  << "possbile = " << ellipse_T[i].possbile << endl
-                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
+                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl
+                 <<"No.:"<<ellipse_T[i].num<<endl;
         }
         cout << "ellipse_F.size = " << ellipse_F.size() << endl;
         for (int i = 0; i < ellipse_F.size(); ++i) {
             cout << "x = " << ellipse_F[i].x << endl
                  << "y = " << ellipse_F[i].y << endl
                  << "possbile = " << ellipse_F[i].possbile << endl
-                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
+                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl
+                 <<"No.:"<<ellipse_F[i].num<<endl;
         }
-//        cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
-//            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
-//            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
-//        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl;
+        cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
+            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
+            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
+        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl<<"drop:"<<drop<<endl;
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
