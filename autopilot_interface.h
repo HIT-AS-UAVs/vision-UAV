@@ -68,6 +68,8 @@
 extern bool stable, updateellipse, getlocalposition, drop;
 extern int TargetNum;
 extern coordinate droptarget;
+extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
+
 // ------------------------------------------------------------------------------
 //   Defines
 // ------------------------------------------------------------------------------
@@ -348,6 +350,9 @@ public:
 
     void handle_quit( int sig );
 
+    int Throw(float yaw,int TNum);
+    int ThrowF(float yaw,int32_t lat,int32_t lon, int Num);
+
 
 private:
 
@@ -389,7 +394,6 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x, float& y);
 void OptimizEllipse(vector<Ellipse>& ellipse_out, vector<Ellipse>& ellipses_in);
 void filtellipse(Autopilot_Interface& api, vector<Ellipse>& ellipseok, vector<Ellipse>& ellipse_big);
-void SortF(vector<target>& ellipse_F);
 #endif // AUTOPILOT_INTERFACE_H_
 
 

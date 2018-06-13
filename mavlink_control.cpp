@@ -82,8 +82,8 @@ top (int argc, char **argv)
 #ifdef __APPLE__
     char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
-    char *uart_name = (char*)"/dev/ttyUSB0";
-    char *WL_uart = (char*)"/dev/ttyUSB1";
+    char *uart_name = (char*)"/dev/ttyTHS2";
+    char *WL_uart = (char*)"/dev/ttyS0";
 #endif
     int baudrate = 57600;
 
@@ -147,9 +147,9 @@ top (int argc, char **argv)
 
 
 
-//    serial_port.start();
-//    WL_serial_port.start();
-//    autopilot_interface.start();
+    serial_port.start();
+    WL_serial_port.start();
+    autopilot_interface.start();
 //视觉定位线程
     thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
     // --------------------------------------------------------------------------
@@ -160,7 +160,9 @@ top (int argc, char **argv)
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
 
-//    commands(autopilot_interface);
+    commands(autopilot_interface);
+
+//   commands(autopilot_interface);
     while(1){
                sleep(1);
     }
@@ -218,6 +220,7 @@ commands(Autopilot_Interface &api)
         gp = api.global_position;
         stable = false;
         updateellipse = false;
+        float yaw;
         //设置触发节点
         if (target_ellipse_position.size() > TargetNum)
         {
@@ -235,7 +238,7 @@ commands(Autopilot_Interface &api)
             //现在用当前高度,最终高度确定时使用
             float local_alt = -gp.relative_alt/1000.0;
             sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-            float yaw = D2R(gp.hdg);
+            yaw = D2R(gp.hdg);
             while(goback)
             {
                 // --------------------------------------------------------------------------
@@ -324,50 +327,10 @@ commands(Autopilot_Interface &api)
 //                            sleep(30);
                             if (ellipse_T.size() > TNum)
                             {
-                                if (ellipse_T.size() == 3)
+                                if ((ellipse_T.size() == 3)&&(TNum == 2))
                                 {
-                                    //执行仍的过程
-                                    drop = true;
-                                    local_alt = -15;
-                                    while (true)
-                                    {
-                                        set_position(target_ellipse_position[TargetNum].x, // [m]
-                                                     target_ellipse_position[TargetNum].y, // [m]
-                                                     local_alt, // [m]
-                                                     sp);
-                                        set_yaw(yaw, // [rad]
-                                                sp);
-                                        // SEND THE COMMAND
-                                        api.update_local_setpoint(sp);
-                                        mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
-                                        float MXY = XYDistance(pos.x, pos.y, sp.x, sp.y);
-                                        if (MXY < 2)
-                                        {
-                                            //后续加上速度
-                                            usleep(200);
-                                            if ((pos.z+10.5)>0)
-                                            {
-                                                // ------------------------------------------------------------------------------
-                                                //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
-                                                //	ServoId：AUX_OUT1-6 对应148-153/9-14
-                                                // ------------------------------------------------------------------------------
-                                                sleep(1);
-                                                api.Servo_Control(10, 1700);
-                                                TNum = TNum + 1;
-                                                TargetNum = TargetNum + 1;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                ;
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            usleep(200000);
-                                        }
-                                    }
+                                    TNum = api.Throw(yaw,TNum);
+                                    TargetNum = TargetNum + 1;
                                 }
                                 else
                                 {
@@ -378,7 +341,7 @@ commands(Autopilot_Interface &api)
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
                                     //后续添加判断采集全局坐标的正确性,如果错误重新选择
-                                    int Globallen = api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
                                     // ------------------------------------------------------------------------------
                                     //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
                                     //	ServoId：AUX_OUT1-6 对应148-153/9-14
@@ -500,17 +463,26 @@ commands(Autopilot_Interface &api)
             }
             if(api.current_messages.mission_item_reached.seq == 5)
             {
+                updateellipse = true;
+                sort(ellipse_F.begin(),ellipse_F.end());
                 if(TNum == 1)
                 {
                     //将F中识别出来的T概率最高的点发送给从机[TNum+1]
-                    ;
+
+                    mavlink_global_position_int_t Target_Global_Position;
+                    Target_Global_Position.lat = ellipse_F[0].lat;
+                    Target_Global_Position.lon = ellipse_F[0].lon;
+                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                    usleep(2000);
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    ;
+                    api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
+                    TNum = TNum + 1;
                 }
                 else if(TNum == 2)
                 {
+
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    ;
+                    api.ThrowF(yaw,ellipse_F[0].lat,ellipse_F[0].lon,ellipse_F[0].num);
                 }
                 else
                 {
@@ -530,6 +502,7 @@ commands(Autopilot_Interface &api)
     // STOP OFFBOARD MODE
     // --------------------------------------------------------------------------
     sleep(5);
+
 //    mavlink_mission_clear_all_t comclearall;
 //    comclearall.target_system = 01;
 //    comclearall.target_component = 01;
@@ -690,6 +663,7 @@ void videothread(Autopilot_Interface& api){
     );
 
 Mat1b gray, gray_big;
+VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 360));
 	while(true) {
 
         Mat3b image, image_r;
@@ -705,7 +679,6 @@ Mat1b gray, gray_big;
         Mat3b resultImage2 = image_r.clone();
         vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
         if(getlocalposition){
-
             OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
             yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
             filtellipse(api, ellipseok, ellipse_big);
@@ -746,23 +719,26 @@ Mat1b gray, gray_big;
             cout << "x = " << ellipse_T[i].x << endl
                  << "y = " << ellipse_T[i].y << endl
                  << "possbile = " << ellipse_T[i].possbile << endl
-                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl;
+                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl
+                 <<"No.:"<<ellipse_T[i].num<<endl;
         }
         cout << "ellipse_F.size = " << ellipse_F.size() << endl;
         for (int i = 0; i < ellipse_F.size(); ++i) {
             cout << "x = " << ellipse_F[i].x << endl
                  << "y = " << ellipse_F[i].y << endl
                  << "possbile = " << ellipse_F[i].possbile << endl
-                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl;
+                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl
+                 <<"No.:"<<ellipse_F[i].num<<endl;
         }
-//        cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
-//            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
-//            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
-//        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl;
+        cout<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
+            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
+            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
+        cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl<<"drop:"<<drop<<endl;
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);
 		imshow("缩小", resultImage);
+		writer1.write(resultImage);
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
