@@ -57,8 +57,6 @@ using namespace std;
 #include "serial_port.h"
 #include "ellipse/EllipseDetectorYaed.h"
 
-extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
-
 
 // ------------------------------------------------------------------------------
 //   Prototypes

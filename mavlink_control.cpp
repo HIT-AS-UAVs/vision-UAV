@@ -220,6 +220,7 @@ commands(Autopilot_Interface &api)
         gp = api.global_position;
         stable = false;
         updateellipse = false;
+        float yaw;
         //设置触发节点
         if (target_ellipse_position.size() > TargetNum)
         {
@@ -237,7 +238,7 @@ commands(Autopilot_Interface &api)
             //现在用当前高度,最终高度确定时使用
             float local_alt = -gp.relative_alt/1000.0;
             sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-            float yaw = D2R(gp.hdg);
+            yaw = D2R(gp.hdg);
             while(goback)
             {
                 // --------------------------------------------------------------------------
@@ -326,50 +327,10 @@ commands(Autopilot_Interface &api)
 //                            sleep(30);
                             if (ellipse_T.size() > TNum)
                             {
-                                if (ellipse_T.size() == 3)
+                                if ((ellipse_T.size() == 3)&&(TNum == 2))
                                 {
-                                    //执行仍的过程
-                                    drop = true;
-                                    local_alt = -15;
-                                    while (true)
-                                    {
-                                        set_position(target_ellipse_position[TargetNum].x, // [m]
-                                                     target_ellipse_position[TargetNum].y, // [m]
-                                                     local_alt, // [m]
-                                                     sp);
-                                        set_yaw(yaw, // [rad]
-                                                sp);
-                                        // SEND THE COMMAND
-                                        api.update_local_setpoint(sp);
-                                        mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
-                                        float MXY = XYDistance(pos.x, pos.y, sp.x, sp.y);
-                                        if (MXY < 2)
-                                        {
-                                            //后续加上速度
-                                            usleep(200);
-                                            if ((pos.z+10.5)>0)
-                                            {
-                                                // ------------------------------------------------------------------------------
-                                                //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
-                                                //	ServoId：AUX_OUT1-6 对应148-153/9-14
-                                                // ------------------------------------------------------------------------------
-                                                sleep(1);
-                                                api.Servo_Control(10, 1700);
-                                                TNum = TNum + 1;
-                                                TargetNum = TargetNum + 1;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                ;
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            usleep(200000);
-                                        }
-                                    }
+                                    TNum = api.Throw(yaw,TNum);
+                                    TargetNum = TargetNum + 1;
                                 }
                                 else
                                 {
@@ -380,7 +341,7 @@ commands(Autopilot_Interface &api)
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
                                     //后续添加判断采集全局坐标的正确性,如果错误重新选择
-                                    int Globallen = api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
                                     // ------------------------------------------------------------------------------
                                     //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
                                     //	ServoId：AUX_OUT1-6 对应148-153/9-14
@@ -502,17 +463,26 @@ commands(Autopilot_Interface &api)
             }
             if(api.current_messages.mission_item_reached.seq == 5)
             {
+                updateellipse = true;
+                sort(ellipse_F.begin(),ellipse_F.end());
                 if(TNum == 1)
                 {
                     //将F中识别出来的T概率最高的点发送给从机[TNum+1]
-                    ;
+
+                    mavlink_global_position_int_t Target_Global_Position;
+                    Target_Global_Position.lat = ellipse_F[0].lat;
+                    Target_Global_Position.lon = ellipse_F[0].lon;
+                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                    usleep(2000);
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    ;
+                    api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
+                    TNum = TNum + 1;
                 }
                 else if(TNum == 2)
                 {
+
                     //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    ;
+                    api.ThrowF(yaw,ellipse_F[0].lat,ellipse_F[0].lon,ellipse_F[0].num);
                 }
                 else
                 {
@@ -532,6 +502,7 @@ commands(Autopilot_Interface &api)
     // STOP OFFBOARD MODE
     // --------------------------------------------------------------------------
     sleep(5);
+
 //    mavlink_mission_clear_all_t comclearall;
 //    comclearall.target_system = 01;
 //    comclearall.target_component = 01;

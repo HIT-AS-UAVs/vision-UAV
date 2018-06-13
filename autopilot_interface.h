@@ -68,6 +68,8 @@
 extern bool stable, updateellipse, getlocalposition, drop;
 extern int TargetNum;
 extern coordinate droptarget;
+extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
+
 // ------------------------------------------------------------------------------
 //   Defines
 // ------------------------------------------------------------------------------
@@ -347,6 +349,9 @@ public:
     void start_WL_write(void);
 
     void handle_quit( int sig );
+
+    int Throw(float yaw,int TNum);
+    int ThrowF(float yaw,int32_t lat,int32_t lon, int Num);
 
 
 private:
