@@ -88,6 +88,8 @@ struct target{
 	int32_t lon;
 	int num;
 
+	target() : x(0), y(0), a(0), T_N(0), F_N(0), possbile(0), lat(0), lon(0), num(0) {}
+
 	bool operator<(const target& other) const{
 		if(possbile == other.possbile){
 			return T_N > other.T_N;

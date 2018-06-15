@@ -341,6 +341,7 @@ Servo_Control(float ServoId, float PWM_Value)
     // Send the message
     int ServoLen = serial_port->write_message(RCC);
     usleep(100);
+    printf("drop succeed!/n");
     return ServoLen;
 }
 
@@ -549,7 +550,8 @@ read_messages()
 					this_timestamps.param_value = current_messages.time_stamps.param_value;
 					std::cout<<"param_id:"<<current_messages.param_value.param_id<<std::endl
 							 <<"param_value:"<<current_messages.param_value.param_value<<std::endl
-							 <<"param_type:"<<(float)current_messages.param_value.param_type<<std::endl;
+							 <<"param_type:"<<(float)current_messages.param_value.param_type<<std::endl
+							 <<"param_index:"<<current_messages.param_value.param_index<<std::endl;
 					break;
 				}
 				case MAVLINK_MSG_ID_STATUSTEXT:
@@ -758,14 +760,18 @@ Autopilot_Interface::
 Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target_Global_Position)
 {
     mavlink_message_t Global_messgge;
+	int Glolen = 0;
     mavlink_msg_global_position_int_encode(Target_machine,Target_machine,&Global_messgge,&Target_Global_Position);
-    int Glolen = WL_write_message(Global_messgge);
-    while(Glolen <= 0)
-    {
-        printf("fail send wl message! try again! ");
-        Glolen = WL_write_message(Global_messgge);
-    }
-        printf("send wl message succeed!");
+//    int Glolen = WL_write_message(Global_messgge);
+	for (int i = 0; i < 10; ++i) {
+		Glolen = WL_write_message(Global_messgge);
+		while(Glolen <= 0)
+		{
+			printf("fail send wl message! try again! ");
+			Glolen = WL_write_message(Global_messgge);
+		}
+		printf("send wl message succeed!");
+	}
 
     return Glolen;
 }
@@ -868,12 +874,10 @@ enable_offboard_control()
 
 // ----------------------------------------------------------------------------------
 //                                     设置模式
-//      STABILIZE=0,    ACRO=1,     ALT_HOLD=2,AUTO=3,GUIDED=4,
-//       LOITER=5,      RTL=6,          CIRCLE=7,
-//       LAND=9,    DRIFT=11,       SPORT=13,
-//       FLIP=14,   AUTOTUNE=15,    POSHOLD=16,
-//       BRAKE=17,  HROW=18,       AVOID_ADSB=19,
-//       GUIDED_NOGPS=20,            SMART_RTL=21,
+//      STABILIZE=0,    ACRO=1,     ALT_HOLD=2,    AUTO=3,    GUIDED=4,
+//      LOITER=5,       RTL=6,      CIRCLE=7,      LAND=9,    DRIFT=11,
+//      SPORT=13,       FLIP=14,    AUTOTUNE=15,   POSHOLD=16,BRAKE=17,
+//      HROW=18,    	AVOID_ADSB=19,  GUIDED_NOGPS=20,     SMART_RTL=21,
 // -----------------------------------------------------------------------------------
 void
 Autopilot_Interface::
@@ -941,6 +945,7 @@ int
 Autopilot_Interface::
 toggle_offboard_control( bool flag )
 {
+
     //////////////////////自稳模式
     mavlink_set_mode_t com = { 0 };
     com.base_mode = 1;
@@ -953,7 +958,7 @@ toggle_offboard_control( bool flag )
     usleep(100);
     // Done!
 
-	Servo_Control(10,1250);
+	Servo_Control(11,1250);
 
     ///////请求数据流(关闭ALL)
     mavlink_request_data_stream_t com1 = { 0 };
@@ -983,7 +988,7 @@ toggle_offboard_control( bool flag )
     	Rlen = serial_port->write_message(Rmassage);
         usleep(100);
     }
-    usleep(20000);
+    usleep(200);
 
     ////////////////////////////////////////解锁
     mavlink_command_long_t Armdata = { 0 };
@@ -999,7 +1004,7 @@ toggle_offboard_control( bool flag )
 
     //设置成AUTO模式，开始mission
     Set_Mode(03);
-    sleep(1);
+    usleep(1000);
     Set_Mode(03);
 
     //////////////////////////////////开始misiion
@@ -1026,7 +1031,7 @@ toggle_offboard_control( bool flag )
 
     // Done!
 
-    return len;
+    return Rlen;
 }
 
 
@@ -1313,7 +1318,7 @@ int
 Autopilot_Interface::
 Throw(float yaw,int Tnum)
 {
-    //执行仍的过程
+    //执行reng的过程
     drop = true;
 
     //给响应时间识别小圆,需加判断是否写入目标点
@@ -1331,7 +1336,7 @@ Throw(float yaw,int Tnum)
 	}
     int local_alt = -10;
     mavlink_set_position_target_local_ned_t locsp;
-    while (true)
+    while (drop)
     {
 
     	set_position(droptarget.locx, // [m]
@@ -1348,17 +1353,19 @@ Throw(float yaw,int Tnum)
         {
             //后续加上速度
             usleep(200);
-            if ((locpos.z+10.5)>0)
+            printf("input drop process!!!");
+            if ((locpos.z+10.5)>= 0)
             {
                 // ------------------------------------------------------------------------------
                 //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
                 //	ServoId：AUX_OUT1-6 对应148-153/9-14
                 // ------------------------------------------------------------------------------
-                sleep(1);
-                int lenn = Servo_Control(10, 1700);
+//                sleep(2);
+                int lenn = Servo_Control(11, 1700);
                 Tnum = Tnum + 1;
                 sleep(1);
-                break;
+                drop = false;
+//                break;
             }
             else
             {
@@ -1592,12 +1599,12 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
     for (auto &p:ellipse_out) {
     	float x_l, y_l;
     	realtarget(api, p, x_l, y_l);
-    	p.x = x_l;
-    	p.y = y_l;
+    	p.locx = x_l;
+    	p.locy = y_l;
     	if (target_ellipse.size() == 0) {
                 target t;
-                t.x = p.x;
-                t.y = p.y;
+                t.x = p.locx;
+                t.y = p.locy;
                 t.a = p.a;
                 if (p.flag == 1)
                     t.T_N = 1;
@@ -1616,10 +1623,10 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
                 } else{
     	            temp = TargetNum - 1;
     	        }
-    	        if(abs(p.x - target_ellipse[temp].x) < dis &&
-                   abs(p.y - target_ellipse[temp].y) < dis){
-                    target_ellipse[temp].x = p.x;
-                    target_ellipse[temp].y = p.y;
+    	        if(abs(p.locx - target_ellipse[temp].x) < dis &&
+                   abs(p.locy - target_ellipse[temp].y) < dis){
+                    target_ellipse[temp].x = p.locx;
+                    target_ellipse[temp].y = p.locy;
                     target_ellipse[temp].a = p.a;
                     if (p.flag == 1)
                         target_ellipse[temp].T_N = target_ellipse[temp].T_N + 1;
@@ -1627,16 +1634,16 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
                         target_ellipse[temp].F_N = target_ellipse[temp].F_N + 1;
                     else {}
                     target_ellipse[temp].possbile =
-                            (float) target_ellipse[temp].T_N / (float) (target_ellipse[temp].T_N + target_ellipse[temp].F_N);
+                            (float) target_ellipse[temp].T_N / (float) (target_ellipse[temp].T_N + target_ellipse[temp].F_N + 0.001);
                     break;
                 } else
                     continue;
             } else {
 				for (auto i = 0; i < target_ellipse.size(); i++) {
-					if (abs(p.x - target_ellipse[i].x) < dis &&
-						abs(p.y - target_ellipse[i].y) < dis) {
-						target_ellipse[i].x = p.x;
-						target_ellipse[i].y = p.y;
+					if (abs(p.locx - target_ellipse[i].x) < dis &&
+						abs(p.locy - target_ellipse[i].y) < dis) {
+						target_ellipse[i].x = p.locx;
+						target_ellipse[i].y = p.locy;
 						target_ellipse[i].a = p.a;
 						if (p.flag == 1)
 							target_ellipse[i].T_N = target_ellipse[i].T_N + 1;
@@ -1644,14 +1651,14 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
 							target_ellipse[i].F_N = target_ellipse[i].F_N + 1;
 						else {}
 						target_ellipse[i].possbile =
-								(float) target_ellipse[i].T_N / (float) (target_ellipse[i].T_N + target_ellipse[i].F_N);
+								(float) target_ellipse[i].T_N / (float) (target_ellipse[i].T_N + target_ellipse[i].F_N + 0.001);
 						break;
 					} else if (i != (target_ellipse.size() - 1)) {
 						continue;
 					} else {
 						target t;
-						t.x = p.x;
-						t.y = p.y;
+						t.x = p.locx;
+						t.y = p.locy;
 						t.a = p.a;
 						if (p.flag == 1)
 							t.T_N = 1;
@@ -1727,9 +1734,6 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out) {
     float target_x = 0, target_y = 0;
     int num;
-
-    float dis = 4;//在室外的参数圆心相距9米内都算一个圆
-//	float dis = 0.05;//在室内测试用0.05
     if (ellipse_out.size() != 0){
         for (auto &p:ellipse_out) {
             float e_x, e_y;
@@ -1749,10 +1753,10 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 }
 
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_l){
-    int32_t h = -api.current_messages.local_position_ned.z;
-//        int32_t h1 = 25;//桌子高度0.74M
-    uint16_t hdg = api.current_messages.global_position_int.hdg;
-//        uint16_t hdg1 = 0;//设置机头方向为正北
+//    int32_t h = -api.current_messages.local_position_ned.z;
+        int32_t h = 25;//桌子高度0.74M
+//    uint16_t hdg = api.current_messages.global_position_int.hdg;
+        uint16_t hdg = 0;//设置机头方向为正北
     float loc_x = api.current_messages.local_position_ned.x;
     float loc_y = api.current_messages.local_position_ned.y;
     /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
@@ -1761,10 +1765,10 @@ void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_
     //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
     float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
     float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
-    x_l = x_r + loc_x;
-    y_l = y_r + loc_y;
-//	x_l = x_r;
-//	y_l = y_r;
+//    x_l = x_r + loc_x;
+//    y_l = y_r + loc_y;
+	x_l = x_r;
+	y_l = y_r;
 }
 
 void OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
