@@ -147,6 +147,7 @@ void set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_
 float Distance(float x,float y,float z,float x1,float y1,float z1);
 float XYDistance(float x, float y, float x1, float y1);
 float D2R(uint16_t ghdg);
+float R2D(float R);
 
 void* start_autopilot_interface_read_thread(void *args);
 void* start_autopilot_interface_write_thread(void *args);
@@ -351,8 +352,8 @@ public:
     void handle_quit( int sig );
 
     int Throw(float yaw,int TNum);
-    int ThrowF(float yaw,int32_t lat,int32_t lon, int Num);
-
+//    int ThrowF(float yaw,int32_t lat,int32_t lon, int Num);
+    int ThrowF(float yaw,target* targetF);
 
 private:
 

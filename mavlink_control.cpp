@@ -164,9 +164,9 @@ top (int argc, char **argv)
 
 
    commands(autopilot_interface);
-    while(1){
-               sleep(1);
-    }
+//    while(1){
+//               sleep(1);
+//    }
     // --------------------------------------------------------------------------
     //   THREAD and PORT SHUTDOWN
     // --------------------------------------------------------------------------
@@ -174,6 +174,7 @@ top (int argc, char **argv)
 
     autopilot_interface.stop();
     serial_port.stop();
+    WL_serial_port.stop();
     t1.join();
 
     // --------------------------------------------------------------------------
@@ -202,17 +203,17 @@ commands(Autopilot_Interface &api)
     stable = false;
     updateellipse = false;
     drop = false;
-    while(flag)
-    {
-        if((api.current_messages.param_value.param_type==9)&&(api.current_messages.param_value.param_index == 65535))
-        {
-            break;
-        }
-        else
-        {
-            usleep(1000);
-        }
-    }
+//    while(flag)
+//    {
+//        if((api.current_messages.param_value.param_type==9)&&(api.current_messages.param_value.param_index == 65535))
+//        {
+//            break;
+//        }
+//        else
+//        {
+//            usleep(1000);
+//        }
+//    }
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
     //   设置guided（offboard）模式/解锁、起飞
@@ -224,7 +225,7 @@ commands(Autopilot_Interface &api)
     //   SEND OFFBOARD COMMANDS
     // --------------------------------------------------------------------------
     printf("Start Mission!\n");
-sleep(100);
+//sleep(100);
     while(flag)
     {
         gp = api.global_position;
@@ -342,7 +343,7 @@ sleep(100);
                                     TNum = api.Throw(yaw,TNum);
                                     mavlink_global_position_int_t Target_Global_Position;
                                     Target_Global_Position = api.current_messages.global_position_int;
-                                    if (Target_Global_Position.lat < 1000)
+                                    if (Target_Global_Position.lat < 10000)
                                     {
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
@@ -354,7 +355,7 @@ sleep(100);
                                 {
                                     mavlink_global_position_int_t Target_Global_Position;
                                     Target_Global_Position = api.current_messages.global_position_int;
-                                    if (Target_Global_Position.lat < 1000)
+                                    if (Target_Global_Position.lat < 10000)
                                     {
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
@@ -479,35 +480,59 @@ sleep(100);
             {
                 usleep(100000);
             }
-            if(api.current_messages.mission_item_reached.seq == 5)
+            if((api.current_messages.mission_item_reached.seq == 5)&&(TNum < 3))
             {
                 updateellipse = true;
-                sort(ellipse_F.begin(),ellipse_F.end());
-                if(TNum == 1)
+                switch (ellipse_F.size())
                 {
-                    //将F中识别出来的T概率最高的点发送给从机[TNum+1]
+                    case 0:
+                    {
+                        flag = false;
+                        break;
+                    }
+                    case 1:
+                    {
+                        //send RTL to all UAVs
 
-                    mavlink_global_position_int_t Target_Global_Position;
-                    Target_Global_Position.lat = ellipse_F[0].lat;
-                    Target_Global_Position.lon = ellipse_F[0].lon;
-                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
-                    usleep(2000);
-                    //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
-                    TNum = TNum + 1;
-                    flag = false;
-                }
-                else if(TNum == 2)
-                {
+                        ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
+                        api.ThrowF(yaw,&ellipse_F[0]);
+                        flag = false;
+                        break;
+                    }
+                    default:
+                    {
+                        sort(ellipse_F.begin(),ellipse_F.end());
+                        if(TNum == 1)
+                        {
+                            //将F中识别出来的T概率最高的点发送给从机[TNum+1]
 
-                    //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    api.ThrowF(yaw,ellipse_F[0].lat,ellipse_F[0].lon,ellipse_F[0].num);
-                    flag = false;
-                }
-                else
-                {
-                    flag = false;
-                    updateellipse = true;
+                            mavlink_global_position_int_t Target_Global_Position;
+                            Target_Global_Position.lat = ellipse_F[0].lat;
+                            Target_Global_Position.lon = ellipse_F[0].lon;
+                            uint16_t hdg1= R2D(yaw);
+                            Target_Global_Position.hdg = hdg1;
+                            int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                            usleep(2000);
+                            //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+//                        api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
+
+                            api.ThrowF(yaw,&ellipse_F[1]);
+                            TNum = TNum + 1;
+                            flag = false;
+                        }
+                        else if(TNum == 2)
+                        {
+
+                            //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+                            api.ThrowF(yaw,&ellipse_F[0]);
+                            flag = false;
+                        }
+                        else
+                        {
+                            flag = false;
+                            updateellipse = true;
+                        }
+                    }
                 }
             }
         }
@@ -521,7 +546,7 @@ sleep(100);
     //
     // STOP OFFBOARD MODE
     // --------------------------------------------------------------------------
-    sleep(5);
+//    sleep(5);
 
 //    mavlink_mission_clear_all_t comclearall;
 //    comclearall.target_system = 01;

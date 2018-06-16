@@ -113,6 +113,14 @@ float D2R(uint16_t ghdg)
     return Rad;
 
 }
+float R2D(float R)
+{
+//	float deg = (float)ghdg/100.0;
+//	float Rad = deg*3.14159/180;
+	uint16_t D= R*18000/3.1415926;
+	return D;
+
+}
 
 
 // ----------------------------------------------------------------------------------
@@ -341,7 +349,7 @@ Servo_Control(float ServoId, float PWM_Value)
     // Send the message
     int ServoLen = serial_port->write_message(RCC);
     usleep(100);
-    printf("drop succeed!/n");
+    printf("drop succeed!\n");
     return ServoLen;
 }
 
@@ -763,16 +771,16 @@ Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target
 	int Glolen = 0;
     mavlink_msg_global_position_int_encode(Target_machine,Target_machine,&Global_messgge,&Target_Global_Position);
 //    int Glolen = WL_write_message(Global_messgge);
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i)
+	{
 		Glolen = WL_write_message(Global_messgge);
 		while(Glolen <= 0)
 		{
 			printf("fail send wl message! try again! ");
 			Glolen = WL_write_message(Global_messgge);
 		}
-		printf("send wl message succeed!");
+		printf("send wl message succeed!\n");
 	}
-
     return Glolen;
 }
 
@@ -945,7 +953,7 @@ int
 Autopilot_Interface::
 toggle_offboard_control( bool flag )
 {
-	/*
+
     //////////////////////自稳模式
     mavlink_set_mode_t com = { 0 };
     com.base_mode = 1;
@@ -957,7 +965,7 @@ toggle_offboard_control( bool flag )
     int len = serial_port->write_message(message);
     usleep(100);
     // Done!
-*/
+
 	Servo_Control(10,1250);
 
     ///////请求数据流(关闭ALL)
@@ -991,7 +999,7 @@ toggle_offboard_control( bool flag )
     usleep(200);
 
     ////////////////////////////////////////解锁
-    /*mavlink_command_long_t Armdata = { 0 };
+    mavlink_command_long_t Armdata = { 0 };
     Armdata.target_system= 01;
     Armdata.target_component = 01;
     Armdata.command = MAV_CMD_COMPONENT_ARM_DISARM;
@@ -1000,7 +1008,7 @@ toggle_offboard_control( bool flag )
     mavlink_msg_command_long_encode(255, 190, &Armmes, &Armdata);
     // Send the message
     int Armlen = serial_port->write_message(Armmes);
-    usleep(100);*/
+    usleep(100);
 
     //设置成AUTO模式，开始mission
     Set_Mode(03);
@@ -1318,7 +1326,20 @@ int
 Autopilot_Interface::
 Throw(float yaw,int Tnum)
 {
-    //执行reng的过程
+	int local_alt = -10;
+	mavlink_set_position_target_local_ned_t locsp;
+	set_position(  target_ellipse_position[TargetNum].x, // [m]
+				   target_ellipse_position[TargetNum].y, // [m]
+				   local_alt, // [m]
+				   locsp);
+	set_yaw(yaw,locsp);
+	update_local_setpoint(locsp);
+	while(((current_messages.local_position_ned.z+11) <= 0)&&(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,locsp.x,locsp.y) <= 8))
+	{
+		;
+	}
+
+	//执行reng的过程
     drop = true;
 
     //给响应时间识别小圆,需加判断是否写入目标点
@@ -1334,44 +1355,48 @@ Throw(float yaw,int Tnum)
 			usleep(20000);
 		}
 	}
-    int local_alt = -10;
-    mavlink_set_position_target_local_ned_t locsp;
+
+    int i = 0;
+
     while (drop)
     {
-
-    	set_position(droptarget.locx, // [m]
-                     droptarget.locy, // [m]
-                     local_alt, // [m]
-                     locsp);
+		float locx = droptarget.locx;
+		float locy = droptarget.locy;
+    	mavlink_local_position_ned_t pos = current_messages.local_position_ned;
+    	float disx = locx - pos.x;
+    	float disy = locy - pos.y;
+    	float adisx = fabsf(disx);
+    	float adisy	= fabsf(disy);
+    	if(adisx >= adisy)
+		{
+			set_velocity(disx/adisx,disy/adisx,0,locsp);
+		}
+		else
+		{
+			set_velocity(disx/adisy,disy/adisy,0,locsp);
+		}
         set_yaw(yaw, // [rad]
                 locsp);
         // SEND THE COMMAND
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
-        float MXY = XYDistance(locpos.x, locpos.y, locsp.x, locsp.y);
-        if (MXY < 2)
-        {
-            //后续加上速度
-            usleep(200);
-            printf("input drop process!!!");
-            if ((locpos.z+10.5)>= 0)
-            {
-                // ------------------------------------------------------------------------------
-                //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
-                //	ServoId：AUX_OUT1-6 对应148-153/9-14
-                // ------------------------------------------------------------------------------
-                sleep(1);
-                int lenn = Servo_Control(10, 1700);
-                Tnum = Tnum + 1;
-                sleep(1);
-                drop = false;
-                break;
-            }
-            else
-            {
-                ;
-            }
 
+        if ((fabsf(locpos.x-droptarget.locx) < 0.5)&&(fabsf(locpos.y-droptarget.locy) < 0.5)&&((locpos.z+10.5)>= 0))
+        {
+            Set_Mode(05);
+            sleep(2);
+            Set_Mode(04);
+            printf("input drop process!!!\n");
+            // ------------------------------------------------------------------------------
+            //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
+            //	ServoId：AUX_OUT1-6 对应148-153/9-14
+            // ------------------------------------------------------------------------------
+            usleep(100000);
+            int lenn = Servo_Control(11, 1700);
+            Tnum = Tnum + 1;
+            sleep(1);
+            drop = false;
+            break;
         }
         else
         {
@@ -1382,36 +1407,39 @@ Throw(float yaw,int Tnum)
 }
 
 int
-Autopilot_Interface::ThrowF(float yaw,int32_t lat,int32_t lon,int Num)
+Autopilot_Interface::
+//ThrowF(float yaw,int32_t lat,int32_t lon,int Num)
+ThrowF(float yaw,target* targetF)
 {
 	mavlink_set_position_target_global_int_t glosp;
-	float hight = 25;
+	int T = 0;
+	//detect hight
+	float hight = 15;
 	Set_Mode(05);
 	usleep(400);
 	Set_Mode(04);
 	usleep(400);
-	set_global_position(lat,lon,hight,glosp);
+	set_global_position(targetF->lat,targetF->lon,hight,glosp);
 	set_global_yaw(yaw,glosp);
 	update_global_setpoint(glosp);
 	int Targetnum = TargetNum;
-	TargetNum = Num;
+	TargetNum = targetF->num;
 	while(updateellipse)
 	{
 		mavlink_global_position_int_t current_global = current_messages.global_position_int;
-		float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,lat,lon,hight);
+		float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,targetF->lat,targetF->lon,hight);
 		if(distan < 5)
 		{
-			sleep(2);
+			sleep(1);
 			//updateellipse = false;
 			break;
 		}
 		else
 		{
 			usleep(200000);
+
 		}
 	}
-	ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
-	ellipse_F[1].T_N = ellipse_F[1].F_N = ellipse_F[1].possbile = 0;
 	stable = true;
 	int TF = 0;
 	while(stable)
@@ -1426,7 +1454,8 @@ Autopilot_Interface::ThrowF(float yaw,int32_t lat,int32_t lon,int Num)
 			{
 				break;
 			}
-			else {
+			else
+			{
 					continue;
 			}
 		}
@@ -1436,10 +1465,29 @@ Autopilot_Interface::ThrowF(float yaw,int32_t lat,int32_t lon,int Num)
 		}
 
 	}
-	Throw(yaw,2);
-	TargetNum = Targetnum;
+	if (targetF->T_N >= 50)
+    {
+        T = Throw(yaw,2);
+    }
+    else
+    {
+        //RTL
+        mavlink_command_long_t com3 = { 0 };
+        com3.target_system= 01;
+        com3.target_component = 01;
+        com3.command = 20;
 
+        mavlink_message_t message3;
+        mavlink_msg_command_long_encode(255, 190, &message3, &com3);
+        for (int i = 0; i < 3; ++i)
+        {
+            int len3 = write_message(message3);
+        }
+    }
+	TargetNum = Targetnum;
+	return T;
 }
+
 
 // ------------------------------------------------------------------------------
 //   Read Thread
