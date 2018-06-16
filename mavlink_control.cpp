@@ -788,7 +788,7 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
-		usleep(100000);
+//		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------
