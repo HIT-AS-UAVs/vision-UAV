@@ -152,8 +152,7 @@ top (int argc, char **argv)
     serial_port.start();
     WL_serial_port.start();
     autopilot_interface.start();
-//视觉定位线程
-    thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
+
     // --------------------------------------------------------------------------
     //   RUN COMMANDS
     // --------------------------------------------------------------------------
@@ -175,7 +174,7 @@ top (int argc, char **argv)
     autopilot_interface.stop();
     serial_port.stop();
     WL_serial_port.stop();
-    t1.join();
+
 
     // --------------------------------------------------------------------------
     //   DONE
@@ -203,17 +202,19 @@ commands(Autopilot_Interface &api)
     stable = false;
     updateellipse = false;
     drop = false;
-//    while(flag)
-//    {
-//        if((api.current_messages.param_value.param_type==9)&&(api.current_messages.param_value.param_index == 65535))
-//        {
-//            break;
-//        }
-//        else
-//        {
-//            usleep(1000);
-//        }
-//    }
+    //视觉定位线程
+    thread t1(videothread, ref(api));//ref可以使autopilot_interface引用被正确传递给videothread.
+    while(flag)
+    {
+        if(api.Inter_message.command_long.command == 400)
+        {
+            break;
+        }
+        else
+        {
+            usleep(200000);
+        }
+    }
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
     //   设置guided（offboard）模式/解锁、起飞
@@ -556,7 +557,7 @@ commands(Autopilot_Interface &api)
 //    mavlink_msg_mission_clear_all_encode(255,190,&Clearcom,&comclearall);
 //    int Clearlen = api.write_message(Clearcom);
     sleep(1);
-
+    t1.join();
     //返航
     mavlink_command_long_t com3 = { 0 };
     com3.target_system= 01;

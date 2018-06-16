@@ -720,6 +720,31 @@ WL_read_messages()
                     std::cout<<"mission_ack:"<<(float)Inter_message.mission_ack.type<<std::endl;
                     break;
                 }
+				case MAVLINK_MSG_ID_COMMAND_LONG:
+				{
+					printf("MAVLINK_MSG_ID_COMMAND_LONG\n");
+					mavlink_msg_command_long_decode(&message, &(Inter_message.command_long));
+					std::cout<<"command:"<<Inter_message.command_long.command<<std::endl
+							 <<"confirmation:"<<(float)Inter_message.command_long.confirmation<<std::endl
+							 <<"param1:"<<Inter_message.command_long.param1<<std::endl
+							 <<"param2:"<<Inter_message.command_long.param2<<std::endl
+							 <<"param3:"<<Inter_message.command_long.param3<<std::endl
+							 <<"param4:"<<Inter_message.command_long.param4<<std::endl
+							 <<"param5:"<<Inter_message.command_long.param5<<std::endl
+							 <<"param6:"<<Inter_message.command_long.param6<<std::endl
+							 <<"param7:"<<Inter_message.command_long.param7<<std::endl;
+					Inter_message.time_stamps.command_long = get_time_usec();
+					this_timestamps.command_long = Inter_message.time_stamps.command_long;
+					if((Inter_message.command_long.command==400)&&(Inter_message.command_long.param1 == 0))
+					{
+						mavlink_message_t disarm;
+						Inter_message.command_long.target_system = 1;
+						Inter_message.command_long.target_component = 1;
+						mavlink_msg_command_long_encode(255, 190, &disarm, &Inter_message.command_long);
+						int disarmlen = write_message(disarm);
+					}
+					break;
+				}
 
                 default:
                 {
@@ -757,8 +782,13 @@ Autopilot_Interface::
 WL_write_message(mavlink_message_t message)
 {
     // do the write
-    int len = WL_port->write_message(message);
-    // book keep
+	int len;
+	for (int i = 0; i < 10; ++i)
+	{
+		len = WL_port->write_message(message);
+		usleep(50000);
+	}
+
     WL_write_count++;
     // Done!
     return len;
@@ -771,8 +801,6 @@ Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target
 	int Glolen = 0;
     mavlink_msg_global_position_int_encode(Target_machine,Target_machine,&Global_messgge,&Target_Global_Position);
 //    int Glolen = WL_write_message(Global_messgge);
-	for (int i = 0; i < 10; ++i)
-	{
 		Glolen = WL_write_message(Global_messgge);
 		while(Glolen <= 0)
 		{
@@ -780,7 +808,6 @@ Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target
 			Glolen = WL_write_message(Global_messgge);
 		}
 		printf("send wl message succeed!\n");
-	}
     return Glolen;
 }
 
