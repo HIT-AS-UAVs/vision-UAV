@@ -1732,21 +1732,25 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 
 
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out) {
-    float target_x = 0, target_y = 0;
-    int num;
     if (ellipse_out.size() != 0){
-        for (auto &p:ellipse_out) {
-            float e_x, e_y;
-            realtarget(api, p, e_x, e_y);
-            target_x = target_x + e_x;
-            target_y = target_y + e_y;
-        }
-    num = ellipse_out.size();
-    droptarget.locx = target_x / num;
-    droptarget.locy = target_y / num;
-    cout << "target_x" << droptarget.locx << endl;
-    cout << "target_y" << droptarget.locy << endl;
-} else{
+        float dis = 4;
+		sort(ellipse_out.begin(),ellipse_out.end());
+		float e_x, e_y, locx, locy;
+		realtarget(api, ellipse_out[0], e_x, e_y);
+//		locx = api.current_messages.local_position_ned.x;
+//		locy = api.current_messages.local_position_ned.y;
+		locx = 0;
+		locy = 0;
+		if(abs(e_x - locx) < dis && abs(e_y - locy) < dis){
+			droptarget.locx = e_x;
+			droptarget.locy = e_y;
+			cout << "target_x" << droptarget.locx << endl;
+			cout << "target_y" << droptarget.locy << endl;
+		} else{
+			cout << "target_x" << droptarget.locx << endl;
+			cout << "target_y" << droptarget.locy << endl;
+		}
+	} else{
     	cout << "target_x" << droptarget.locx << endl;
         cout << "target_y" << droptarget.locy << endl;
     }

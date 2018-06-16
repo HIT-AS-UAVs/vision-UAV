@@ -161,7 +161,11 @@ top (int argc, char **argv)
     /*
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
-
+    sleep(10);
+    updateellipse = true;
+    stable = true;
+    sleep(20);
+    drop = true;
 
 //   commands(autopilot_interface);
     while(1){

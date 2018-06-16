@@ -73,7 +73,12 @@ struct coordinate {
     int order;
     float a;
     uchar flag;//0为F，1为T, 2为未识别
-
+    coordinate() : x(0), y(0), locx(0), locy(0), num(0), possible(0), order(0), a(0), flag(0) {}
+    bool operator<(const coordinate& other) const{
+        float dis1 = locx * locx + locy * locy;
+        float dis2 = other.locx * other.locx + other.locy * other.locy;
+        return dis1 < dis2;
+    }
 };
 extern vector<coordinate> ellipse_pre;
 
