@@ -548,7 +548,7 @@ commands(Autopilot_Interface &api)
     //
     // STOP OFFBOARD MODE
     // --------------------------------------------------------------------------
-//    sleep(5);
+    sleep(5);
 
 //    mavlink_mission_clear_all_t comclearall;
 //    comclearall.target_system = 01;

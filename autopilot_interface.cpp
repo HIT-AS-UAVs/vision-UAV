@@ -979,7 +979,6 @@ int
 Autopilot_Interface::
 toggle_offboard_control( bool flag )
 {
-
     //////////////////////自稳模式
     mavlink_set_mode_t com = { 0 };
     com.base_mode = 1;
@@ -992,7 +991,7 @@ toggle_offboard_control( bool flag )
     usleep(100);
     // Done!
 
-	Servo_Control(10,1250);
+	Servo_Control(11,1250);
 
     ///////请求数据流(关闭ALL)
     mavlink_request_data_stream_t com1 = { 0 };
