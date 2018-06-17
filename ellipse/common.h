@@ -35,9 +35,6 @@ typedef unsigned int uint;
 
 #define _INFINITY 1024
 
-//const float h = 30;//无人机高度30m
-//const float gps_x = 10000, gps_y = 20000;//无人机的gps坐标
-
 
 int inline sgn(float val) {
     return (0.f < val) - (val < 0.f);

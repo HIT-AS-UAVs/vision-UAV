@@ -349,7 +349,6 @@ Servo_Control(float ServoId, float PWM_Value)
     // Send the message
     int ServoLen = serial_port->write_message(RCC);
     usleep(100);
-    printf("drop succeed!\n");
     return ServoLen;
 }
 
@@ -1674,12 +1673,12 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
     for (auto &p:ellipse_out) {
     	float x_l, y_l;
     	realtarget(api, p, x_l, y_l);
-    	p.x = x_l;
-    	p.y = y_l;
+    	p.locx = x_l;
+    	p.locy = y_l;
     	if (target_ellipse.size() == 0) {
                 target t;
-                t.x = p.x;
-                t.y = p.y;
+                t.x = p.locx;
+                t.y = p.locy;
                 t.a = p.a;
                 if (p.flag == 1)
                     t.T_N = 1;
@@ -1698,10 +1697,10 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
                 } else{
     	            temp = TargetNum - 1;
     	        }
-    	        if(abs(p.x - target_ellipse[temp].x) < dis &&
-                   abs(p.y - target_ellipse[temp].y) < dis){
-                    target_ellipse[temp].x = p.x;
-                    target_ellipse[temp].y = p.y;
+    	        if(abs(p.locx - target_ellipse[temp].x) < dis &&
+                   abs(p.locy - target_ellipse[temp].y) < dis){
+                    target_ellipse[temp].x = p.locx;
+                    target_ellipse[temp].y = p.locy;
                     target_ellipse[temp].a = p.a;
                     if (p.flag == 1)
                         target_ellipse[temp].T_N = target_ellipse[temp].T_N + 1;
@@ -1709,16 +1708,16 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
                         target_ellipse[temp].F_N = target_ellipse[temp].F_N + 1;
                     else {}
                     target_ellipse[temp].possbile =
-                            (float) target_ellipse[temp].T_N / (float) (target_ellipse[temp].T_N + target_ellipse[temp].F_N);
+                            (float) target_ellipse[temp].T_N / (float) (target_ellipse[temp].T_N + target_ellipse[temp].F_N + 0.001);
                     break;
                 } else
                     continue;
             } else {
 				for (auto i = 0; i < target_ellipse.size(); i++) {
-					if (abs(p.x - target_ellipse[i].x) < dis &&
-						abs(p.y - target_ellipse[i].y) < dis) {
-						target_ellipse[i].x = p.x;
-						target_ellipse[i].y = p.y;
+					if (abs(p.locx - target_ellipse[i].x) < dis &&
+						abs(p.locy - target_ellipse[i].y) < dis) {
+						target_ellipse[i].x = p.locx;
+						target_ellipse[i].y = p.locy;
 						target_ellipse[i].a = p.a;
 						if (p.flag == 1)
 							target_ellipse[i].T_N = target_ellipse[i].T_N + 1;
@@ -1726,14 +1725,14 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
 							target_ellipse[i].F_N = target_ellipse[i].F_N + 1;
 						else {}
 						target_ellipse[i].possbile =
-								(float) target_ellipse[i].T_N / (float) (target_ellipse[i].T_N + target_ellipse[i].F_N);
+								(float) target_ellipse[i].T_N / (float) (target_ellipse[i].T_N + target_ellipse[i].F_N + 0.001);
 						break;
 					} else if (i != (target_ellipse.size() - 1)) {
 						continue;
 					} else {
 						target t;
-						t.x = p.x;
-						t.y = p.y;
+						t.x = p.locx;
+						t.y = p.locy;
 						t.a = p.a;
 						if (p.flag == 1)
 							t.T_N = 1;
@@ -1807,24 +1806,25 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 
 
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out) {
-    float target_x = 0, target_y = 0;
-    int num;
-
-    float dis = 4;//在室外的参数圆心相距9米内都算一个圆
-//	float dis = 0.05;//在室内测试用0.05
     if (ellipse_out.size() != 0){
-        for (auto &p:ellipse_out) {
-            float e_x, e_y;
-            realtarget(api, p, e_x, e_y);
-            target_x = target_x + e_x;
-            target_y = target_y + e_y;
-        }
-    num = ellipse_out.size();
-    droptarget.locx = target_x / num;
-    droptarget.locy = target_y / num;
-    cout << "target_x" << droptarget.locx << endl;
-    cout << "target_y" << droptarget.locy << endl;
-} else{
+        float dis = 4;
+		sort(ellipse_out.begin(),ellipse_out.end());
+		float e_x, e_y, locx, locy;
+		realtarget(api, ellipse_out[0], e_x, e_y);
+//		locx = api.current_messages.local_position_ned.x;
+//		locy = api.current_messages.local_position_ned.y;
+		locx = 0;
+		locy = 0;
+		if(abs(e_x - locx) < dis && abs(e_y - locy) < dis){
+			droptarget.locx = e_x;
+			droptarget.locy = e_y;
+			cout << "target_x" << droptarget.locx << endl;
+			cout << "target_y" << droptarget.locy << endl;
+		} else{
+			cout << "target_x" << droptarget.locx << endl;
+			cout << "target_y" << droptarget.locy << endl;
+		}
+	} else{
     	cout << "target_x" << droptarget.locx << endl;
         cout << "target_y" << droptarget.locy << endl;
     }

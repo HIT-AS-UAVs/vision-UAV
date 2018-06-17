@@ -161,11 +161,12 @@ top (int argc, char **argv)
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
 
+    commands(autopilot_interface);
 
-   commands(autopilot_interface);
-//    while(1){
-//               sleep(1);
-//    }
+//   commands(autopilot_interface);
+    while(1){
+               sleep(1);
+    }
     // --------------------------------------------------------------------------
     //   THREAD and PORT SHUTDOWN
     // --------------------------------------------------------------------------

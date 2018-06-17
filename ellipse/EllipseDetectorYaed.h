@@ -73,7 +73,12 @@ struct coordinate {
     int order;
     float a;
     uchar flag;//0为F，1为T, 2为未识别
-
+    coordinate() : x(0), y(0), locx(0), locy(0), num(0), possible(0), order(0), a(0), flag(0) {}
+    bool operator<(const coordinate& other) const{
+        float dis1 = locx * locx + locy * locy;
+        float dis2 = other.locx * other.locx + other.locy * other.locy;
+        return dis1 < dis2;
+    }
 };
 extern vector<coordinate> ellipse_pre;
 
@@ -87,6 +92,8 @@ struct target{
 	int32_t lat = 0; /*< Latitude, expressed as degrees * 1E7*/
 	int32_t lon = 0;
 	int num = 0;
+
+	target() : x(0), y(0), a(0), T_N(0), F_N(0), possbile(0), lat(0), lon(0), num(0) {}
 
 	bool operator<(const target& other) const{
 		if(possbile == other.possbile){

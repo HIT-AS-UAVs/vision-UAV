@@ -1925,7 +1925,16 @@ void CEllipseDetectorYaed::extracrROI(Mat1b& image, vector<coordinate>& ellipse_
 
 //	cvtColor(image, image, COLOR_RGB2GRAY);
 	GaussianBlur(image, image, Size(5, 5),0, 0);
-	threshold(image, image, 190, 255, CV_THRESH_BINARY);
+	static int number;
+	if(number == 0) {
+        threshold(image, image, 170, 255, CV_THRESH_BINARY);
+        number = 1;
+
+    } else{
+        threshold(image, image, 190, 255, CV_THRESH_BINARY);
+        number = 0;
+	}
+
 	for(auto &p:ellipse_out){
 		Mat1b ROI;
 		int r = 3 * p.a;
