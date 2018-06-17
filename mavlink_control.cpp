@@ -164,7 +164,8 @@ top (int argc, char **argv)
     commands(autopilot_interface);
 
 //   commands(autopilot_interface);
-    while(1){
+    while(1)
+    {
                sleep(1);
     }
     // --------------------------------------------------------------------------
@@ -209,6 +210,7 @@ commands(Autopilot_Interface &api)
     {
         if(api.Inter_message.command_long.command == 400)
         {
+            api.enable_offboard_control();
             break;
         }
         else
@@ -220,7 +222,6 @@ commands(Autopilot_Interface &api)
     //   START OFFBOARD MODE
     //   设置guided（offboard）模式/解锁、起飞
     // --------------------------------------------------------------------------
-    api.enable_offboard_control();
     usleep(100); // give some time to let it sink in
 
     // --------------------------------------------------------------------------
@@ -307,7 +308,7 @@ commands(Autopilot_Interface &api)
                         sleep(1);
 
                         float distance = Distance(pos.x,pos.y,pos.z,sp.x,sp.y,sp.z);
-                        if(distance < 5)
+                        if(distance < 8)
                         {
                             int TF=0;
                             stable = true;
@@ -337,7 +338,6 @@ commands(Autopilot_Interface &api)
                                     ;
                                 }
                             }
-//                            sleep(30);
                             if (ellipse_T.size() > TNum)
                             {
                                 if ((ellipse_T.size() == 1)&&(TNum == 0))
@@ -350,7 +350,7 @@ commands(Autopilot_Interface &api)
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
                                     //后续添加判断采集全局坐标的正确性,如果错误重新选择
-                                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                                    int Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
                                     TargetNum = TargetNum + 1;
                                 }
                                 else
@@ -362,12 +362,12 @@ commands(Autopilot_Interface &api)
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
                                     //后续添加判断采集全局坐标的正确性,如果错误重新选择
-                                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                                    int Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
                                     // ------------------------------------------------------------------------------
                                     //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
                                     //	ServoId：AUX_OUT1-6 对应148-153/9-14
                                     // ------------------------------------------------------------------------------
-                                    api.Servo_Control(10, 1700);
+                                    api.Servo_Control(11, 1700);
                                     TNum = TNum + 1;
                                     TargetNum = TargetNum + 1;
                                 }
@@ -495,7 +495,7 @@ commands(Autopilot_Interface &api)
                     case 1:
                     {
                         //send RTL to all UAVs
-
+                        api.RTL();
                         ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
                         api.ThrowF(yaw,&ellipse_F[0]);
                         flag = false;
@@ -513,18 +513,16 @@ commands(Autopilot_Interface &api)
                             Target_Global_Position.lon = ellipse_F[0].lon;
                             uint16_t hdg1= R2D(yaw);
                             Target_Global_Position.hdg = hdg1;
-                            int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                            int Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
                             usleep(2000);
                             //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-//                        api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
-
                             api.ThrowF(yaw,&ellipse_F[1]);
                             TNum = TNum + 1;
                             flag = false;
                         }
                         else if(TNum == 2)
                         {
-
+                            api.RTL();
                             //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
                             api.ThrowF(yaw,&ellipse_F[0]);
                             flag = false;
