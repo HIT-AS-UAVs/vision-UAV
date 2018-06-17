@@ -54,7 +54,7 @@
 
 #include "autopilot_interface.h"
 
-bool stable = false, updateellipse = false, getlocalposition = true, drop = false;
+bool stable = false, updateellipse = false, getlocalposition = false, drop = false;
 int TargetNum = 0;
 coordinate droptarget;
 // ----------------------------------------------------------------------------------
