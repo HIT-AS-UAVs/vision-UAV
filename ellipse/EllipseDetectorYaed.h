@@ -78,15 +78,15 @@ struct coordinate {
 extern vector<coordinate> ellipse_pre;
 
 struct target{
-    float_t x;
-    float_t y;
-    float a;
-    uint32_t T_N;
-    uint32_t F_N;
-    float possbile;
-	int32_t lat; /*< Latitude, expressed as degrees * 1E7*/
-	int32_t lon;
-	int num;
+    float_t x = 0;
+    float_t y = 0;
+    float a = 0;
+    uint32_t T_N = 0;
+    uint32_t F_N = 0;
+    float possbile = 0;
+	int32_t lat = 0; /*< Latitude, expressed as degrees * 1E7*/
+	int32_t lon = 0;
+	int num = 0;
 
 	bool operator<(const target& other) const{
 		if(possbile == other.possbile){
