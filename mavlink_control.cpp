@@ -82,10 +82,10 @@ top (int argc, char **argv)
 #ifdef __APPLE__
     char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
-    char *uart_name = (char*)"/dev/ttyTHS2";
-    char *WL_uart = (char*)"/dev/ttyS0";
-//    char *uart_name = (char*)"/dev/ttyUSB0";
-//    char *WL_uart = (char*)"/dev/ttyUSB1";
+//    char *uart_name = (char*)"/dev/ttyTHS2";
+//    char *WL_uart = (char*)"/dev/ttyS0";
+    char *uart_name = (char*)"/dev/ttyUSB0";
+    char *WL_uart = (char*)"/dev/ttyUSB1";
 #endif
     int baudrate = 57600;
 
@@ -152,8 +152,7 @@ top (int argc, char **argv)
     serial_port.start();
     WL_serial_port.start();
     autopilot_interface.start();
-//视觉定位线程
-    thread t1(videothread, ref(autopilot_interface));//ref可以使autopilot_interface引用被正确传递给videothread.
+
     // --------------------------------------------------------------------------
     //   RUN COMMANDS
     // --------------------------------------------------------------------------
@@ -161,13 +160,10 @@ top (int argc, char **argv)
     /*
      * Now we can implement the algorithm we want on top of the autopilot interface
      */
-    sleep(10);
-    updateellipse = true;
-    stable = true;
-    sleep(20);
-    drop = true;
 
-   commands(autopilot_interface);
+    commands(autopilot_interface);
+
+//   commands(autopilot_interface);
     while(1){
                sleep(1);
     }
@@ -178,7 +174,8 @@ top (int argc, char **argv)
 
     autopilot_interface.stop();
     serial_port.stop();
-    t1.join();
+    WL_serial_port.stop();
+
 
     // --------------------------------------------------------------------------
     //   DONE
@@ -206,17 +203,19 @@ commands(Autopilot_Interface &api)
     stable = false;
     updateellipse = false;
     drop = false;
-//    while(flag)
-//    {
-//        if((api.current_messages.param_value.param_type==9)&&(api.current_messages.param_value.param_index == 65535))
-//        {
-//            break;
-//        }
-//        else
-//        {
-//            usleep(1000);
-//        }
-//    }
+    //视觉定位线程
+    thread t1(videothread, ref(api));//ref可以使autopilot_interface引用被正确传递给videothread.
+    while(flag)
+    {
+        if(api.Inter_message.command_long.command == 400)
+        {
+            break;
+        }
+        else
+        {
+            usleep(200000);
+        }
+    }
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
     //   设置guided（offboard）模式/解锁、起飞
@@ -346,7 +345,7 @@ commands(Autopilot_Interface &api)
                                     TNum = api.Throw(yaw,TNum);
                                     mavlink_global_position_int_t Target_Global_Position;
                                     Target_Global_Position = api.current_messages.global_position_int;
-                                    if (Target_Global_Position.lat < 1000)
+                                    if (Target_Global_Position.lat < 10000)
                                     {
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
@@ -358,7 +357,7 @@ commands(Autopilot_Interface &api)
                                 {
                                     mavlink_global_position_int_t Target_Global_Position;
                                     Target_Global_Position = api.current_messages.global_position_int;
-                                    if (Target_Global_Position.lat < 1000)
+                                    if (Target_Global_Position.lat < 10000)
                                     {
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
@@ -483,35 +482,59 @@ commands(Autopilot_Interface &api)
             {
                 usleep(100000);
             }
-            if(api.current_messages.mission_item_reached.seq == 8)
+            if((api.current_messages.mission_item_reached.seq == 5)&&(TNum < 3))
             {
                 updateellipse = true;
-                sort(ellipse_F.begin(),ellipse_F.end());
-                if(TNum == 1)
+                switch (ellipse_F.size())
                 {
-                    //将F中识别出来的T概率最高的点发送给从机[TNum+1]
+                    case 0:
+                    {
+                        flag = false;
+                        break;
+                    }
+                    case 1:
+                    {
+                        //send RTL to all UAVs
 
-                    mavlink_global_position_int_t Target_Global_Position;
-                    Target_Global_Position.lat = ellipse_F[0].lat;
-                    Target_Global_Position.lon = ellipse_F[0].lon;
-                    int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
-                    usleep(2000);
-                    //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
-                    TNum = TNum + 1;
-                    flag = false;
-                }
-                else if(TNum == 2)
-                {
+                        ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
+                        api.ThrowF(yaw,&ellipse_F[0]);
+                        flag = false;
+                        break;
+                    }
+                    default:
+                    {
+                        sort(ellipse_F.begin(),ellipse_F.end());
+                        if(TNum == 1)
+                        {
+                            //将F中识别出来的T概率最高的点发送给从机[TNum+1]
 
-                    //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                    api.ThrowF(yaw,ellipse_F[0].lat,ellipse_F[0].lon,ellipse_F[0].num);
-                    flag = false;
-                }
-                else
-                {
-                    flag = false;
-                    updateellipse = true;
+                            mavlink_global_position_int_t Target_Global_Position;
+                            Target_Global_Position.lat = ellipse_F[0].lat;
+                            Target_Global_Position.lon = ellipse_F[0].lon;
+                            uint16_t hdg1= R2D(yaw);
+                            Target_Global_Position.hdg = hdg1;
+                            int Globallen=  api.Send_WL_Global_Position(TNum + 1, Target_Global_Position);
+                            usleep(2000);
+                            //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+//                        api.ThrowF(yaw,ellipse_F[1].lat,ellipse_F[1].lon,ellipse_F[1].num);
+
+                            api.ThrowF(yaw,&ellipse_F[1]);
+                            TNum = TNum + 1;
+                            flag = false;
+                        }
+                        else if(TNum == 2)
+                        {
+
+                            //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+                            api.ThrowF(yaw,&ellipse_F[0]);
+                            flag = false;
+                        }
+                        else
+                        {
+                            flag = false;
+                            updateellipse = true;
+                        }
+                    }
                 }
             }
         }
@@ -535,7 +558,7 @@ commands(Autopilot_Interface &api)
 //    mavlink_msg_mission_clear_all_encode(255,190,&Clearcom,&comclearall);
 //    int Clearlen = api.write_message(Clearcom);
     sleep(1);
-
+    t1.join();
     //返航
     mavlink_command_long_t com3 = { 0 };
     com3.target_system= 01;
@@ -766,7 +789,7 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
-		usleep(1000);
+//		usleep(100000);
 	}
 }
 // ------------------------------------------------------------------------------
