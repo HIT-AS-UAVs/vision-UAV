@@ -1667,7 +1667,7 @@ start_WL_write_thread(void *args)
 //  将当前时刻看到的所有可能为目标的椭圆存放在容器中
 // ------------------------------------------------------------------------------
 void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse){
-    float dis = 4;//在室外的参数圆心相距9米内都算一个圆
+    float dis = 7;//在室外的参数圆心相距9米内都算一个圆
 //	float dis = 0.05;//在室内测试用0.05
     for (auto &p:ellipse_out) {
     	float x_l, y_l;
@@ -1750,7 +1750,7 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
 void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
 //	float possobile = 0.5, dis = 0.05;//室内测试设置0.5，0.05， 室外待定
 //	uint32_t num = 10;//室内测试设置10，室外待定
-	float possobile = 0.4, dis = 4;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
+	float possobile = 0.4, dis = 7;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
 	uint32_t num = 50;//室外测试：识别次数大于50次即可进行TF判断。
 	if(ellipse_in.size() == 0){
 
@@ -1806,7 +1806,7 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out) {
     if (ellipse_out.size() != 0){
-        float dis = 4;
+        float dis = 7;
 		sort(ellipse_out.begin(),ellipse_out.end());
 		float e_x, e_y, locx, locy;
 		realtarget(api, ellipse_out[0], e_x, e_y);
@@ -1830,10 +1830,10 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 }
 
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_l){
-//    int32_t h = -api.current_messages.local_position_ned.z;
-        int32_t h = 25;//桌子高度0.74M
-//    uint16_t hdg = api.current_messages.global_position_int.hdg;
-        uint16_t hdg = 0;//设置机头方向为正北
+    int32_t h = -api.current_messages.local_position_ned.z;
+//        int32_t h = 25;//桌子高度0.74M
+    uint16_t hdg = api.current_messages.global_position_int.hdg;
+//        uint16_t hdg = 0;//设置机头方向为正北
     float loc_x = api.current_messages.local_position_ned.x;
     float loc_y = api.current_messages.local_position_ned.y;
     /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
@@ -1842,10 +1842,10 @@ void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_
     //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
     float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
     float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
-//    x_l = x_r + loc_x;
-//    y_l = y_r + loc_y;
-	x_l = x_r;
-	y_l = y_r;
+    x_l = x_r + loc_x;
+    y_l = y_r + loc_y;
+//	x_l = x_r;
+//	y_l = y_r;
 }
 
 void OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){
