@@ -119,8 +119,8 @@ float R2D(float R)
 //	float Rad = deg*3.14159/180;
 	uint16_t D= R*18000/3.1415926;
 	return D;
-
 }
+
 
 
 // ----------------------------------------------------------------------------------
@@ -352,6 +352,19 @@ Servo_Control(float ServoId, float PWM_Value)
     return ServoLen;
 }
 
+void
+Autopilot_Interface::
+RTL()
+{
+    mavlink_command_long_t com3 = { 0 };
+    com3.target_system= 01;
+    com3.target_component = 01;
+    com3.command = 20;
+
+    mavlink_message_t message3;
+    mavlink_msg_command_long_encode(40, 40, &message3, &com3);
+    int len3 = WL_write_message(message3);
+}
 
 // ------------------------------------------------------------------------------
 //   Update Local Setpoint
@@ -656,7 +669,7 @@ WL_read_messages()
     {
         mavlink_message_t message;
         success = WL_port->read_message(message);
-        if ((message.sysid != 0)&&(message.sysid != Machine_Num))
+        if ((message.sysid != 40)&&(message.sysid != Machine_Num))
         {
             break;
         }
@@ -1359,14 +1372,19 @@ Throw(float yaw,int Tnum)
 				   locsp);
 	set_yaw(yaw,locsp);
 	update_local_setpoint(locsp);
-	while(((current_messages.local_position_ned.z+11) <= 0)&&(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,locsp.x,locsp.y) <= 8))
-	{
-		;
-	}
 
+	while(((current_messages.local_position_ned.z+11) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,locsp.x,locsp.y) >= 8))
+	{
+        set_position(  target_ellipse_position[TargetNum].x, // [m]
+                       target_ellipse_position[TargetNum].y, // [m]
+                       local_alt, // [m]
+                       locsp);
+        set_yaw(yaw,locsp);
+        update_local_setpoint(locsp);
+        usleep(200000);
+	}
 	//执行reng的过程
     drop = true;
-
     //给响应时间识别小圆,需加判断是否写入目标点
     while(drop)
 	{

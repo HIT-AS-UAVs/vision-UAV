@@ -122,7 +122,7 @@ extern vector<target> target_ellipse_position, ellipse_T, ellipse_F;
 #define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_FORCE        0b0000111000111111
 #define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_ANGLE    0b0000100111111111
 #define MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT_YAW_RATE     0b0000010111111111
-#define Machine_Num 1
+#define Machine_Num 41
 
 
 // ------------------------------------------------------------------------------
@@ -143,6 +143,7 @@ void set_global_velocity(float vx, float vy, float vz, mavlink_set_position_targ
 //void set_global_acceleration(float ax, float ay, float az, mavlink_set_position_target_global_int_t &sp);
 void set_global_yaw(float yaw, mavlink_set_position_target_global_int_t &sp);
 void set_global_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp);
+//void RTL();
 
 float Distance(float x,float y,float z,float x1,float y1,float z1);
 float XYDistance(float x, float y, float x1, float y1);
@@ -328,7 +329,7 @@ public:
     void update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point);
 
     int Servo_Control(float ServoId, float PWM_Value);
-
+    void RTL();
     void read_messages();
     int  write_message(mavlink_message_t message);
 
