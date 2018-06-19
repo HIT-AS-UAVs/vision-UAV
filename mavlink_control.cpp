@@ -218,7 +218,7 @@ commands(Autopilot_Interface &api)
     }
     while (flag)
     {
-        if(api.current_messages.mission_item_reached.seq == 1)
+        if(api.current_messages.mission_item_reached.seq >= 1)
         {
             break;
         }
