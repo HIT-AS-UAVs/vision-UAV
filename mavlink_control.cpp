@@ -204,7 +204,7 @@ commands(Autopilot_Interface &api)
     stable = false;
     updateellipse = false;
     drop = false;
-    //视觉定位线程
+    //视觉定位线程,
     thread t1(videothread, ref(api));//ref可以使autopilot_interface引用被正确传递给videothread.
     while(flag)
     {
@@ -276,31 +276,45 @@ commands(Autopilot_Interface &api)
                 {
                     mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
                     float XYdis = XYDistance(pos.x,pos.y,sp.x,sp.y);
-                    if(XYdis >10 && XYdis< 20)
+                    if(XYdis >15 && XYdis< 20)
                     {
                         local_alt = -25;
                         // -------------------------------------------------------------------------
                         // 							设置位置/朝向
                         // -------------------------------------------------------------------------
-                        //                       set_position(  target_ellipse_position[TargetNum].x, // [m]
-                        //                                      target_ellipse_position[TargetNum].y, // [m]
-                        //                                      local_alt, // [m]
-                        //                                      sp);
-                        sp.z = local_alt;
+                        set_position(  target_ellipse_position[TargetNum].x, // [m]
+                                        target_ellipse_position[TargetNum].y, // [m]
+                                        local_alt, // [m]
+                                        sp);
+//                        sp.z = local_alt;
                         // SEND THE COMMAND
                         api.update_local_setpoint(sp);
                         sleep(1);
                     }
-                    else if (XYdis < 10)
+                    else if (XYdis < 15)
                     {
                         local_alt = -20;
                         // -------------------------------------------------------------------------
                         // 							设置位置/朝向
                         // -------------------------------------------------------------------------
-                        set_position(  target_ellipse_position[TargetNum].x, // [m]
-                                       target_ellipse_position[TargetNum].y, // [m]
-                                       local_alt, // [m]
-                                       sp);
+//                        set_position(  target_ellipse_position[TargetNum].x, // [m]
+//                                       target_ellipse_position[TargetNum].y, // [m]
+//                                       local_alt, // [m]
+//                                       sp);
+                        float Disx = target_ellipse_position[TargetNum].x - api.current_messages.local_position_ned.x;
+                        float Disy = target_ellipse_position[TargetNum].y - api.current_messages.local_position_ned.y;
+                        float Disss = -20-api.current_messages.local_position_ned.z;
+                        float Adisx = fabsf(Disx);
+                        float Adisy	= fabsf(Disy);
+
+                        if(Adisx >= Adisy)
+                        {
+                            set_velocity(0.5*(Disx/Adisx),0.5*(Disy/Adisx),0.5*(Disss/Adisy),sp);
+                        }
+                        else
+                        {
+                            set_velocity(0.5*(Disx/Adisy),0.5*(Disy/Adisy),0.5*(Disss/Adisy),sp);
+                        }
                         set_yaw(yaw, // [rad]
                                 sp);
                         // SEND THE COMMAND
@@ -395,7 +409,6 @@ commands(Autopilot_Interface &api)
                     }
                 }
                 goback = true;
-
                 if(TNum == 3)
                 {
                     flag = false;
@@ -456,10 +469,12 @@ commands(Autopilot_Interface &api)
                 {
                     mavlink_global_position_int_t current_global = api.global_position;
                     float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,gp.lat,gp.lon,gp.relative_alt);
-                    if(distan < 5)
+                    if(distan < 8)
                     {
                         usleep(200);
                         goback = true;
+                        api.Set_Mode(03);
+                        sleep(2);
                         api.Set_Mode(03);
                         sleep(2);
                         updateellipse = false;
@@ -725,6 +740,7 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
         Mat3b resultImage = image_r.clone();
         Mat3b resultImage2 = image_r.clone();
         vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
+        ofstream myfile("ellipse_r.txt", ios::out);
         if(getlocalposition){
             OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
             yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
@@ -738,6 +754,14 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
                 ellipse_out1 = ellipse_TF;
             } else
                 ellipse_out1 = ellipse_out;
+                if(!myfile){
+                    cout<<"error!";
+                } else{
+                    for(auto &p:ellipse_out1){
+                        myfile<<"ellipse_r:"<<p.a<<endl;
+                        myfile<<"UAV_Hight:"<< - api.current_messages.local_position_ned.z<<endl;
+                    }
+                }
             for (auto &p:contours) {
                 vector<vector<Point> > contours1;
                 contours1.push_back(p);
@@ -781,6 +805,7 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
             <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
             <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
         cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl<<"drop:"<<drop<<endl;
+        cout<<"target_Num:"<<TargetNum<<endl;
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);

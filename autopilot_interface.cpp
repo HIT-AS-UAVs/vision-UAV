@@ -755,6 +755,20 @@ WL_read_messages()
 						mavlink_msg_command_long_encode(255, 190, &disarm, &Inter_message.command_long);
 						int disarmlen = write_message(disarm);
 					}
+					if((Inter_message.command_long.command == 20))
+                    {
+                        mavlink_message_t RTLL;
+                        Inter_message.command_long.target_system = 01;
+                        Inter_message.command_long.target_component = 01;
+                        Inter_message.command_long.command = 20;
+                        mavlink_msg_command_long_encode(255,190,&RTLL,&Inter_message.command_long);
+                        for (int i = 0; i <6 ; ++i)
+                        {
+                            int RT = write_message(RTLL);
+                            usleep(20000);
+                        }
+
+                    }
 					break;
 				}
 
@@ -877,7 +891,7 @@ write_local_setpoint()
 	if ( len <= 0 )
 		fprintf(stderr,"WARNING: could not send POSITION_TARGET_LOCAL_NED \n");
 	else
-		printf("%lu POSITION_TARGET  = [ %f , %f , %f ] \n", write_count, sp.x, sp.y, sp.z);
+//		printf("%lu POSITION_TARGET  = [ %f , %f , %f ] \n", write_count, sp.x, sp.y, sp.z);
 	std::cout<<sp.type_mask<<std::endl;
 
 	return;
@@ -1364,7 +1378,7 @@ int
 Autopilot_Interface::
 Throw(float yaw,int Tnum)
 {
-	int local_alt = -10;
+	int local_alt = -8;
 	mavlink_set_position_target_local_ned_t locsp;
 	set_position(  target_ellipse_position[TargetNum].x, // [m]
 				   target_ellipse_position[TargetNum].y, // [m]
@@ -1372,13 +1386,33 @@ Throw(float yaw,int Tnum)
 				   locsp);
 	set_yaw(yaw,locsp);
 	update_local_setpoint(locsp);
+	while(1)
+    {
+        if(current_messages.local_position_ned.z+9>=0)
+        {
+            break;
+        } else
+        {
+            usleep(2000);
+        }
+    }
 
-	while(((current_messages.local_position_ned.z+11) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,locsp.x,locsp.y) >= 8))
+	while(((current_messages.local_position_ned.z+9) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,target_ellipse_position[TargetNum].x,target_ellipse_position[TargetNum].y) >= 6))
 	{
-        set_position(  target_ellipse_position[TargetNum].x, // [m]
-                       target_ellipse_position[TargetNum].y, // [m]
-                       local_alt, // [m]
-                       locsp);
+        float Disx = target_ellipse_position[TargetNum].x - current_messages.local_position_ned.x;
+        float Disy = target_ellipse_position[TargetNum].y - current_messages.local_position_ned.y;
+        float Adisx = fabsf(Disx);
+        float Adisy	= fabsf(Disy);
+
+        if(Adisx >= Adisy)
+        {
+            set_velocity(0.5*(Disx/Adisx),0.5*(Disy/Adisx),0,locsp);
+        }
+        else
+        {
+            set_velocity(0.5*(Disx/Adisy),0.5*(Disy/Adisy),0,locsp);
+        }
+        // SEND THE COMMAND
         set_yaw(yaw,locsp);
         update_local_setpoint(locsp);
         usleep(200000);
@@ -1410,13 +1444,17 @@ Throw(float yaw,int Tnum)
     	float disy = locy - pos.y;
     	float adisx = fabsf(disx);
     	float adisy	= fabsf(disy);
+//    	locx = 2*locx-pos.x;
+//    	locy = 2*locy - pos.y;
+//    	locsp.x = locx;
+//    	locsp.y = locy;
     	if(adisx >= adisy)
 		{
-			set_velocity(disx/adisx,disy/adisx,0,locsp);
+			set_velocity(0.5*(disx/adisx),0.5*(disy/adisx),0,locsp);
 		}
 		else
 		{
-			set_velocity(disx/adisy,disy/adisy,0,locsp);
+			set_velocity(0.5*(disx/adisy),0.5*(disy/adisy),0,locsp);
 		}
         set_yaw(yaw, // [rad]
                 locsp);
@@ -1424,17 +1462,17 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((fabsf(locpos.x-droptarget.locx) < 0.5)&&(fabsf(locpos.y-droptarget.locy) < 0.5)&&((locpos.z+10.5)>= 0))
+        if ((fabsf(locpos.x-droptarget.locx) < 0.3)&&(fabsf(locpos.y-droptarget.locy) < 0.3)&&((locpos.z+9)>= 0))
         {
             Set_Mode(05);
-            sleep(2);
+            sleep(1);
             Set_Mode(04);
             printf("input drop process!!!\n");
             // ------------------------------------------------------------------------------
             //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
             //	ServoId：AUX_OUT1-6 对应148-153/9-14
             // ------------------------------------------------------------------------------
-            usleep(100000);
+            sleep(2);
             int lenn = Servo_Control(11, 1700);
             Tnum = Tnum + 1;
             sleep(1);
@@ -1685,7 +1723,7 @@ start_WL_write_thread(void *args)
 //  将当前时刻看到的所有可能为目标的椭圆存放在容器中
 // ------------------------------------------------------------------------------
 void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse){
-    float dis = 4;//在室外的参数圆心相距9米内都算一个圆
+    float dis = 7;//在室外的参数圆心相距9米内都算一个圆
 //	float dis = 0.05;//在室内测试用0.05
     for (auto &p:ellipse_out) {
     	float x_l, y_l;
@@ -1768,7 +1806,7 @@ void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out,
 void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0){
 //	float possobile = 0.5, dis = 0.05;//室内测试设置0.5，0.05， 室外待定
 //	uint32_t num = 10;//室内测试设置10，室外待定
-	float possobile = 0.4, dis = 4;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
+	float possobile = 0.4, dis = 7;//室外测试：识别概率大于0.4都算作T，两圆圆心相距9米内都算一个圆
 	uint32_t num = 50;//室外测试：识别次数大于50次即可进行TF判断。
 	if(ellipse_in.size() == 0){
 
@@ -1824,14 +1862,14 @@ void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<targe
 
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out) {
     if (ellipse_out.size() != 0){
-        float dis = 4;
+        float dis = 7;
 		sort(ellipse_out.begin(),ellipse_out.end());
-		float e_x, e_y, locx, locy;
+		float e_x, e_y, locx, locy, c_x, c_y;
 		realtarget(api, ellipse_out[0], e_x, e_y);
-//		locx = api.current_messages.local_position_ned.x;
-//		locy = api.current_messages.local_position_ned.y;
-		locx = 0;
-		locy = 0;
+		locx = api.current_messages.local_position_ned.x;
+		locy = api.current_messages.local_position_ned.y;
+		c_x = e_x - 320;
+		c_y = e_y - 180;
 		if(abs(e_x - locx) < dis && abs(e_y - locy) < dis){
 			droptarget.locx = e_x;
 			droptarget.locy = e_y;
@@ -1848,10 +1886,10 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 }
 
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_l){
-//    int32_t h = -api.current_messages.local_position_ned.z;
-        int32_t h = 25;//桌子高度0.74M
-//    uint16_t hdg = api.current_messages.global_position_int.hdg;
-        uint16_t hdg = 0;//设置机头方向为正北
+    int32_t h = -api.current_messages.local_position_ned.z;
+//        int32_t h = 25;//桌子高度0.74M
+    uint16_t hdg = api.current_messages.global_position_int.hdg;
+//        uint16_t hdg = 0;//设置机头方向为正北
     float loc_x = api.current_messages.local_position_ned.x;
     float loc_y = api.current_messages.local_position_ned.y;
     /*在相机坐标系下椭圆圆心的坐标（相机坐标系正东为x，正北为y）*/
@@ -1860,10 +1898,10 @@ void realtarget(Autopilot_Interface& api, coordinate& cam, float& x_l, float& y_
     //将相机坐标系坐标转换为以摄像头所在中心的导航坐标系下坐标（正东为y,正北为x）
     float x_r = y * cos(hdg * 3.1415926 / 180 / 100) - x * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
     float y_r = x * cos(hdg * 3.1415926 / 180 / 100) + y * sin(hdg * 3.1415926 / 180 / 100);
-//    x_l = x_r + loc_x;
-//    y_l = y_r + loc_y;
-	x_l = x_r;
-	y_l = y_r;
+    x_l = x_r + loc_x;
+    y_l = y_r + loc_y;
+//	x_l = x_r;
+//	y_l = y_r;
 }
 
 void OptimizEllipse(vector<Ellipse> &ellipse_out, vector<Ellipse> &ellipses_in){

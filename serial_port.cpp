@@ -145,7 +145,7 @@ read_message(mavlink_message_t &message)
 	// Couldn't read from port
 	else
 	{
-		fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
+//		fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
 	}
 
 	// --------------------------------------------------------------------------
@@ -369,7 +369,7 @@ _setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_c
 	struct termios  config;
 	if(tcgetattr(fd, &config) < 0)
 	{
-		fprintf(stderr, "\nERROR: could not read configuration of fd %d\n", fd);
+//		fprintf(stderr, "\nERROR: could not read configuration of fd %d\n", fd);
 		return false;
 	}
 
