@@ -272,7 +272,7 @@ commands(Autopilot_Interface &api)
                 // SEND THE COMMAND
                 api.update_local_setpoint(sp);
 
-                while(1)
+                while(goback)
                 {
                     mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
                     float XYdis = XYDistance(pos.x,pos.y,sp.x,sp.y);
@@ -367,7 +367,7 @@ commands(Autopilot_Interface &api)
                                     //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
                                     //	ServoId：AUX_OUT1-6 对应148-153/9-14
                                     // ------------------------------------------------------------------------------
-                                    api.Servo_Control(11, 1700);
+//                                    api.Servo_Control(11, 1700);
                                     TNum = TNum + 1;
                                     TargetNum = TargetNum + 1;
                                 }
@@ -379,6 +379,7 @@ commands(Autopilot_Interface &api)
                             }
                             stable = false;
                             drop = false;
+                            goback = false;
                             break;
                         }
                         else
@@ -393,6 +394,7 @@ commands(Autopilot_Interface &api)
                         sleep(1);
                     }
                 }
+                goback = true;
 
                 if(TNum == 3)
                 {

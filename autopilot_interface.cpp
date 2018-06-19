@@ -1399,7 +1399,7 @@ Throw(float yaw,int Tnum)
 		}
 	}
 
-    int i = 0;
+//    int i = 0;
 
     while (drop)
     {
