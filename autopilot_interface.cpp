@@ -755,6 +755,20 @@ WL_read_messages()
 						mavlink_msg_command_long_encode(255, 190, &disarm, &Inter_message.command_long);
 						int disarmlen = write_message(disarm);
 					}
+					if((Inter_message.command_long.command == 20))
+                    {
+                        mavlink_message_t RTLL;
+                        Inter_message.command_long.target_system = 01;
+                        Inter_message.command_long.target_component = 01;
+                        Inter_message.command_long.command = 20;
+                        mavlink_msg_command_long_encode(255,190,&RTLL,&Inter_message.command_long);
+                        for (int i = 0; i <6 ; ++i)
+                        {
+                            int RT = write_message(RTLL);
+                            usleep(20000);
+                        }
+
+                    }
 					break;
 				}
 
@@ -877,7 +891,7 @@ write_local_setpoint()
 	if ( len <= 0 )
 		fprintf(stderr,"WARNING: could not send POSITION_TARGET_LOCAL_NED \n");
 	else
-		printf("%lu POSITION_TARGET  = [ %f , %f , %f ] \n", write_count, sp.x, sp.y, sp.z);
+//		printf("%lu POSITION_TARGET  = [ %f , %f , %f ] \n", write_count, sp.x, sp.y, sp.z);
 	std::cout<<sp.type_mask<<std::endl;
 
 	return;
@@ -1364,7 +1378,7 @@ int
 Autopilot_Interface::
 Throw(float yaw,int Tnum)
 {
-	int local_alt = -10;
+	int local_alt = -8;
 	mavlink_set_position_target_local_ned_t locsp;
 	set_position(  target_ellipse_position[TargetNum].x, // [m]
 				   target_ellipse_position[TargetNum].y, // [m]
@@ -1372,13 +1386,33 @@ Throw(float yaw,int Tnum)
 				   locsp);
 	set_yaw(yaw,locsp);
 	update_local_setpoint(locsp);
+	while(1)
+    {
+        if(current_messages.local_position_ned.z+9>=0)
+        {
+            break;
+        } else
+        {
+            usleep(2000);
+        }
+    }
 
-	while(((current_messages.local_position_ned.z+11) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,locsp.x,locsp.y) >= 8))
+	while(((current_messages.local_position_ned.z+9) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,target_ellipse_position[TargetNum].x,target_ellipse_position[TargetNum].y) >= 6))
 	{
-        set_position(  target_ellipse_position[TargetNum].x, // [m]
-                       target_ellipse_position[TargetNum].y, // [m]
-                       local_alt, // [m]
-                       locsp);
+        float Disx = target_ellipse_position[TargetNum].x - current_messages.local_position_ned.x;
+        float Disy = target_ellipse_position[TargetNum].y - current_messages.local_position_ned.y;
+        float Adisx = fabsf(Disx);
+        float Adisy	= fabsf(Disy);
+
+        if(Adisx >= Adisy)
+        {
+            set_velocity(0.5*(Disx/Adisx),0.5*(Disy/Adisx),0,locsp);
+        }
+        else
+        {
+            set_velocity(0.5*(Disx/Adisy),0.5*(Disy/Adisy),0,locsp);
+        }
+        // SEND THE COMMAND
         set_yaw(yaw,locsp);
         update_local_setpoint(locsp);
         usleep(200000);
@@ -1410,13 +1444,17 @@ Throw(float yaw,int Tnum)
     	float disy = locy - pos.y;
     	float adisx = fabsf(disx);
     	float adisy	= fabsf(disy);
+//    	locx = 2*locx-pos.x;
+//    	locy = 2*locy - pos.y;
+//    	locsp.x = locx;
+//    	locsp.y = locy;
     	if(adisx >= adisy)
 		{
-			set_velocity(disx/adisx,disy/adisx,0,locsp);
+			set_velocity(0.5*(disx/adisx),0.5*(disy/adisx),0,locsp);
 		}
 		else
 		{
-			set_velocity(disx/adisy,disy/adisy,0,locsp);
+			set_velocity(0.5*(disx/adisy),0.5*(disy/adisy),0,locsp);
 		}
         set_yaw(yaw, // [rad]
                 locsp);
@@ -1424,17 +1462,17 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((fabsf(locpos.x-droptarget.locx) < 0.5)&&(fabsf(locpos.y-droptarget.locy) < 0.5)&&((locpos.z+10.5)>= 0))
+        if ((fabsf(locpos.x-droptarget.locx) < 0.3)&&(fabsf(locpos.y-droptarget.locy) < 0.3)&&((locpos.z+9)>= 0))
         {
             Set_Mode(05);
-            sleep(2);
+            sleep(1);
             Set_Mode(04);
             printf("input drop process!!!\n");
             // ------------------------------------------------------------------------------
             //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
             //	ServoId：AUX_OUT1-6 对应148-153/9-14
             // ------------------------------------------------------------------------------
-            usleep(100000);
+            sleep(2);
             int lenn = Servo_Control(11, 1700);
             Tnum = Tnum + 1;
             sleep(1);
@@ -1826,12 +1864,12 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
     if (ellipse_out.size() != 0){
         float dis = 7;
 		sort(ellipse_out.begin(),ellipse_out.end());
-		float e_x, e_y, locx, locy;
+		float e_x, e_y, locx, locy, c_x, c_y;
 		realtarget(api, ellipse_out[0], e_x, e_y);
-//		locx = api.current_messages.local_position_ned.x;
-//		locy = api.current_messages.local_position_ned.y;
-		locx = 0;
-		locy = 0;
+		locx = api.current_messages.local_position_ned.x;
+		locy = api.current_messages.local_position_ned.y;
+		c_x = e_x - 320;
+		c_y = e_y - 180;
 		if(abs(e_x - locx) < dis && abs(e_y - locy) < dis){
 			droptarget.locx = e_x;
 			droptarget.locy = e_y;
