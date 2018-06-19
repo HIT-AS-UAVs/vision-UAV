@@ -828,7 +828,7 @@ Send_WL_Global_Position(int Target_machine, mavlink_global_position_int_t Target
     mavlink_msg_global_position_int_encode(Target_machine,Target_machine,&Global_messgge,&Target_Global_Position);
 //    int Glolen = WL_write_message(Global_messgge);
 		Glolen = WL_write_message(Global_messgge);
-		while(Glolen <= 0)
+		if(Glolen <= 0)
 		{
 			printf("fail send wl message! try again! ");
 			Glolen = WL_write_message(Global_messgge);
@@ -1380,24 +1380,25 @@ Throw(float yaw,int Tnum)
 {
 	int local_alt = -8;
 	mavlink_set_position_target_local_ned_t locsp;
-	set_position(  target_ellipse_position[TargetNum].x, // [m]
-				   target_ellipse_position[TargetNum].y, // [m]
-				   local_alt, // [m]
-				   locsp);
-	set_yaw(yaw,locsp);
+	set_velocity(0, 0, 1, locsp);
+	set_yaw(yaw, locsp);
 	update_local_setpoint(locsp);
 	while(1)
     {
-        if(current_messages.local_position_ned.z+9>=0)
+        if((current_messages.local_position_ned.z+0.5-local_alt)>=0)
         {
-            break;
-        } else
+			set_velocity(0, 0, 0, locsp);
+			set_yaw(yaw, locsp);
+			update_local_setpoint(locsp);
+        	break;
+        }
+        else
         {
             usleep(2000);
         }
     }
 
-	while(((current_messages.local_position_ned.z+9) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,target_ellipse_position[TargetNum].x,target_ellipse_position[TargetNum].y) >= 6))
+	while(((current_messages.local_position_ned.z+9) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,target_ellipse_position[TargetNum].x,target_ellipse_position[TargetNum].y) >= 4))
 	{
         float Disx = target_ellipse_position[TargetNum].x - current_messages.local_position_ned.x;
         float Disy = target_ellipse_position[TargetNum].y - current_messages.local_position_ned.y;
@@ -1462,7 +1463,7 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((fabsf(locpos.x-droptarget.locx) < 0.3)&&(fabsf(locpos.y-droptarget.locy) < 0.3)&&((locpos.z+9)>= 0))
+        if ((fabsf(locpos.x-droptarget.locx) < 0.2)&&(fabsf(locpos.y-droptarget.locy) < 0.2)&&((locpos.z+9)>= 0))
         {
             Set_Mode(05);
             sleep(1);
