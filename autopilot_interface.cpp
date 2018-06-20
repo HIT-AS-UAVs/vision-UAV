@@ -1380,7 +1380,7 @@ Throw(float yaw,int Tnum)
 {
 	int local_alt = -8;
 	mavlink_set_position_target_local_ned_t locsp;
-	set_velocity(0, 0, 1, locsp);
+	set_velocity(0, 0, 0.5, locsp);
 	set_yaw(yaw, locsp);
 	update_local_setpoint(locsp);
 	while(1)
@@ -1398,8 +1398,8 @@ Throw(float yaw,int Tnum)
         }
     }
 
-	while(((current_messages.local_position_ned.z+9) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,target_ellipse_position[TargetNum].x,target_ellipse_position[TargetNum].y) >= 4))
-	{
+	while((fabsf(current_messages.local_position_ned.x-target_ellipse_position[TargetNum].x)>=1)||(fabsf(current_messages.local_position_ned.y-target_ellipse_position[TargetNum].y)>=1))
+     {
         float Disx = target_ellipse_position[TargetNum].x - current_messages.local_position_ned.x;
         float Disy = target_ellipse_position[TargetNum].y - current_messages.local_position_ned.y;
         float Adisx = fabsf(Disx);
@@ -1463,17 +1463,17 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((fabsf(locpos.x-droptarget.locx) < 0.2)&&(fabsf(locpos.y-droptarget.locy) < 0.2)&&((locpos.z+9)>= 0))
+        if ((fabsf(locpos.x-droptarget.locx) < 0.5)&&(fabsf(locpos.y-droptarget.locy) < 0.5)&&((locpos.z+8.5)>= 0))
         {
             Set_Mode(05);
-            sleep(1);
+            usleep(10000);
             Set_Mode(04);
             printf("input drop process!!!\n");
             // ------------------------------------------------------------------------------
             //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
             //	ServoId：AUX_OUT1-6 对应148-153/9-14
             // ------------------------------------------------------------------------------
-            sleep(2);
+            sleep(1);
             int lenn = Servo_Control(11, 1700);
             Tnum = Tnum + 1;
             sleep(1);
