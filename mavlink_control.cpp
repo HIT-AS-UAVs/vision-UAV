@@ -82,10 +82,10 @@ top (int argc, char **argv)
 #ifdef __APPLE__
     char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
-//    char *uart_name = (char*)"/dev/ttyTHS2";
+    char *uart_name = (char*)"/dev/ttyTHS2";
 //    char *WL_uart = (char*)"/dev/ttyS0";
-    char *uart_name = (char*)"/dev/ttyUSB0";
-    char *WL_uart = (char*)"/dev/ttyUSB1";
+//    char *uart_name = (char*)"/dev/ttyUSB0";
+    char *WL_uart = (char*)"/dev/ttyUSB0";
 #endif
     int baudrate = 57600;
 
@@ -291,22 +291,35 @@ commands(Autopilot_Interface &api)
                     if( XYdis< 20)
                     {
                         local_alt = -20;
+                        set_velocity(  0, // [m]
+                                       0, // [m]
+                                       1, // [m]
+                                       sp);
+                        sp.z = local_alt;
+                        api.update_local_setpoint(sp);
+                        while ((api.current_messages.local_position_ned.z+20.5)<=0)
+                        {
+                            api.update_local_setpoint(sp);
+                            usleep(200000);
+                        }
+                        set_velocity(0,0,0,sp);
+                        api.update_local_setpoint(sp);
                         // -------------------------------------------------------------------------
                         // 							设置位置/朝向
                         // -------------------------------------------------------------------------
                         float Disx = target_ellipse_position[TargetNum].x - api.current_messages.local_position_ned.x;
                         float Disy = target_ellipse_position[TargetNum].y - api.current_messages.local_position_ned.y;
-                        float Disz = -20 - api.current_messages.local_position_ned.z;
+//                        float Disz = -20 - api.current_messages.local_position_ned.z;
                         float Adisx = fabsf(Disx);
                         float Adisy = fabsf(Disy);
 
                         if (Adisx >= Adisy)
                         {
-                            set_velocity(Disx / Adisx, Disy / Adisx, Disz / Adisy, sp);
+                            set_velocity(0.5*(Disx / Adisx),0.5*( Disy / Adisx), 0, sp);
                         }
                         else
                         {
-                            set_velocity(Disx / Adisy, Disy / Adisy, Disz / Adisy, sp);
+                            set_velocity(0.5*(Disx / Adisy), 0.5*(Disy / Adisy), 0, sp);
                         }
                         set_yaw(yaw, // [rad]
                                 sp);
@@ -314,7 +327,7 @@ commands(Autopilot_Interface &api)
                         api.update_local_setpoint(sp);
 
                         float distance = Distance(pos.x, pos.y, pos.z, sp.x, sp.y, sp.z);
-                        if (distance < 4)
+                        if (distance < 8)
                         {
                             set_velocity(0, 0, 0, sp);
                             set_yaw(yaw, sp);

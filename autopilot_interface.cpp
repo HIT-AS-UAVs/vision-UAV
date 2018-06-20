@@ -1060,7 +1060,7 @@ toggle_offboard_control( bool flag )
     mavlink_msg_command_long_encode(255, 190, &Armmes, &Armdata);
     // Send the message
     int Armlen = serial_port->write_message(Armmes);
-    usleep(100);
+    sleep(3);
 
     //设置成AUTO模式，开始mission
     Set_Mode(03);
@@ -1378,10 +1378,11 @@ int
 Autopilot_Interface::
 Throw(float yaw,int Tnum)
 {
-	int local_alt = -8;
+    float local_alt = -8;
 	mavlink_set_position_target_local_ned_t locsp;
 	set_velocity(0, 0, 1, locsp);
 	set_yaw(yaw, locsp);
+	locsp.z = local_alt;
 	update_local_setpoint(locsp);
 	while(1)
     {
@@ -1394,11 +1395,14 @@ Throw(float yaw,int Tnum)
         }
         else
         {
+            set_velocity(0, 0, 1, locsp);
+            set_yaw(yaw, locsp);
+            update_local_setpoint(locsp);
             usleep(2000);
         }
     }
 
-	while(((current_messages.local_position_ned.z+9) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,target_ellipse_position[TargetNum].x,target_ellipse_position[TargetNum].y) >= 4))
+	while(((current_messages.local_position_ned.z+8.5) <= 0)||(XYDistance(current_messages.local_position_ned.x,current_messages.local_position_ned.y,target_ellipse_position[TargetNum].x,target_ellipse_position[TargetNum].y) >= 4))
 	{
         float Disx = target_ellipse_position[TargetNum].x - current_messages.local_position_ned.x;
         float Disy = target_ellipse_position[TargetNum].y - current_messages.local_position_ned.y;
@@ -1463,7 +1467,7 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((fabsf(locpos.x-droptarget.locx) < 0.2)&&(fabsf(locpos.y-droptarget.locy) < 0.2)&&((locpos.z+9)>= 0))
+        if ((fabsf(locpos.x-droptarget.locx) < 0.2)&&(fabsf(locpos.y-droptarget.locy) < 0.2)&&((locpos.z+8.5)>= 0))
         {
             Set_Mode(05);
             sleep(1);
