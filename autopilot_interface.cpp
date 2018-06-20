@@ -1877,7 +1877,7 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
 		c_x = 180 - ellipse_out[0].y;
 		c_y = ellipse_out[0].x - 320;
 		hdg = api.current_messages.global_position_int.hdg;
-		x_r = c_x * cos(hdg * 3.1415926 / 180 / 100) - c_y * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
+		x_r = c_x * cos(hdg * 3.1415926 / 180 / 100) - c_y * sin(hdg * 3.1415926 / 180 / 100);//单位是:像素
 		y_r = c_y * cos(hdg * 3.1415926 / 180 / 100) + c_x * sin(hdg * 3.1415926 / 180 / 100);
 		if(abs(e_x - locx) < dis && abs(e_y - locy) < dis){
 			droptarget.locx = e_x;
