@@ -1395,7 +1395,7 @@ Throw(float yaw,int Tnum)
         }
         else
         {
-            set_velocity(0, 0, 1, locsp);
+            set_velocity(0, 0, 0.5, locsp);
             set_yaw(yaw, locsp);
             update_local_setpoint(locsp);
             usleep(2000);
