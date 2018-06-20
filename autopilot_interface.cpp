@@ -1442,8 +1442,8 @@ Throw(float yaw,int Tnum)
 
     while (drop)
     {
-		float locx = -droptarget.x;
-		float locy = -droptarget.y;
+		float locx = droptarget.x;
+		float locy = droptarget.y;
     	mavlink_local_position_ned_t pos = current_messages.local_position_ned;
 //    	float disx = locx - pos.x;
 //    	float disy = locy - pos.y;
@@ -1467,7 +1467,7 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((adisx < 0.2)&&(adisy < 0.2))
+        if ((adisx < 10)&&(adisy < 10))
         {
             Set_Mode(05);
             usleep(10000);
@@ -1498,12 +1498,18 @@ Autopilot_Interface::
 ThrowF(float yaw,target* targetF)
 {
 	mavlink_set_position_target_global_int_t glosp;
+	mavlink_set_position_target_local_ned_t losp;
 	int T = 0;
 	//detect hight
-	float hight = 15;
+	float hight = 20;
 	Set_Mode(05);
 	usleep(400);
 	Set_Mode(04);
+	set_global_velocity(1,1,0,glosp);
+	set_velocity(1,1,0,losp);
+	update_local_setpoint(losp);
+	usleep(100);
+	update_global_setpoint(glosp);
 	usleep(400);
 	set_global_position(targetF->lat,targetF->lon,hight,glosp);
 	set_global_yaw(yaw,glosp);
@@ -1513,8 +1519,8 @@ ThrowF(float yaw,target* targetF)
 	while(updateellipse)
 	{
 		mavlink_global_position_int_t current_global = current_messages.global_position_int;
-		float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,targetF->lat,targetF->lon,hight);
-		if(distan < 5)
+		float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,targetF->lat,targetF->lon,hight*1000);
+		if(distan < 10)
 		{
 			sleep(1);
 			//updateellipse = false;
@@ -1522,6 +1528,7 @@ ThrowF(float yaw,target* targetF)
 		}
 		else
 		{
+			update_global_setpoint(glosp);
 			usleep(200000);
 
 		}
@@ -1533,16 +1540,16 @@ ThrowF(float yaw,target* targetF)
 
 		sleep(1);
 		TF++;
-		if (TF==10)
+		if (TF==15)
 		{
 			int TplusF = target_ellipse_position[TargetNum].T_N + target_ellipse_position[TargetNum].F_N;
-			if(TplusF <= 10 )
+			if(TplusF <= 5 )
 			{
 				break;
 			}
 			else
 			{
-					continue;
+				continue;
 			}
 		}
 		else

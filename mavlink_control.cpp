@@ -517,7 +517,7 @@ commands(Autopilot_Interface &api)
             {
                 usleep(100000);
             }
-            if((api.current_messages.mission_item_reached.seq == 5)&&(TNum < 3))
+            if((api.current_messages.mission_item_reached.seq == 4)&&(TNum < 3))
             {
                 updateellipse = true;
                 switch (ellipse_F.size())
