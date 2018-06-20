@@ -1442,24 +1442,24 @@ Throw(float yaw,int Tnum)
 
     while (drop)
     {
-		float locx = droptarget.locx;
-		float locy = droptarget.locy;
+		float locx = -droptarget.x;
+		float locy = -droptarget.y;
     	mavlink_local_position_ned_t pos = current_messages.local_position_ned;
-    	float disx = locx - pos.x;
-    	float disy = locy - pos.y;
-    	float adisx = fabsf(disx);
-    	float adisy	= fabsf(disy);
+//    	float disx = locx - pos.x;
+//    	float disy = locy - pos.y;
+    	float adisx = fabsf(locx);
+    	float adisy	= fabsf(locy);
 //    	locx = 2*locx-pos.x;
 //    	locy = 2*locy - pos.y;
 //    	locsp.x = locx;
 //    	locsp.y = locy;
     	if(adisx >= adisy)
 		{
-			set_velocity(0.5*(disx/adisx),0.5*(disy/adisx),0,locsp);
+			set_velocity(0.3*(locx /adisx),0.3*(locy/adisx),0,locsp);
 		}
 		else
 		{
-			set_velocity(0.5*(disx/adisy),0.5*(disy/adisy),0,locsp);
+			set_velocity(0.3*(locx/adisy),0.3*(locy/adisy),0,locsp);
 		}
         set_yaw(yaw, // [rad]
                 locsp);
@@ -1467,7 +1467,7 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((fabsf(locpos.x-droptarget.locx) < 0.2)&&(fabsf(locpos.y-droptarget.locy) < 0.2)&&((locpos.z+8.5)>= 0))
+        if ((adisx < 0.2)&&(adisy < 0.2))
         {
             Set_Mode(05);
             usleep(10000);
