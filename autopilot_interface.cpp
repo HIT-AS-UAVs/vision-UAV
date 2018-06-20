@@ -1869,17 +1869,25 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
     if (ellipse_out.size() != 0){
         float dis = 7;
 		sort(ellipse_out.begin(),ellipse_out.end());
-		float e_x, e_y, locx, locy, c_x, c_y;
+		float e_x, e_y, locx, locy, c_x, c_y, x_r, y_r;
+		uint16_t hdg;
 		realtarget(api, ellipse_out[0], e_x, e_y);
 		locx = api.current_messages.local_position_ned.x;
 		locy = api.current_messages.local_position_ned.y;
-		c_x = e_x - 320;
-		c_y = e_y - 180;
+		c_x = 180 - ellipse_out[0].y;
+		c_y = ellipse_out[0].x - 320;
+		hdg = api.current_messages.global_position_int.hdg;
+		x_r = c_x * cos(hdg * 3.1415926 / 180 / 100) - c_y * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
+		y_r = c_y * cos(hdg * 3.1415926 / 180 / 100) + c_x * sin(hdg * 3.1415926 / 180 / 100);
 		if(abs(e_x - locx) < dis && abs(e_y - locy) < dis){
 			droptarget.locx = e_x;
 			droptarget.locy = e_y;
+			droptarget.x = x_r;
+			droptarget.y = y_r;
 			cout << "target_x" << droptarget.locx << endl;
 			cout << "target_y" << droptarget.locy << endl;
+            cout << "cam_x" << droptarget.x << endl;
+            cout << "cam_y" << droptarget.y << endl;
 		} else{
 			cout << "target_x" << droptarget.locx << endl;
 			cout << "target_y" << droptarget.locy << endl;
