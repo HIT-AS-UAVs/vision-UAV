@@ -1060,7 +1060,7 @@ toggle_offboard_control( bool flag )
     mavlink_msg_command_long_encode(255, 190, &Armmes, &Armdata);
     // Send the message
     int Armlen = serial_port->write_message(Armmes);
-    usleep(100);
+    sleep(3);
 
     //设置成AUTO模式，开始mission
     Set_Mode(03);
@@ -1378,10 +1378,11 @@ int
 Autopilot_Interface::
 Throw(float yaw,int Tnum)
 {
-	int local_alt = -8;
+    float local_alt = -8;
 	mavlink_set_position_target_local_ned_t locsp;
 	set_velocity(0, 0, 0.5, locsp);
 	set_yaw(yaw, locsp);
+	locsp.z = local_alt;
 	update_local_setpoint(locsp);
 	while(1)
     {
@@ -1394,6 +1395,9 @@ Throw(float yaw,int Tnum)
         }
         else
         {
+            set_velocity(0, 0, 1, locsp);
+            set_yaw(yaw, locsp);
+            update_local_setpoint(locsp);
             usleep(2000);
         }
     }
@@ -1463,7 +1467,7 @@ Throw(float yaw,int Tnum)
         update_local_setpoint(locsp);
         mavlink_local_position_ned_t locpos = current_messages.local_position_ned;
 
-        if ((fabsf(locpos.x-droptarget.locx) < 0.5)&&(fabsf(locpos.y-droptarget.locy) < 0.5)&&((locpos.z+8.5)>= 0))
+        if ((fabsf(locpos.x-droptarget.locx) < 0.2)&&(fabsf(locpos.y-droptarget.locy) < 0.2)&&((locpos.z+8.5)>= 0))
         {
             Set_Mode(05);
             usleep(10000);
@@ -1865,17 +1869,25 @@ void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coor
     if (ellipse_out.size() != 0){
         float dis = 7;
 		sort(ellipse_out.begin(),ellipse_out.end());
-		float e_x, e_y, locx, locy, c_x, c_y;
+		float e_x, e_y, locx, locy, c_x, c_y, x_r, y_r;
+		uint16_t hdg;
 		realtarget(api, ellipse_out[0], e_x, e_y);
 		locx = api.current_messages.local_position_ned.x;
 		locy = api.current_messages.local_position_ned.y;
-		c_x = e_x - 320;
-		c_y = e_y - 180;
+		c_x = 180 - ellipse_out[0].y;
+		c_y = ellipse_out[0].x - 320;
+		hdg = api.current_messages.global_position_int.hdg;
+		x_r = c_x * cos(hdg * 3.1415926 / 180 / 100) - c_y * sin(hdg * 3.1415926 / 180 / 100);//单位是:m
+		y_r = c_y * cos(hdg * 3.1415926 / 180 / 100) + c_x * sin(hdg * 3.1415926 / 180 / 100);
 		if(abs(e_x - locx) < dis && abs(e_y - locy) < dis){
 			droptarget.locx = e_x;
 			droptarget.locy = e_y;
+			droptarget.x = x_r;
+			droptarget.y = y_r;
 			cout << "target_x" << droptarget.locx << endl;
 			cout << "target_y" << droptarget.locy << endl;
+            cout << "cam_x" << droptarget.x << endl;
+            cout << "cam_y" << droptarget.y << endl;
 		} else{
 			cout << "target_x" << droptarget.locx << endl;
 			cout << "target_y" << droptarget.locy << endl;
