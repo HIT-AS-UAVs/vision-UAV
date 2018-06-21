@@ -532,6 +532,7 @@ commands(Autopilot_Interface &api)
                         //send RTL to all UAVs
                         api.RTL();
                         ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
+                        target_ellipse_position[ellipse_F[0].num].F_N = target_ellipse_position[ellipse_F[0].num].T_N = 0;
                         api.ThrowF(yaw,&ellipse_F[0]);
                         flag = false;
                         break;
@@ -743,6 +744,8 @@ void videothread(Autopilot_Interface& api){
     );
 
 Mat1b gray, gray_big;
+ofstream outf;
+outf.open("hight_and_r.txt");
 VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 360));
 	while(true) {
 
@@ -772,14 +775,6 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
                 ellipse_out1 = ellipse_TF;
             } else
                 ellipse_out1 = ellipse_out;
-                if(!myfile){
-                    cout<<"error!";
-                } else{
-                    for(auto &p:ellipse_out1){
-                        myfile<<"ellipse_r:"<<p.a<<endl;
-                        myfile<<"UAV_Hight:"<< - api.current_messages.local_position_ned.z<<endl;
-                    }
-                }
             for (auto &p:contours) {
                 vector<vector<Point> > contours1;
                 contours1.push_back(p);
@@ -824,6 +819,10 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
             <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
         cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl<<"drop:"<<drop<<endl;
         cout<<"target_Num:"<<TargetNum<<endl;
+        for(auto &p:ellipse_out1){
+            outf<<"椭圆半径："<<p.a<<endl;
+            outf<<"当前高度"<<-api.current_messages.local_position_ned.z<<endl;
+        }
 //		namedWindow("原图",1);
 //		imshow("原图", image);
 		namedWindow("缩小",1);

@@ -1479,6 +1479,9 @@ Throw(float yaw,int Tnum)
             // ------------------------------------------------------------------------------
             sleep(1);
             int lenn = Servo_Control(11, 1700);
+            ofstream fout("little_ellipse.txt");
+            fout<<"droptarget_a:"<<droptarget.a<<endl;
+            fout.close();
             Tnum = Tnum + 1;
             sleep(1);
             drop = false;
