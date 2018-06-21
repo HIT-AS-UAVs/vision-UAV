@@ -530,11 +530,12 @@ commands(Autopilot_Interface &api)
                     case 1:
                     {
                         //send RTL to all UAVs
-                        api.RTL();
+
                         ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
                         target_ellipse_position[ellipse_F[0].num].F_N = target_ellipse_position[ellipse_F[0].num].T_N = 0;
                         api.ThrowF(yaw,&ellipse_F[0]);
                         flag = false;
+                        api.RTL();
                         break;
                     }
                     default:
@@ -552,15 +553,20 @@ commands(Autopilot_Interface &api)
                             int Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
                             usleep(2000);
                             //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+                            target_ellipse_position[ellipse_F[1].num].T_N = target_ellipse_position[ellipse_F[1].num].F_N = 0;
+                            ellipse_F[1].F_N = ellipse_F[1].T_N = 0;
                             api.ThrowF(yaw,&ellipse_F[1]);
                             TNum = TNum + 1;
                             flag = false;
                         }
                         else if(TNum == 2)
                         {
-                            api.RTL();
+
                             //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
+                            ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
+                            target_ellipse_position[ellipse_F[0].num].F_N = target_ellipse_position[ellipse_F[0].num].T_N = 0;
                             api.ThrowF(yaw,&ellipse_F[0]);
+                            api.RTL();
                             flag = false;
                         }
                         else
