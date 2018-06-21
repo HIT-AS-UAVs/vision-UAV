@@ -1074,7 +1074,7 @@ toggle_offboard_control( bool flag )
     mission_start.command = 300;
     mission_start.confirmation = 1;
     mission_start.param1 = 1;
-    mission_start.param2 = 8;
+    mission_start.param2 = 100;
 
     mavlink_message_t Mission_starmessage;
     mavlink_msg_command_long_encode(255, 190, &Mission_starmessage, &mission_start);
@@ -1398,7 +1398,7 @@ Throw(float yaw,int Tnum)
             set_velocity(0, 0, 0.5, locsp);
             set_yaw(yaw, locsp);
             update_local_setpoint(locsp);
-            usleep(2000);
+            usleep(200000);
         }
     }
 
@@ -1540,7 +1540,7 @@ ThrowF(float yaw,target* targetF)
 
 		sleep(1);
 		TF++;
-		if (TF==15)
+		if (TF==10)
 		{
 			int TplusF = target_ellipse_position[TargetNum].T_N + target_ellipse_position[TargetNum].F_N;
 			if(TplusF <= 5 )
@@ -1558,7 +1558,7 @@ ThrowF(float yaw,target* targetF)
 		}
 
 	}
-	if (targetF->T_N >= 50)
+	if (target_ellipse_position[TargetNum].T_N >= 50)
     {
         T = Throw(yaw,2);
     }
