@@ -329,7 +329,7 @@ public:
     void update_global_setpoint(mavlink_set_position_target_global_int_t set_global_point);
 
     int Servo_Control(float ServoId, float PWM_Value);
-    void RTL();
+    void RTL(int sysnum);
     void read_messages();
     int  write_message(mavlink_message_t message);
 
@@ -391,6 +391,7 @@ private:
 
 /*将当前时刻看到的所有可能为目标的椭圆存放在容器中*/
 void possible_ellipse(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse);
+void possible_ellipse_r(Autopilot_Interface& api, vector<coordinate>& ellipse_out, vector<target>& target_ellipse);
 void resultTF(Autopilot_Interface& api, vector<target>& ellipse_in, vector<target>& ellipse_1, vector<target>& ellipse_0);
 void getdroptarget(Autopilot_Interface& api, coordinate& droptarget, vector<coordinate>& ellipse_out);
 void realtarget(Autopilot_Interface& api, coordinate& cam, float& x, float& y);

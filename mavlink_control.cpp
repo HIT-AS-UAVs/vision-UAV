@@ -164,10 +164,10 @@ top (int argc, char **argv)
     commands(autopilot_interface);
 
 //   commands(autopilot_interface);
-    while(1)
-    {
-               sleep(1);
-    }
+//    while(1)
+//    {
+//               sleep(1);
+//    }
     // --------------------------------------------------------------------------
     //   THREAD and PORT SHUTDOWN
     // --------------------------------------------------------------------------
@@ -195,6 +195,8 @@ top (int argc, char **argv)
 void
 commands(Autopilot_Interface &api)
 {
+    ofstream outf2;
+    outf2.open("dropp.txt");
     mavlink_global_position_int_t gp;
     float dist, distance, XYdis;
     bool flag = true;
@@ -204,47 +206,51 @@ commands(Autopilot_Interface &api)
     stable = false;
     updateellipse = false;
     drop = false;
+    int detect = 0;
     while(flag)
     {
-        if(api.Inter_message.command_long.command == 400)
+        if((api.Inter_message.command_long.command == 400)&&(api.Inter_message.command_long.param1 == 1))
         {
             api.enable_offboard_control();
+            outf2<<"enable_offboard!"<<endl;
             break;
         }
         else
         {
             usleep(200000);
+
         }
     }
     while (flag)
     {
-        if(api.current_messages.mission_item_reached.seq >= 1)
+        if(api.current_messages.mission_item_reached.seq == 6)
         {
+
+            outf2<<"api.current_messages.mission_item_reached.seq :"<<api.current_messages.mission_item_reached.seq<<endl;
             break;
         }
         else
         {
-            usleep(2000);
+            usleep(20000);
         }
     }
     //视觉定位线程,
     thread t1(videothread, ref(api));//ref可以使autopilot_interface引用被正确传递给videothread.
-
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
     //   设置guided（offboard）模式/解锁、起飞
     // --------------------------------------------------------------------------
-    usleep(100); // give some time to let it sink in
+    usleep(1000); // give some time to let it sink in
 
     // --------------------------------------------------------------------------
     //   SEND OFFBOARD COMMANDS
     // --------------------------------------------------------------------------
-    printf("Start Mission!\n");
 //sleep(100);
     while(flag)
     {
         gp = api.global_position;
         stable = false;
+        goback = true;
         updateellipse = false;
         float yaw;
         //设置触发节点
@@ -253,19 +259,22 @@ commands(Autopilot_Interface &api)
             // --------------------------------------------------------------------------
             // 设置guided模式
             // --------------------------------------------------------------------------
+            sleep(1);
+            updateellipse = true;
             api.Set_Mode(05);
-            usleep(100);
+            usleep(100000);
             api.Set_Mode(04);
             usleep(100);
-
-            //设置成为只更新椭圆位置,不添加新的椭圆坐标
-            updateellipse = true;
+//            updateellipse = false;
+//            sleep(2);
+//            设置成为只更新椭圆位置,不添加新的椭圆坐标
+//            updateellipse = true;
             mavlink_set_position_target_local_ned_t sp;
             //现在用当前高度,最终高度确定时使用
-            float local_alt = -gp.relative_alt/1000.0;
+            float local_alt = -gp.relative_alt / 1000.0;
             sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
             yaw = D2R(gp.hdg);
-            while(goback)
+            while (goback)
             {
                 // --------------------------------------------------------------------------
                 // 给定局部坐标(local_ned)位置，并执行
@@ -274,67 +283,103 @@ commands(Autopilot_Interface &api)
                 // -------------------------------------------------------------------------
                 // 							设置位置/朝向
                 // -------------------------------------------------------------------------
-                set_position(  target_ellipse_position[TargetNum].x, // [m]
-                               target_ellipse_position[TargetNum].y, // [m]
-                               local_alt, // [m]
-                               sp);
-                set_yaw( yaw, // [rad]
-                         sp     );
+                set_position(target_ellipse_position[TargetNum].locx, // [m]
+                             target_ellipse_position[TargetNum].locy, // [m]
+                             local_alt, // [m]
+                             sp);
+                set_yaw(yaw, // [rad]
+                        sp);
 
                 // SEND THE COMMAND
                 api.update_local_setpoint(sp);
+                sleep(4);
 
-                while(goback)
+                mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
+                while((fabsf(api.current_messages.local_position_ned.x-target_ellipse_position[TargetNum].locx)>=1)||(fabsf(api.current_messages.local_position_ned.y-target_ellipse_position[TargetNum].locy)>=1))
                 {
-                    mavlink_local_position_ned_t pos = api.current_messages.local_position_ned;
-                    float XYdis = XYDistance(pos.x,pos.y,sp.x,sp.y);
-                    if( XYdis< 20)
-                    {
-                        local_alt = -20;
-                        set_velocity(  0, // [m]
-                                       0, // [m]
-                                       1, // [m]
-                                       sp);
-                        sp.z = local_alt;
-                        api.update_local_setpoint(sp);
-                        while ((api.current_messages.local_position_ned.z+20.5)<=0)
-                        {
-                            api.update_local_setpoint(sp);
-                            usleep(200000);
-                        }
-                        set_velocity(0,0,0,sp);
-                        api.update_local_setpoint(sp);
-                        // -------------------------------------------------------------------------
-                        // 							设置位置/朝向
-                        // -------------------------------------------------------------------------
-                        float Disx = target_ellipse_position[TargetNum].x - api.current_messages.local_position_ned.x;
-                        float Disy = target_ellipse_position[TargetNum].y - api.current_messages.local_position_ned.y;
-//                        float Disz = -20 - api.current_messages.local_position_ned.z;
-                        float Adisx = fabsf(Disx);
-                        float Adisy = fabsf(Disy);
+                    float Disx = target_ellipse_position[TargetNum].locx - pos.x;
+                    float Disy = target_ellipse_position[TargetNum].locy - pos.y;
+                    float Adisx = fabsf(Disx);
+                    float Adisy	= fabsf(Disy);
+                    float Disz = local_alt - pos.z;
 
-                        if (Adisx >= Adisy)
+                    while(fabsf(Disz)>=0.5)
+                    {
+                        if(fabsf(Disz)<=0.2)
                         {
-                            set_velocity(0.5*(Disx / Adisx),0.5*( Disy / Adisx), 0, sp);
+                            break;
+                        }
+                        set_velocity(0,0,Disz/(fabsf(Disz)),sp);
+                        api.update_local_setpoint(sp);
+                        usleep(200000);
+                        pos = api.current_messages.local_position_ned;
+                        Disz = local_alt - pos.z;
+
+                    }
+                    if(Adisx >= Adisy)
+                    {
+                        set_velocity(Disx/Adisx,Disy/Adisx,0,sp);
+                    }
+                    else
+                    {
+                        set_velocity(Disx/Adisy,Disy/Adisy,0,sp);
+                    }
+                    set_yaw(yaw,sp);
+                    api.update_local_setpoint(sp);
+                    usleep(50000);
+                    pos = api.current_messages.local_position_ned;
+                }
+
+                    float Elocx = target_ellipse_position[TargetNum].x;
+                    float Elocy = target_ellipse_position[TargetNum].y;
+
+                    float Alocx = fabsf(Elocx);
+                    float Alocy = fabsf(Elocy);
+
+                    int j = 0;
+
+                    while ((Alocy > 10) || (Alocx > 10))
+                    {
+                        if (Alocx >= Alocy)
+                        {
+                            set_velocity(0.5 * (Elocx / Alocx), 0.5 * (Elocy / Alocx), 0, sp);
                         }
                         else
                         {
-                            set_velocity(0.5*(Disx / Adisy), 0.5*(Disy / Adisy), 0, sp);
+                            set_velocity(0.5 * (Elocx / Alocy), 0.5 * (Elocy / Alocy), 0, sp);
                         }
-                        set_yaw(yaw, // [rad]
-                                sp);
-                        // SEND THE COMMAND
+                        set_yaw(yaw,sp);
                         api.update_local_setpoint(sp);
+                        usleep(200000);
+                        Elocx = target_ellipse_position[TargetNum].x;
+                        Elocy = target_ellipse_position[TargetNum].y;
+                        Alocx = fabsf(Elocx);
+                        Alocy = fabsf(Elocy);
+                        outf2<<"Elocx: "<<Elocx<<endl<<"Elocy: "<<Elocy<<endl;
 
-                        float distance = Distance(pos.x, pos.y, pos.z, sp.x, sp.y, sp.z);
-                        if (distance < 8)
+                        j = j + 1;
+                        if(j >= 20)
                         {
-                            set_velocity(0, 0, 0, sp);
-                            set_yaw(yaw, sp);
-                            api.update_local_setpoint(sp);
+                            j = 0;
+                            break;
+                        }
 
+                    }
+
+                    local_alt = -30;
+                    set_velocity(0, 0, 1, sp);
+//
+                    while (goback)
+                    {
+                        if (api.current_messages.local_position_ned.z - local_alt + 0.5 > 0)
+                        {
                             int TF = 0;
                             stable = true;
+                            set_velocity(0, 0, 0, sp);
+                            api.update_local_setpoint(sp);
+                            usleep(2000);
+                            set_velocity(0, 0, 0, sp);
+                            api.update_local_setpoint(sp);
                             //------------------------------------------------------------------------------
                             //    调用判断T/F的函数
                             //    若为T则将当前全局坐标系发送给从机[TagetNum+1]
@@ -342,7 +387,6 @@ commands(Autopilot_Interface &api)
                             // 需添加固定时间内未检测到任何东西直接break
                             while (stable)
                             {
-                                sleep(1);
                                 TF++;
                                 if (TF == 10)
                                 {
@@ -359,32 +403,64 @@ commands(Autopilot_Interface &api)
                                 }
                                 else
                                 {
-                                    ;
+                                    sleep(1);
+                                    Elocx = target_ellipse_position[TargetNum].x;
+                                    Elocy = target_ellipse_position[TargetNum].y;
+                                    Alocx = fabsf(Elocx);
+                                    Alocy = fabsf(Elocy);
+                                    while ((Alocy > 10) || (Alocx > 10))
+                                    {
+                                        if (Alocx >= Alocy)
+                                        {
+                                            set_velocity(0.3 * (Elocx / Alocx), 0.3 * (Elocy / Alocx), 0, sp);
+                                        }
+                                        else
+                                        {
+                                            set_velocity(0.3 * (Elocx / Alocy), 0.3 * (Elocy / Alocy), 0, sp);
+                                        }
+                                        set_yaw(yaw,sp);
+                                        api.update_local_setpoint(sp);
+                                        usleep(200000);
+                                        Elocx = target_ellipse_position[TargetNum].x;
+                                        Elocy = target_ellipse_position[TargetNum].y;
+                                        Alocx = fabsf(Elocx);
+                                        Alocy = fabsf(Elocy);
+
+                                        j = j + 1;
+                                        if(j >= 5)
+                                        {
+                                            j = 0;
+                                            break;
+                                        }
+
+                                    }
                                 }
                             }
+                            //检测T\F
                             if (ellipse_T.size() > TNum)
                             {
-                                if ((ellipse_T.size() == 1) && (TNum == 0))
+                                if ((ellipse_T.size() == 1) || (ellipse_T.size()  == 2))
                                 {
                                     TNum = api.Throw(yaw, TNum);
                                     mavlink_global_position_int_t Target_Global_Position;
                                     Target_Global_Position = api.current_messages.global_position_int;
-                                    if (Target_Global_Position.lat < 10000)
-                                    {
-                                        Target_Global_Position = api.current_messages.global_position_int;
-                                    }
-                                    //后续添加判断采集全局坐标的正确性,如果错误重新选择
-                                    int Globallen = api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
+                                    outf2<<"Targetposition_lat: "<<Target_Global_Position.lat<<endl
+                                         <<"Targetposition_lon: "<<Target_Global_Position.lon<<endl
+                                         <<"machine_num:"<<TNum<<endl;
+                                    outf2<<"Throw "<<endl;
+//                                    int Globallen = api.Send_WL_Global_Position(TNum + 40, Target_Global_Position);
                                     int targetnum = TargetNum;
                                     TargetNum = TargetNum + 1;
-                                    if(TargetNum <= targetnum)
+                                    if (TargetNum <= targetnum)
                                     {
-                                        TargetNum = targetnum+1;
+                                        TargetNum = targetnum + 1;
                                     }
                                     else
                                     {
                                         ;
                                     }
+                                    detect = 1;
+
                                 }
                                 else
                                 {
@@ -395,116 +471,133 @@ commands(Autopilot_Interface &api)
                                         Target_Global_Position = api.current_messages.global_position_int;
                                     }
 
-                                    int Globallen = api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
-                                    // ------------------------------------------------------------------------------
-                                    //	驱动舵机：<PWM_Value:1100-1900> 打开：1700、关闭：1250
-                                    //	ServoId：AUX_OUT1-6 对应148-153/9-14
-                                    // ------------------------------------------------------------------------------
-//                                    api.Servo_Control(11, 1700);
+                                    int Globallen = api.Send_WL_Global_Position(TNum + 40, Target_Global_Position);
+                                    outf2<<"Targetposition_lat: "<<Target_Global_Position.lat<<endl
+                                         <<"Targetposition_lon: "<<Target_Global_Position.lon<<endl
+                                         <<"machine_num:"<<TNum<<endl;
+
                                     TNum = TNum + 1;
                                     TargetNum = TargetNum + 1;
+                                    detect = 1;
+
                                 }
 
                             }
                             else
                             {
                                 TargetNum = TargetNum + 1;
+
+                                detect = 1;
                             }
                             stable = false;
                             drop = false;
-//                            goback = false;
-                            break;
-
                         }
                         else
                         {
+
+
+                            api.update_local_setpoint(sp);
                             usleep(20000);
+
                         }
+
+                        if(detect==1)
+                        {
+                            if (TNum == 3)
+                            {
+//                                api.Set_Mode(03);
+//                                sleep(2);
+//                                api.Set_Mode(03);
+//                                sleep(1);
+                                goback = false;
+                                flag = false;
+                                break;
+                            }
+                            else
+                            {
+                                //判定是否执行完已有目标
+                                if (target_ellipse_position.size() <= TargetNum)
+                                {
+                                    goback = false;
+                                    TargetNum = target_ellipse_position.size();
+                                    usleep(100);
+                                    outf2<<"goback: "<<goback<<endl;
+                                }
+                                else
+                                {
+                                    goback = true;
+                                    usleep(100);
+                                    outf2<<"goback: "<<goback<<endl;
+                                    break;
+                                }
+                            }
+                            detect = 0;
+                        }
+
+
                     }
-                    else
-                    {
-                        sleep(1);
-                    }
-                }
-//                goback = true;
-                if(TNum == 3)
+
+                printf("\n");
+
+                if (goback == false)
                 {
-                    flag = false;
-                    break;
-                }
-                else
-                {
-                    //判定是否执行完已有目标
-                    if (target_ellipse_position.size() == TargetNum)
-                    {
-                        goback = false;
-                        usleep(100);
-                    }
-                    else
-                    {
-                        goback = true;
-                        usleep(100);
-                    }
-                }
+                    // -------------------------------------------------------------------------
+                    // --------------- 全局坐标系下设置目标位置坐标 -------------------------------
+                    // -------------------------------------------------------------------------
+                    mavlink_set_position_target_global_int_t gsp;
+                    mavlink_global_position_int_t ggsp = gp; //api.global_position;
+                    mavlink_set_position_target_global_int_t global_int_pos;
+                    global_int_pos.lat_int = ggsp.lat;
+                    global_int_pos.lon_int = ggsp.lon;
+                    global_int_pos.alt = ggsp.alt;
+                    global_int_pos.vx = ggsp.vx;
+                    global_int_pos.vy = ggsp.vy;
+                    global_int_pos.vz = ggsp.vz;
+                    float gyaw = D2R(ggsp.hdg);
+                    global_int_pos.yaw = gyaw;
+                    gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
+                    gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
 
-            }
-
-            printf("\n");
-
-            if(goback == false)
-            {
-                // -------------------------------------------------------------------------
-                // --------------- 全局坐标系下设置目标位置坐标 -------------------------------
-                // -------------------------------------------------------------------------
-                mavlink_set_position_target_global_int_t gsp;
-                mavlink_global_position_int_t ggsp = gp; //api.global_position;
-                mavlink_set_position_target_global_int_t global_int_pos;
-                global_int_pos.lat_int = ggsp.lat;
-                global_int_pos.lon_int = ggsp.lon;
-                global_int_pos.alt = ggsp.alt;
-                global_int_pos.vx = ggsp.vx;
-                global_int_pos.vy = ggsp.vy;
-                global_int_pos.vz = ggsp.vz;
-                float gyaw = D2R(ggsp.hdg);
-                global_int_pos.yaw = gyaw;
-                gsp.time_boot_ms = (uint32_t) (get_time_usec() / 1000);
-                gsp.coordinate_frame = MAV_FRAME_GLOBAL_RELATIVE_ALT_INT;
-
-                // ------------------------------------------------------------------------
-                //			配置设定巡视高度
-                // ------------------------------------------------------------------------
-                int32_t High = 25;
-                //set global_point 经度，纬度，相对home高度
-                set_global_position(global_int_pos.lat_int,
-                                    global_int_pos.lon_int,
-                                    High,
-                                    gsp);
+                    // ------------------------------------------------------------------------
+                    //			配置设定巡视高度
+                    // ------------------------------------------------------------------------
+                    int32_t High = 33;
+                    //set global_point 经度，纬度，相对home高度
+                    set_global_position(global_int_pos.lat_int,
+                                        global_int_pos.lon_int,
+                                        High,
+                                        gsp);
 //				set_global_yaw(gyaw,
 //						       gsp);
 
-                api.update_global_setpoint(gsp);
-                while(updateellipse)
-                {
-                    mavlink_global_position_int_t current_global = api.global_position;
-                    float distan = Distance(current_global.lat,current_global.lon,current_global.relative_alt,gp.lat,gp.lon,gp.relative_alt);
-                    if(distan < 8)
+                    api.update_global_setpoint(gsp);
+                    while (updateellipse)
                     {
-                        usleep(200);
-                        goback = true;
-                        api.Set_Mode(03);
-                        sleep(2);
-                        api.Set_Mode(03);
-                        sleep(2);
-                        updateellipse = false;
-                        break;
+                        mavlink_global_position_int_t current_global = api.global_position;
+                        float distan = Distance(current_global.lat, current_global.lon, gp.relative_alt,
+                                                gp.lat, gp.lon, gp.relative_alt);
+                        if (distan < 5)
+                        {
+                            usleep(200);
+//                            goback = true;
+                            api.Set_Mode(03);
+                            usleep(100);
+                            api.Set_Mode(03);
+                            sleep(1);
+                            updateellipse = false;
+                            outf2<<"back to sp"<<endl;
+                            break;
+                        }
+                        else
+                        {
+                            api.update_global_setpoint(gsp);
+                            usleep(200000);
+                        }
                     }
-                    else
-                    {
-                        usleep(200000);
-                    }
-                }
-            }
 
+                }
+
+            }
         }
         else
         {
@@ -515,10 +608,12 @@ commands(Autopilot_Interface &api)
             }
             else
             {
-                usleep(100000);
+                usleep(10000);
             }
-            if((api.current_messages.mission_item_reached.seq == 4)&&(TNum < 3))
+            if((api.current_messages.mission_item_reached.seq == 11 ))
             {
+                flag = false;
+                outf2<<"drop F"<<endl;
                 updateellipse = true;
                 switch (ellipse_F.size())
                 {
@@ -531,11 +626,11 @@ commands(Autopilot_Interface &api)
                     {
                         //send RTL to all UAVs
 
-                        ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
-                        target_ellipse_position[ellipse_F[0].num].F_N = target_ellipse_position[ellipse_F[0].num].T_N = 0;
-                        api.ThrowF(yaw,&ellipse_F[0]);
+//                        ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
+//                        target_ellipse_position[ellipse_F[0].num].F_N = target_ellipse_position[ellipse_F[0].num].T_N = 0;
+//                        api.ThrowF(yaw,&ellipse_F[0]);
                         flag = false;
-                        api.RTL();
+//                        api.RTL(40);
                         break;
                     }
                     default:
@@ -550,12 +645,18 @@ commands(Autopilot_Interface &api)
                             Target_Global_Position.lon = ellipse_F[0].lon;
                             uint16_t hdg1= R2D(yaw);
                             Target_Global_Position.hdg = hdg1;
-                            int Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
+//                            int Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
                             usleep(2000);
                             //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                            target_ellipse_position[ellipse_F[1].num].T_N = target_ellipse_position[ellipse_F[1].num].F_N = 0;
-                            ellipse_F[1].F_N = ellipse_F[1].T_N = 0;
-                            api.ThrowF(yaw,&ellipse_F[1]);
+//                            target_ellipse_position[ellipse_F[1].num].T_N = target_ellipse_position[ellipse_F[1].num].F_N = 0;
+//                            ellipse_F[1].F_N = ellipse_F[1].T_N = 0;
+//                            api.ThrowF(yaw,&ellipse_F[1]);
+                            TNum = TNum + 1;
+                            Target_Global_Position.lat = ellipse_F[1].lat;
+                            Target_Global_Position.lon = ellipse_F[1].lon;
+//                            uint16_t hdg1= R2D(yaw);
+                            Target_Global_Position.hdg = hdg1;
+//                            Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
                             TNum = TNum + 1;
                             flag = false;
                         }
@@ -563,10 +664,16 @@ commands(Autopilot_Interface &api)
                         {
 
                             //设置成guided模式,到达F中T的概率第二高的位置,到达指定位置后,再次确定T||F,决定投或者不投
-                            ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
-                            target_ellipse_position[ellipse_F[0].num].F_N = target_ellipse_position[ellipse_F[0].num].T_N = 0;
-                            api.ThrowF(yaw,&ellipse_F[0]);
-                            api.RTL();
+//                            ellipse_F[0].T_N = ellipse_F[0].F_N = ellipse_F[0].possbile = 0;
+//                            target_ellipse_position[ellipse_F[0].num].F_N = target_ellipse_position[ellipse_F[0].num].T_N = 0;
+//                            api.ThrowF(yaw,&ellipse_F[0]);
+//                            api.RTL();
+                            mavlink_global_position_int_t Target_Global_Position;
+                            Target_Global_Position.lat = ellipse_F[0].lat;
+                            Target_Global_Position.lon = ellipse_F[0].lon;
+                            uint16_t hdg1= R2D(yaw);
+                            Target_Global_Position.hdg = hdg1;
+//                            int Globallen=  api.Send_WL_Global_Position(TNum + 41, Target_Global_Position);
                             flag = false;
                         }
                         else
@@ -574,6 +681,7 @@ commands(Autopilot_Interface &api)
                             flag = false;
                             updateellipse = true;
                         }
+                        break;
                     }
                 }
             }
@@ -588,28 +696,19 @@ commands(Autopilot_Interface &api)
     //
     // STOP OFFBOARD MODE
     // --------------------------------------------------------------------------
-    sleep(5);
+//    sleep(2);
+    outf2<<"return to launch!"<<endl;
 
-//    mavlink_mission_clear_all_t comclearall;
-//    comclearall.target_system = 01;
-//    comclearall.target_component = 01;
-//
-//    mavlink_message_t Clearcom;
-//    mavlink_msg_mission_clear_all_encode(255,190,&Clearcom,&comclearall);
-//    int Clearlen = api.write_message(Clearcom);
-    sleep(1);
-    t1.join();
     //返航
-    mavlink_command_long_t com3 = { 0 };
-    com3.target_system= 01;
-    com3.target_component = 01;
-    com3.command = 20;
 
-    mavlink_message_t message3;
-    mavlink_msg_command_long_encode(255, 190, &message3, &com3);
-    int len3 = api.write_message(message3);
+    for (int i = 0; i < 5; ++i)
+    {
+        api.Set_Mode(06);
+        usleep(200);
+    }
 
-
+    t1.detach();
+    outf2<<"close video!"<<endl;
     // now pixhawk isn't listening to setpoint commands
 
     // --------------------------------------------------------------------------
@@ -750,9 +849,11 @@ void videothread(Autopilot_Interface& api){
     );
 
 Mat1b gray, gray_big;
-ofstream outf;
+ofstream outf, outf1;
 outf.open("hight_and_r.txt");
-VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 360));
+outf1.open("target_r.txt");
+VideoWriter writer1("little_e.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 360));
+VideoWriter writer2("big_e.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(1920, 1080));
 	while(true) {
 
         Mat3b image, image_r;
@@ -767,13 +868,13 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
         Mat3b resultImage = image_r.clone();
         Mat3b resultImage2 = image_r.clone();
         vector<coordinate> ellipse_out, ellipse_TF, ellipse_out1;
-        ofstream myfile("ellipse_r.txt", ios::out);
         if(getlocalposition){
             OptimizEllipse(ellipse_in, ellsYaed);//对椭圆检测部分得到的椭圆进行预处理，输出仅有大圆的vector
-            yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
-            filtellipse(api, ellipseok, ellipse_big);
-            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipseok);//绘制检测到的椭圆
             if (!drop) {
+//            yaed->big_vector(resultImage2, ellipse_in, ellipse_big);
+                yaed->targetcolor(resultImage2, ellipse_in, ellipse_big);
+//            filtellipse(api, ellipseok, ellipse_big);
+            yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
             vector<vector<Point> > contours;
             if (stable) {
                 yaed->extracrROI(gray_big, ellipse_out, img_roi);
@@ -786,36 +887,60 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
                 contours1.push_back(p);
                 drawContours(image, contours1, 0, Scalar(255, 255, 0), 1);
             }
-            possible_ellipse(api, ellipse_out1, target_ellipse_position);
-
+//            possible_ellipse(api, ellipse_out1, target_ellipse_position);
+            possible_ellipse_r(api, ellipse_out1, target_ellipse_position);//修改后的椭圆更新函数
             if(stable) {
                 resultTF(api, target_ellipse_position, ellipse_T, ellipse_F);
             }
 
-        } else {
-            getdroptarget(api, droptarget, ellipse_out);
+          } else {
+                yaed->targetcolor(resultImage2, ellipse_in, ellipse_big);
+//                filtellipse(api, ellipseok, ellipse_big);
+                yaed->DrawDetectedEllipses(resultImage, ellipse_out, ellipse_big);//绘制检测到的椭圆
+                getdroptarget(api, droptarget, ellipse_out);
+//                outf1<<"target_r:"<<droptarget.a<<endl;
+//                outf1<<"cam_coordinate:"<<droptarget.x<<" "<<droptarget.y<<endl;
+//                outf1<<"real_coordinate:"<<droptarget.locx<<" "<<droptarget.locy<<endl;
         }
     }
         cout << "target_ellipse.size = " << target_ellipse_position.size() << endl;
+        outf1 << "target_ellipse.size = " << target_ellipse_position.size() << endl;
         for (int i = 0; i < target_ellipse_position.size(); ++i) {
-            cout << "x = " << target_ellipse_position[i].x << endl
-                 << "y = " << target_ellipse_position[i].y << endl
+            cout << "x = " << target_ellipse_position[i].locx << endl
+                 << "y = " << target_ellipse_position[i].locy << endl
+                 << "T = " << target_ellipse_position[i].T_N << endl
+                 << "F = " << target_ellipse_position[i].F_N << endl
+                 << "flag = " << target_ellipse_position[i].possbile << endl;
+            outf1 << "x = " << target_ellipse_position[i].locx << endl
+                 << "y = " << target_ellipse_position[i].locy << endl
                  << "T = " << target_ellipse_position[i].T_N << endl
                  << "F = " << target_ellipse_position[i].F_N << endl
                  << "flag = " << target_ellipse_position[i].possbile << endl;
         }
         cout << "ellipse_T.size = " << ellipse_T.size() << endl;
+        outf1 << "ellipse_T.size = " << ellipse_T.size() << endl;
         for (int i = 0; i < ellipse_T.size(); ++i) {
-            cout << "x = " << ellipse_T[i].x << endl
-                 << "y = " << ellipse_T[i].y << endl
+            cout << "x = " << ellipse_T[i].locx << endl
+                 << "y = " << ellipse_T[i].locy << endl
+                 << "possbile = " << ellipse_T[i].possbile << endl
+                 << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl
+                 <<"No.:"<<ellipse_T[i].num<<endl;
+            outf1 << "x = " << ellipse_T[i].locx << endl
+                 << "y = " << ellipse_T[i].locy << endl
                  << "possbile = " << ellipse_T[i].possbile << endl
                  << "lat:" << ellipse_T[i].lat << "lon:" << ellipse_T[i].lon << endl
                  <<"No.:"<<ellipse_T[i].num<<endl;
         }
         cout << "ellipse_F.size = " << ellipse_F.size() << endl;
+        outf1 << "ellipse_F.size = " << ellipse_F.size() << endl;
         for (int i = 0; i < ellipse_F.size(); ++i) {
-            cout << "x = " << ellipse_F[i].x << endl
-                 << "y = " << ellipse_F[i].y << endl
+            cout << "x = " << ellipse_F[i].locx << endl
+                 << "y = " << ellipse_F[i].locy << endl
+                 << "possbile = " << ellipse_F[i].possbile << endl
+                 << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl
+                 <<"No.:"<<ellipse_F[i].num<<endl;
+            outf1 << "x = " << ellipse_F[i].locx << endl
+                 << "y = " << ellipse_F[i].locy << endl
                  << "possbile = " << ellipse_F[i].possbile << endl
                  << "lat:" << ellipse_F[i].lat << "lon:" << ellipse_F[i].lon << endl
                  <<"No.:"<<ellipse_F[i].num<<endl;
@@ -825,15 +950,22 @@ VideoWriter writer1("小图.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5.0, Size(640, 
             <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
         cout<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl<<"drop:"<<drop<<endl;
         cout<<"target_Num:"<<TargetNum<<endl;
+        outf1<<"local_position.x:"<<api.current_messages.local_position_ned.x<<endl
+            <<"local_position.y:"<<api.current_messages.local_position_ned.y<<endl
+            <<"local_position.z:"<<api.current_messages.local_position_ned.z<<endl;
+        outf1<<"stable:"<<stable<<endl<<"updateellipise:"<<updateellipse<<endl<<"drop:"<<drop<<endl;
+        outf1<<"target_Num:"<<TargetNum<<endl;
+        outf1<<"api.current_messages.mission_item_reached.seq :"<<api.current_messages.mission_item_reached.seq<<endl;
         for(auto &p:ellipse_out1){
-            outf<<"椭圆半径："<<p.a<<endl;
-            outf<<"当前高度"<<-api.current_messages.local_position_ned.z<<endl;
+            outf<<"椭圆半径:"<<p.a<<endl;
+            outf<<"当前高度:"<<-api.current_messages.local_position_ned.z<<endl;
         }
 //		namedWindow("原图",1);
 //		imshow("原图", image);
-		namedWindow("缩小",1);
-		imshow("缩小", resultImage);
+//		namedWindow("缩小",1);
+//		imshow("缩小", resultImage);
 		writer1.write(resultImage);
+        writer2.write(image);
         ellipse_out.clear();
 		waitKey(10);
 		ellipse_out1.clear();
